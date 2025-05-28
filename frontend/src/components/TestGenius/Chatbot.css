@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors - Direct HSL values */
+  --color-primary: 262 59% 63%;
+  --color-primary-light: 262 59% 73%;
+  --color-primary-dark: 262 59% 53%;
+  --color-secondary: 173 83% 32%;
+  --color-accent: 330 87% 65%;
+  --color-success: 142 71% 45%;
+  --color-warning: 38 92% 50%;
+  --color-error: 0 91% 71%;
+  --color-background: 210 20% 98%;
+  --color-foreground: 220 14% 96%;
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 224 71% 4%;
+  --color-muted: 220 14% 96%;
+  --color-muted-foreground: 220 8% 46%;
+  --color-border: 220 13% 91%;
+  --color-input: 220 13% 91%;
+  
+  /* Spacing */
+  --spacing-18: 4.5rem;
+  
+  /* Box Shadows */
+  --shadow-message: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  /* Animations */
+  --animate-fade-in: fade-in 0.3s ease forwards;
+  --animate-slide-in: slide-in 0.3s ease forwards;
+}
+
+@layer base {
+  .dark {
+    --color-background: 224 71% 4%;
+    --color-foreground: 224 36% 8%;
+    --color-card: 224 36% 10%;
+    --color-card-foreground: 210 20% 98%;
+    --color-muted: 220 36% 16%;
+    --color-muted-foreground: 220 8% 70%;
+    --color-border: 240 3.7% 15.9%;
+    --color-input: 240 3.7% 15.9%;
+  }
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  @apply bg-background text-card-foreground;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 rounded-full transition-colors;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/70;
+}
+
+/* Animation Keyframes */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Smooth animations */
+.slide-in {
+  animation: slide-in 0.3s ease forwards;
+}
+
+.fade-in {
+  animation: fade-in 0.3s ease forwards;
+}
+
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  @apply bg-primary rounded-full;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
