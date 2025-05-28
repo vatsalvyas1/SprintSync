@@ -20,10 +20,10 @@ const NavBar = () => {
 <nav className="bg-[#0F172A] text-white w-full md:w-64 md:min-h-screen md:fixed">
       {/* Top section */}
       <div className="flex justify-between items-center px-4 py-4 border-b border-slate-600 md:block">
-        <div>
+        <Link to="/">
           <h1 className="text-xl font-bold">SprintSync</h1>
           <p className="text-xs text-slate-400 hidden md:block">Internal Platform</p>
-        </div>
+        </Link>
         <button
           className="md:hidden text-white"
           onClick={() => setMobileMenu(!mobileMenu)}
