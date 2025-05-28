@@ -75,9 +75,6 @@ const NavLinks = () => (
     <Link to="/task-journal" className="flex items-center gap-3 px-4 py-2 hover:bg-slate-700 rounded-md">
       <BookOpen size={18} /> Task Journal
     </Link>
-    <Link to="/communication-logbook" className="flex items-center gap-3 px-4 py-2 hover:bg-slate-700 rounded-md">
-      <Users size={18} /> Communication Logbook
-    </Link>
     <Link to="/form-locker" className="flex items-center gap-3 px-4 py-2 hover:bg-slate-700 rounded-md">
       <Lock size={18} /> Form Locker
     </Link>
@@ -89,8 +86,8 @@ const UserCard = () => (
   <div className="p-4 border-t border-slate-600 flex items-center gap-3 bg-slate-800 rounded-md m-2">
     <img src="https://i.pravatar.cc/40" alt="User" className="h-10 w-10 rounded-full" />
     <div>
-      <p className="font-semibold text-sm">John Doe</p>
-      <p className="text-xs text-slate-400">john@company.com</p>
+      <p className="font-semibold text-sm">Vatsal Vyas</p>
+      <p className="text-xs text-slate-400">vatsal@exl.com</p>
     </div>
   </div>
 );
