@@ -298,10 +298,10 @@ function Checklist() {
           aria-modal="true"
           role="dialog"
         >
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0 backdrop-blur-xs">
             {/* Background overlay */}
             <div 
-              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" 
+              className="fixed transition-opacity bg-gray-500 bg-opacity-75" 
               onClick={closeNewChecklistModal}
               aria-hidden="true"
             ></div>
