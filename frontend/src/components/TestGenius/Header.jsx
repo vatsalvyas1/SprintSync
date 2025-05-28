@@ -9,7 +9,7 @@ const Header = ({ darkMode, toggleDarkMode }) => {
 
   return (
     <>
-      <header className="border-b border-border backdrop-blur-md bg-background/80 sticky top-0 z-10">
+<header className="border-b border-border backdrop-blur-md bg-background/80 sticky top-0 z-10 md:ml-64">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="bg-primary/10 p-2 rounded-lg">

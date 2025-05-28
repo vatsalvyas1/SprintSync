@@ -37,7 +37,7 @@ function Chatbot() {
       <div className="flex flex-col h-screen bg-background">
         <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         
-        <main className="flex-1 flex flex-col overflow-hidden">
+<main className="flex-1 flex flex-col overflow-hidden md:ml-64">
           <ChatContainer />
 
           <div className="p-4 border-t border-border">
