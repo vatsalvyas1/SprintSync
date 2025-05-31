@@ -1,7 +1,6 @@
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
 const generateAccessTokenAndRefreshToken = async function (userId) {
@@ -167,29 +166,9 @@ const getCurrentUser = asyncHandler(async function (req, res) {
         .json(new ApiResponse(201, req.user, "User Fetched Successfully"));
 });
 
-const authenticateUser = asyncHandler(async function (req, res) {
-    const { _id } = req.body;
-
-    if (!_id) {
-        throw new ApiError(200, "User ID not present");
-    }
-
-    const user = await User.findById(_id).select("-password -refreshToken");
-
-    if (!user) throw new ApiError(200, "User doesn't exist");
-
-    return res
-        .status(201)
-        .json(
-            new ApiResponse(201, req.user, "User Authenticated Successfully")
-        );
-});
-
-
 export {
     registerUser,
     loginUser,
     logoutUser,
-    getCurrentUser,
-    authenticateUser,
+    getCurrentUser
 };
