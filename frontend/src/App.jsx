@@ -5,6 +5,7 @@ import NavBar from './components/Navbar/Navbar'
 import Checklist from './components/DeployCheck/Checklist'
 import SprintRetro from './components/Retrospective/SprintRetro'
 import Login from './components/Login/Login'
+import FrontPage from './components/LandingPage/FrontPage'
 
 function App() {
 
@@ -13,6 +14,7 @@ function App() {
       <Router>
       <NavBar />
       <Routes>
+        <Route path='/' element={<FrontPage />} />
         <Route path='/ai-test-generator' element={<Chatbot />} />
         <Route path='/deployment' element={<Checklist />} />
         <Route path='/retrospectives' element={<SprintRetro />} />
