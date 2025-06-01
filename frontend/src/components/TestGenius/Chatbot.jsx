@@ -3,44 +3,41 @@ import Header from './Header';
 import ChatContainer from './ChatContainer';
 import MessageInput from './MessageInput';
 import { ChatProvider } from './ChatContext';
-import './Chatbot.css'; 
 
 function Chatbot() {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check local storage first
+    const stored = localStorage.getItem('darkMode');
+    if (stored !== null) {
+      return stored === 'true';
+    }
+    // Default to light mode
+    return false;
+  });
 
-  // Check for dark mode preference
   useEffect(() => {
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(isDarkMode);
-
-    if (isDarkMode) {
+    if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, []);
+  }, [darkMode]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
-
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    localStorage.setItem('darkMode', String(newDarkMode));
   };
 
   return (
     <ChatProvider>
-      <div className="flex flex-col h-screen bg-background">
+      <div className="flex flex-col h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
         <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         
-<main className="flex-1 flex flex-col overflow-hidden md:ml-64">
+        <main className="flex-1 flex flex-col overflow-hidden md:ml-64">
           <ChatContainer />
 
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-slate-200 dark:border-slate-700">
             <div className="container mx-auto max-w-4xl">
               <MessageInput />
             </div>

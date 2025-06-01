@@ -46,7 +46,7 @@ const MessageInput = () => {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Describe the feature or application to test..."
-          className="flex-1 resize-none p-4 pr-12 rounded-lg border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary transition-all min-h-[56px] max-h-[200px]"
+          className="flex-1 resize-none p-4 pr-12 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 transition-all min-h-[56px] max-h-[200px]"
           disabled={loading}
         />
         <button
@@ -54,8 +54,8 @@ const MessageInput = () => {
           disabled={!input.trim() || loading}
           className={`absolute right-3 bottom-3 p-2 rounded-md transition-colors ${
             input.trim() && !loading
-              ? 'bg-primary text-white hover:bg-primary-dark'
-              : 'bg-muted text-muted-foreground cursor-not-allowed'
+              ? 'bg-purple-500 text-white hover:bg-purple-600 dark:hover:bg-purple-400'
+              : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
           }`}
           aria-label="Send message"
         >

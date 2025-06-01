@@ -9,14 +9,14 @@ const Header = ({ darkMode, toggleDarkMode }) => {
 
   return (
     <>
-<header className="border-b border-border backdrop-blur-md bg-background/80 sticky top-0 z-10 md:ml-64">
+      <header className="border-b border-slate-200 dark:border-slate-700 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 sticky top-0 z-10 md:ml-64">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-primary/10 p-2 rounded-lg">
+            <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg">
               <svg 
                 viewBox="0 0 24 24" 
                 fill="none" 
-                className="w-6 h-6 text-primary"
+                className="w-6 h-6 text-purple-600 dark:text-purple-400"
                 stroke="currentColor" 
                 strokeWidth="2" 
                 strokeLinecap="round" 
@@ -30,13 +30,12 @@ const Header = ({ darkMode, toggleDarkMode }) => {
                 <path d="M12 15v3" />
               </svg>
             </div>
-            <h1 className="text-xl font-bold">TestGenius</h1>
           </div>
           
           <div className="flex items-center gap-3">
             <button
               onClick={() => clearMessages()}
-              className="p-2 text-muted-foreground hover:text-card-foreground hover:bg-muted rounded-md transition-colors"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
               aria-label="Clear conversation"
               title="Clear conversation"
             >
@@ -45,7 +44,7 @@ const Header = ({ darkMode, toggleDarkMode }) => {
             
             <button
               onClick={() => setShowSystemPromptDialog(true)}
-              className="p-2 text-muted-foreground hover:text-card-foreground hover:bg-muted rounded-md transition-colors"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
               aria-label="System prompt settings"
               title="System prompt settings"
             >
@@ -54,7 +53,7 @@ const Header = ({ darkMode, toggleDarkMode }) => {
             
             <button
               onClick={toggleDarkMode}
-              className="p-2 text-muted-foreground hover:text-card-foreground hover:bg-muted rounded-md transition-colors"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >

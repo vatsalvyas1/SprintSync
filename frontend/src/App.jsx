@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Link } from 'react-router-dom'
-import './components/TestGenius/Chatbot.css'
 import Chatbot from './components/TestGenius/Chatbot'
 import NavBar from './components/Navbar/Navbar'
 import Checklist from './components/DeployCheck/Checklist'

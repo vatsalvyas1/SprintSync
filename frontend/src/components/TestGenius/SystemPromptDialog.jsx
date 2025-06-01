@@ -25,54 +25,54 @@ const SystemPromptDialog = ({ isOpen, onClose }) => {
   if (!showDialog) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in">
-      <div className="bg-card rounded-lg shadow-lg max-w-2xl w-full mx-4 slide-in">
-        <div className="flex justify-between items-center p-4 border-b border-border">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Settings size={20} className="text-primary" />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-out]">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg max-w-2xl w-full mx-4 animate-[slideIn_0.3s_ease-out]">
+        <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
+            <Settings size={20} className="text-purple-500 dark:text-purple-400" />
             System Prompt
           </h2>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-card-foreground transition-colors"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             aria-label="Close"
           >
             <X size={20} />
           </button>
         </div>
         <div className="p-6">
-          <p className="text-muted-foreground mb-4">
+          <p className="text-slate-600 dark:text-slate-300 mb-4">
             Customize the system prompt to control how the AI generates test cases. This prompt sets the tone, format, and requirements for the generated content.
           </p>
           <div className="mb-4">
-            <label htmlFor="systemPrompt" className="block text-sm font-medium mb-1">
+            <label htmlFor="systemPrompt" className="block text-sm font-medium mb-1 text-slate-900 dark:text-white">
               System Prompt
             </label>
             <textarea
               id="systemPrompt"
               value={localPrompt}
               onChange={(e) => setLocalPrompt(e.target.value)}
-              className="w-full h-64 p-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
+              className="w-full h-64 p-3 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 font-mono text-sm"
               placeholder="Enter system prompt to guide the AI's responses"
             />
           </div>
           <div className="flex justify-between">
             <button
               onClick={handleReset}
-              className="px-4 py-2 text-sm text-muted-foreground hover:text-card-foreground transition-colors"
+              className="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Reset to Default
             </button>
             <div className="flex gap-2">
               <button
                 onClick={onClose}
-                className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+                className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
+                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white rounded-md transition-colors"
               >
                 Save
               </button>
