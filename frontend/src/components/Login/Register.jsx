@@ -1,9 +1,11 @@
 import React, { useRef, useState } from "react";
 import api from "../utils/axios.js";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
@@ -12,24 +14,27 @@ function Register() {
         setShowPassword((prev) => !prev);
     };
 
-        const handleSubmit = (e) => {
-            e.preventDefault();
-            setLoading(true);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setLoading(true);
 
-            setTimeout( async() => {
+        setTimeout(async () => {
+            setLoading(false);
+            console.log("Login form submitted");
+            console.log("Email:", emailRef.current.value);
+            console.log("Password:", passwordRef.current.value);
+            const res = await api.post("/register", {
+                email: emailRef.current.value,
+                password: passwordRef.current.value,
+            });
+            console.log(res);
+            console.log(res.data.success)
+            const res2 = await api.get("/current-user")
+            console.log(res2)
+            
+        }, 2000);
 
-                setLoading(false);
-                console.log("Login form submitted");
-                console.log("Email:", emailRef.current.value);
-                console.log("Password:", passwordRef.current.value);
-                const res = await api.post("/register", {
-                    email: emailRef.current.value,
-                    password: passwordRef.current.value
-                })
-                console.log(res)
-                
-            }, 2000);
-        };
+    };
 
     return (
         <div
@@ -60,7 +65,7 @@ function Register() {
                             SprintSync
                         </h1>
                         <p className="text-gray-600 text-sm mt-1">
-                            Welcome back to your workspace
+                            Register for your workspace
                         </p>
                     </div>
 

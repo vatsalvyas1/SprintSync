@@ -1,9 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import api from '../utils/axios';
+
 
 function SampleDashboard() {
   const dashboardRef = useRef(null);
+  const [user, setUser] = useState();
+  
 
   useEffect(() => {
+    const getUser = async() => {
+        const getCurrentUser = await api.get("/current-user");
+
+    console.log(getCurrentUser.data.data.email)
+    setUser(getCurrentUser.data.data.email);
+    }
+
+    getUser();
+
     const dashboardObserverOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -50px 0px'
@@ -76,9 +89,11 @@ function SampleDashboard() {
 
   return (
     <div ref={dashboardRef}>
+        
       <section id="dashboard" className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
+          Hi, {user}
           <div className="text-center mb-12">
             <h2 className="font-sans text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Visualize Your Sprint Activity

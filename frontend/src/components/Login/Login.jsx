@@ -1,9 +1,11 @@
 import React, { useRef, useState } from "react";
 import api from "../utils/axios.js";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
@@ -26,7 +28,13 @@ function Login() {
                     email: emailRef.current.value,
                     password: passwordRef.current.value
                 })
-                console.log(res)
+                console.log(res);
+                console.log(res.data.success)
+                const res2 = await api.get("/current-user")
+                console.log(res2)
+                if(res.data.success){
+                    navigate(`/dashboard/${res.data.data.loggedInUser._id}`)
+                }
                 
             }, 2000);
         };
