@@ -6,19 +6,21 @@ import Checklist from './components/DeployCheck/Checklist'
 import SprintRetro from './components/Retrospective/SprintRetro'
 import Login from './components/Login/Login'
 import FrontPage from './components/LandingPage/FrontPage'
+import Register from './components/Login/Register'
 
 function App() {
 
   return (
-    <div className='flex flex-col'>
+    <div className='flex flex-col select-none'>
       <Router>
-      <NavBar />
+      {/* <NavBar /> */}
       <Routes>
         <Route path='/' element={<FrontPage />} />
         <Route path='/ai-test-generator' element={<Chatbot />} />
         <Route path='/deployment' element={<Checklist />} />
         <Route path='/retrospectives' element={<SprintRetro />} />
         <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
       </Routes>
       </Router>
       </div>

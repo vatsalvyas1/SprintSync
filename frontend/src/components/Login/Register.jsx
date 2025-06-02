@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import api from "../utils/axios.js";
 
-function Login() {
+function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -22,7 +22,7 @@ function Login() {
                 console.log("Login form submitted");
                 console.log("Email:", emailRef.current.value);
                 console.log("Password:", passwordRef.current.value);
-                const res = await api.post("/login", {
+                const res = await api.post("/register", {
                     email: emailRef.current.value,
                     password: passwordRef.current.value
                 })
@@ -210,4 +210,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default Register;

@@ -7,7 +7,7 @@ import CTA from './CTA'
 
 function FrontPage() {
   return (
-    <div className='md:ml-64'>
+    <div className=''>
       <Hero />
       <Features />
       <Modules />
