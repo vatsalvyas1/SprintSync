@@ -5,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({
+        email: "",
+        password: ""
+    });
     const navigate = useNavigate();
 
     const emailRef = useRef(null);
@@ -18,29 +22,88 @@ function Register() {
         navigate("/")
     }
 
-    const handleSubmit = (e) => {
+    const validateForm = () => {
+        const newErrors = {
+            email: "",
+            password: ""
+        };
+        let isValid = true;
+
+        // Email validation
+        const email = emailRef.current.value;
+        if (!email) {
+            newErrors.email = "Email is required";
+            isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = "Please enter a valid email address";
+            isValid = false;
+        }
+
+        // Password validation
+        const password = passwordRef.current.value;
+        if (!password) {
+            newErrors.password = "Password is required";
+            isValid = false;
+        } else if (password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters long";
+            isValid = false;
+        } else if (!/[A-Z]/.test(password)) {
+            newErrors.password = "Password must contain at least one uppercase letter";
+            isValid = false;
+        } else if (!/[a-z]/.test(password)) {
+            newErrors.password = "Password must contain at least one lowercase letter";
+            isValid = false;
+        } else if (!/[0-9]/.test(password)) {
+            newErrors.password = "Password must contain at least one number";
+            isValid = false;
+        } else if (!/[^A-Za-z0-9]/.test(password)) {
+            newErrors.password = "Password must contain at least one special character";
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
+
         setLoading(true);
 
-        setTimeout(async () => {
-            setLoading(false);
-            console.log("Login form submitted");
+        try {
+            console.log("Register form submitted");
             console.log("Email:", emailRef.current.value);
             console.log("Password:", passwordRef.current.value);
+            
             const res = await api.post("/register", {
                 email: emailRef.current.value,
                 password: passwordRef.current.value,
             });
-            console.log(res);
-            console.log(res.data.success)
-            const res2 = await api.get("/current-user")
-            console.log(res2)
-            if(res.data.success){
-                navigate(`/dashboard/${res.data.data._id}`)
-            }
             
-        }, 2000);
-
+            console.log(res);
+            console.log(res.data.success);
+            
+            if (res.data.success) {
+                const res2 = await api.get("/current-user");
+                console.log(res2);
+                navigate(`/dashboard/${res.data.data._id}`);
+            }
+        } catch (error) {
+            console.error("Registration error:", error);
+            // Handle API errors (like duplicate email)
+            if (error.response && error.response.data) {
+                setErrors(prev => ({
+                    ...prev,
+                    email: error.response.data.message || "Registration failed"
+                }));
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -94,8 +157,9 @@ function Register() {
                                     autoComplete="off"
                                     name="email"
                                     ref={emailRef}
-                                    className="w-full px-4 outline-none py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white"
+                                    className={`w-full px-4 outline-none py-3 border ${errors.email ? "border-red-500" : "border-gray-200"} rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white`}
                                     placeholder="Enter your email"
+                                    onChange={() => setErrors(prev => ({...prev, email: ""}))}
                                 />
                                 <svg
                                     className="absolute right-3 top-3.5 w-5 h-5 text-gray-400"
@@ -111,6 +175,9 @@ function Register() {
                                     />
                                 </svg>
                             </div>
+                            {errors.email && (
+                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                            )}
                         </div>
 
                         {/* Password Input */}
@@ -127,8 +194,9 @@ function Register() {
                                     id="password"
                                     name="password"
                                     ref={passwordRef}
-                                    className="w-full px-4 py-3 border outline-none border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white pr-12"
+                                    className={`w-full px-4 py-3 border outline-none ${errors.password ? "border-red-500" : "border-gray-200"} rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white pr-12`}
                                     placeholder="Enter your password"
+                                    onChange={() => setErrors(prev => ({...prev, password: ""}))}
                                 />
                                 <button
                                     type="button"
@@ -172,6 +240,19 @@ function Register() {
                                     )}
                                 </button>
                             </div>
+                            {errors.password && (
+                                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                            )}
+                            <div className="mt-2 text-xs text-gray-500">
+                                Password must contain:
+                                <ul className="list-disc list-inside">
+                                    <li className={passwordRef.current?.value?.length >= 8 ? "text-green-500" : ""}>At least 8 characters</li>
+                                    <li className={/[A-Z]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One uppercase letter</li>
+                                    <li className={/[a-z]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One lowercase letter</li>
+                                    <li className={/[0-9]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One number</li>
+                                    <li className={/[^A-Za-z0-9]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One special character</li>
+                                </ul>
+                            </div>
                         </div>
 
                         {/* Submit Button */}
@@ -181,19 +262,9 @@ function Register() {
                             disabled={loading}
                         >
                             {loading
-                                ? "Signing in..."
-                                : "Sign In to SprintSync"}
+                                ? "Creating account..."
+                                : "Create Account"}
                         </button>
-
-                        {/* Forgot Password */}
-                        {/* <div className="text-center">
-                            <a
-                                href="#"
-                                className="text-sm text-purple-600 hover:text-purple-700 transition-colors duration-200"
-                            >
-                                Forgot your password?
-                            </a>
-                        </div> */}
                     </form>
 
                     {/* Register Link */}
