@@ -91,23 +91,12 @@ function SampleDashboard() {
         };
     }, []);
 
-    const handleLogoutClick = async() => {
-        try{
-           const res = await api.get("/logout")
-           console.log(res);
-           navigate("/login")
-        }
-        catch(error){
-            console.log(error)
-        }
-    };
 
     return (
         <div ref={dashboardRef}>
             <section id="dashboard" className="py-16 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Section Header */}
-                    Hi, {user}
                     <div className="text-center mb-12">
                         <h2 className="font-sans text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                             Visualize Your Sprint Activity
@@ -429,14 +418,6 @@ function SampleDashboard() {
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="mb-16 absolute right-10 top-5 sm:block hidden">
-                    <button
-                        onClick={handleLogoutClick}
-                        className="font-inter cursor-pointer inline-flex items-center px-8 py-2 text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
-                    >
-                        Logout
-                    </button>
                 </div>
             </section>
         </div>

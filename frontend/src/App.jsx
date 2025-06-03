@@ -8,6 +8,7 @@ import Login from "./components/Login/Login";
 import FrontPage from "./components/LandingPage/FrontPage";
 import Register from "./components/Login/Register";
 import SampleDashboard from "./components/LandingPage/SampleDashboard";
+import Dashboard from "./components/User/Dashboard";
 
 function App() {
     return (
@@ -21,9 +22,10 @@ function App() {
                     <Route path="/retrospectives" element={<SprintRetro />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/sampledashboard" element={<SampleDashboard />} />
                     <Route
                         path="/dashboard/:userid"
-                        element={<SampleDashboard />}
+                        element={<Dashboard />}
                     ></Route>
                 </Routes>
             </Router>
