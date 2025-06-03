@@ -18,11 +18,7 @@ const Dashboard = () => {
     }, []);
 
     if (!userInfoGlobal)
-        return (
-            <section className="mx-auto">
-                Loading.....
-            </section>
-        );
+        return <section className="mx-auto">Loading.....</section>;
 
     return (
         <section>
