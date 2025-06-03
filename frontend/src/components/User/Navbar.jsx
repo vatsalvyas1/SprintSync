@@ -15,7 +15,6 @@ import {
 
 const NavBar = ({userName, userid}) => {
     const [mobileMenu, setMobileMenu] = useState(false);
-     // Replace this with real auth if needed
     const navigate = useNavigate();
 
     // Simulate logout
@@ -107,7 +106,7 @@ const NavLinks = ({userid}) => (
             <Zap size={18} /> AI Test Generator
         </Link>
         <Link
-            to="/retrospectives"
+            to={`/retrospectives/${userid}`}
             className="flex items-center gap-3 px-4 py-2 hover:bg-slate-700 rounded-md"
         >
             <MessageSquare size={18} /> Retrospectives

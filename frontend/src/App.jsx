@@ -9,6 +9,7 @@ import PublicDashboard from "./components/LandingPage/PublicDashboard";
 import PublicSprintRetro from "./components/LandingPage/PublicSprintRetro";
 import PublicChecklist from "./components/LandingPage/PublicChecklist";
 import RetroSpectives from "./components/User/RetroSpectives";
+import NotFound from "./components/User/NotFound";
 
 function App() {
     return (
@@ -32,6 +33,7 @@ function App() {
                         path="/retrospectives/:userid"
                         element={<RetroSpectives />}
                     ></Route>
+                    <Route path="*" element={<NotFound />}></Route>
                 </Routes>
             </Router>
         </div>

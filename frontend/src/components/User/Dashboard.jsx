@@ -22,7 +22,7 @@ const Dashboard = () => {
     return (
         <section>
             <NavBar userName={user} userid={userid}/>
-            <div className="md:ml-64 border">
+            <div className="md:ml-64">
                 Hi, {user}
             </div>
         </section>
