@@ -31,6 +31,9 @@ function Register() {
             console.log(res.data.success)
             const res2 = await api.get("/current-user")
             console.log(res2)
+            if(res.data.success){
+                navigate(`/dashboard/${res.data.data._id}`)
+            }
             
         }, 2000);
 
@@ -84,6 +87,7 @@ function Register() {
                                     type="email"
                                     id="email"
                                     autoFocus
+                                    autoComplete="off"
                                     name="email"
                                     ref={emailRef}
                                     className="w-full px-4 outline-none py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white"
@@ -191,13 +195,13 @@ function Register() {
                     {/* Register Link */}
                     <div className="mt-8 pt-6 border-t border-gray-100 text-center">
                         <p className="text-sm text-gray-600">
-                            New here?
+                            Already Registered?
                             <a
-                                href="/register"
+                                href="/login"
                                 className="text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200"
                             >
                                 {" "}
-                                Register Now
+                                Login
                             </a>
                         </p>
                     </div>

@@ -17,26 +17,36 @@ function Login() {
         const handleSubmit = (e) => {
             e.preventDefault();
             setLoading(true);
+            let res;
 
-            setTimeout( async() => {
-
-                setLoading(false);
-                console.log("Login form submitted");
-                console.log("Email:", emailRef.current.value);
-                console.log("Password:", passwordRef.current.value);
-                const res = await api.post("/login", {
-                    email: emailRef.current.value,
-                    password: passwordRef.current.value
-                })
-                console.log(res);
-                console.log(res.data.success)
-                const res2 = await api.get("/current-user")
-                console.log(res2)
+            setTimeout(async () => {
+            setLoading(false);
+            console.log("Login form submitted");
+            console.log("Email:", emailRef.current.value);
+            console.log("Password:", passwordRef.current.value);
+            try{
+                res = await api.post("/login", {
+                email: emailRef.current.value,
+                password: passwordRef.current.value,
+            });
+            }
+            catch(error){
+                
+            }
+            console.log(res);
+            console.log(res.data.success)
+            try {
                 if(res.data.success){
                     navigate(`/dashboard/${res.data.data.loggedInUser._id}`)
                 }
+                else{
+
+                }
+            } catch (error) {
                 
-            }, 2000);
+            }
+            
+        }, 2000);
         };
 
     return (
@@ -87,6 +97,7 @@ function Login() {
                                     type="email"
                                     id="email"
                                     autoFocus
+                                    autoComplete="off"
                                     name="email"
                                     ref={emailRef}
                                     className="w-full px-4 outline-none py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white"
