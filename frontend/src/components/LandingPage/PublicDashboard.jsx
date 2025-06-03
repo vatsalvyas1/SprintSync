@@ -1,11 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import api from "../utils/axios";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 
 function PublicDashboard() {
     const dashboardRef = useRef(null);
-    const [user, setUser] = useState();
-    const navigate = useNavigate();
 
     useEffect(() => {
        
