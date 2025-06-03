@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Chatbot from "./components/TestGenius/Chatbot";
-import NavBar from "./components/Navbar/Navbar";
+import NavBar from "./components/User/Navbar";
 import Checklist from "./components/DeployCheck/Checklist";
 import SprintRetro from "./components/Retrospective/SprintRetro";
-import Login from "./components/Login/Login";
+import Login from "./components/User/Login";
 import FrontPage from "./components/LandingPage/FrontPage";
-import Register from "./components/Login/Register";
+import Register from "./components/User/Register";
 import SampleDashboard from "./components/LandingPage/SampleDashboard";
 import Dashboard from "./components/User/Dashboard";
 

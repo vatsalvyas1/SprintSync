@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import api from "../utils/axios.js";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -14,40 +14,34 @@ function Login() {
         setShowPassword((prev) => !prev);
     };
 
-        const handleSubmit = (e) => {
-            e.preventDefault();
-            setLoading(true);
-            let res;
+    const navigateToHomePage = () => {
+        navigate("/")
+    }
 
-            setTimeout(async () => {
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        setTimeout(async () => {
             setLoading(false);
             console.log("Login form submitted");
             console.log("Email:", emailRef.current.value);
             console.log("Password:", passwordRef.current.value);
-            try{
-                res = await api.post("/login", {
+            const res = await api.post("/register", {
                 email: emailRef.current.value,
                 password: passwordRef.current.value,
             });
-            }
-            catch(error){
-                
-            }
             console.log(res);
             console.log(res.data.success)
-            try {
-                if(res.data.success){
-                    navigate(`/dashboard/${res.data.data.loggedInUser._id}`)
-                }
-                else{
-
-                }
-            } catch (error) {
-                
+            const res2 = await api.get("/current-user")
+            console.log(res2)
+            if(res.data.success){
+                navigate(`/dashboard/${res.data.data._id}`)
             }
             
         }, 2000);
-        };
+
+    };
 
     return (
         <div
@@ -59,7 +53,7 @@ function Login() {
                 <div className="bg-white rounded-3xl shadow-lg border border-purple-100 p-8 relative z-10 transition-all duration-500 hover:shadow-xl">
                     {/* Logo/Brand */}
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4">
+                        <div onClick={navigateToHomePage} className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4">
                             <svg
                                 className="w-8 h-8 text-white"
                                 fill="none"
@@ -74,11 +68,11 @@ function Login() {
                                 />
                             </svg>
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-900 font-inter">
+                        <h1 onClick={navigateToHomePage} className="text-2xl font-bold text-gray-900 font-inter">
                             SprintSync
                         </h1>
                         <p className="text-gray-600 text-sm mt-1">
-                            Welcome back to your workspace
+                            Register for your workspace
                         </p>
                     </div>
 
@@ -192,26 +186,26 @@ function Login() {
                         </button>
 
                         {/* Forgot Password */}
-                        <div className="text-center">
+                        {/* <div className="text-center">
                             <a
                                 href="#"
                                 className="text-sm text-purple-600 hover:text-purple-700 transition-colors duration-200"
                             >
                                 Forgot your password?
                             </a>
-                        </div>
+                        </div> */}
                     </form>
 
                     {/* Register Link */}
                     <div className="mt-8 pt-6 border-t border-gray-100 text-center">
                         <p className="text-sm text-gray-600">
-                            New here?
+                            Already Registered?
                             <a
-                                href="/register"
+                                href="/login"
                                 className="text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200"
                             >
                                 {" "}
-                                Register Now
+                                Login
                             </a>
                         </p>
                     </div>
@@ -229,4 +223,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default Register;

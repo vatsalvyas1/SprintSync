@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../utils/axios";
-import NavBar from "../Navbar/Navbar";
+import NavBar from "./Navbar";
 
 const Dashboard = () => {
     const [user, setUser] = useState();
