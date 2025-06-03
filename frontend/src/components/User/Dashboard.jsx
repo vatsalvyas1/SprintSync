@@ -1,29 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import api from "../utils/axios";
 import NavBar from "./Navbar";
+import { UserContext } from "./UserProvider";
 
 const Dashboard = () => {
     const [user, setUser] = useState();
-    const [userid, setUserId] = useState();
+    const { userInfoGlobal, setUserInfoGlobal } = useContext(UserContext);
 
     useEffect(() => {
         const getUser = async () => {
             const getCurrentUser = await api.get("/current-user");
-            console.log(getCurrentUser)
-            console.log(getCurrentUser.data.data.email);
             setUser(getCurrentUser.data.data.email);
-            setUserId(getCurrentUser.data.data._id);
+            setUserInfoGlobal(getCurrentUser.data.data);
         };
 
         getUser();
-
     }, []);
+
+    if (!userInfoGlobal)
+        return (
+            <section className="mx-auto">
+                Loading.....
+            </section>
+        );
 
     return (
         <section>
-            <NavBar userName={user} userid={userid}/>
+            <NavBar />
             <div className="md:ml-64">
-                Hi, {user}
+                {console.log(userInfoGlobal)}
+                Hi, {userInfoGlobal.email}
             </div>
         </section>
     );
