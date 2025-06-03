@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function SprintRetro() {
+function PublicSprintRetro() {
   const [feedbackModal, setFeedbackModal] = useState(false);
   const [commentModal, setCommentModal] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
@@ -524,4 +524,4 @@ function SprintRetro() {
   );
 }
 
-export default SprintRetro;
+export default PublicSprintRetro;

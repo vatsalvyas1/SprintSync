@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 
-function SampleDashboard() {
+function PublicDashboard() {
     const dashboardRef = useRef(null);
     const [user, setUser] = useState();
     const navigate = useNavigate();
@@ -416,4 +416,4 @@ function SampleDashboard() {
     );
 }
 
-export default SampleDashboard;
+export default PublicDashboard;

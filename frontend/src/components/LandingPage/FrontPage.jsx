@@ -2,7 +2,7 @@ import React from 'react'
 import Hero from './Hero'
 import Features from './Features'
 import Modules from './Modules'
-import SampleDashboard from './SampleDashboard'
+import SampleDashboard from './PublicDashboard'
 import CTA from './CTA'
 
 function FrontPage() {

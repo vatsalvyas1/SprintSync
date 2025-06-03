@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-function Checklist() {
+function PublicChecklist() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openNewChecklistModal = () => {
@@ -393,4 +393,4 @@ function Checklist() {
   )
 }
 
-export default Checklist;
+export default PublicChecklist;
