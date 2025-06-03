@@ -2,6 +2,8 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
+import UserFeedback from "../models/user.feedback.model.js";
+import userFeedbackComment from "../models/user.feedback.comment.model.js";
 
 const generateAccessTokenAndRefreshToken = async function (userId) {
     try {
@@ -27,7 +29,6 @@ const registerUser = asyncHandler(async function (req, res) {
     //  return response
 
     const { email, password } = req.body;
- 
 
     if ([email, password].some((field) => field?.trim() === "")) {
         throw new ApiError(200, "All fields are required.");
@@ -37,22 +38,18 @@ const registerUser = asyncHandler(async function (req, res) {
 
     if (existingUser) throw new ApiError(200, "User already exists.");
 
-    
     const user = await User({
         email,
-        password
+        password,
     });
 
     console.log(user._id);
 
     try {
-        await user.validate();      // errors are caught in a controlled try-catch block 
+        await user.validate(); // errors are caught in a controlled try-catch block
         await user.save();
     } catch (error) {
-        const firstError =
-
-            error.errors.email ||
-            error.errors.password
+        const firstError = error.errors.email || error.errors.password;
 
         throw new ApiError(200, firstError.properties.message);
     }
@@ -61,7 +58,7 @@ const registerUser = asyncHandler(async function (req, res) {
         await generateAccessTokenAndRefreshToken(user._id);
 
     const createdUser = await User.findById(user._id).select(
-        "-password -refreshToken"                       // password and refresh token is removed before sending to frontend
+        "-password -refreshToken" // password and refresh token is removed before sending to frontend
     );
 
     if (!createdUser)
@@ -98,11 +95,11 @@ const loginUser = asyncHandler(async function (req, res) {
         throw new ApiError(200, "Email and Password are required");
 
     const user = await User.findOne({
-        email
+        email,
     });
 
     if (!user) throw new ApiError(200, "User doesn't exist");
-    
+
     const passwordExist = await user.isPasswordCorrect(password);
 
     if (!passwordExist) throw new ApiError(200, "Password isn't correct");
@@ -127,7 +124,7 @@ const loginUser = asyncHandler(async function (req, res) {
             new ApiResponse(
                 201,
                 {
-                    loggedInUser
+                    loggedInUser,
                 },
                 "User Logged In Successfully"
             )
@@ -159,16 +156,84 @@ const logoutUser = asyncHandler(async function (req, res) {
         .json(new ApiResponse(201, {}, "User Logged Out Successfully"));
 });
 
-
 const getCurrentUser = asyncHandler(async function (req, res) {
     return res
         .status(201)
         .json(new ApiResponse(201, req.user, "User Fetched Successfully"));
 });
 
+const registerFeedback = asyncHandler(async function (req, res) {
+    const { email, category, message, upvotes } = req.body;
+
+    const feedback = await UserFeedback({
+        email,
+        category,
+        message,
+        upvotes,
+    });
+
+    if (!feedback)
+        throw new ApiError(
+            200,
+            "Something Went Wrong While Saving The Feedback"
+        );
+
+    try {
+        await feedback.validate();
+        await feedback.save();
+    } catch (error) {
+        const firstError =
+            error.errors.email ||
+            error.errors.category ||
+            error.errors.message ||
+            error.errors.upvotes;
+        throw new ApiError(200, firstError.properties.message);
+    }
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, feedback, "Feedback Taken Successfully"));
+});
+
+const registerFeedbackComment = asyncHandler(async function (req, res) {
+    const { feedbackId, email, message } = req.body;
+
+    const comment = new userFeedbackComment({
+        feedback: feedbackId,
+        email,
+        message,
+    });
+
+    if (!comment)
+        throw new ApiError(
+            200,
+            "Something Went Wrong While Saving The Comment"
+        );
+
+    try {
+        await comment.validate();
+        await comment.save();
+    } catch (error) {
+        if (error.errors?.email)
+            throw new ApiError(200, error.errors.email.message);
+
+        if (error.errors?.message)
+            throw new ApiError(200, error.errors.message.message);
+
+        if (error.errors?.feedback) {
+            throw new ApiError(200, error.errors.feedback.message);
+        }
+    }
+    return res
+        .status(201)
+        .json(new ApiResponse(201, comment, "Comment Taken Successfully"));
+});
+
 export {
     registerUser,
     loginUser,
     logoutUser,
-    getCurrentUser
+    getCurrentUser,
+    registerFeedback,
+    registerFeedbackComment,
 };
