@@ -18,7 +18,7 @@ function App() {
                 <Routes>
                     {/* Public Links */}
                     <Route path="/" element={<FrontPage />} />
-                    <Route path="/ai-test-generator" element={<Chatbot />} />
+                    <Route path="/ai-test-generator/:userid" element={<Chatbot />} />
                     <Route path="/publicdeployment" element={<PublicChecklist />} />
                     <Route path="/publicretrospectives" element={<PublicSprintRetro />} />
                     <Route path="/publicdashboard" element={<PublicDashboard />} />

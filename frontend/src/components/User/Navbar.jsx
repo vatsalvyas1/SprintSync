@@ -106,7 +106,7 @@ const NavLinks = () => {
                 <Bug size={18} /> QA Testing
             </Link>
             <Link
-                to="/ai-test-generator"
+                to={`/ai-test-generator/${userInfoGlobal._id}`}
                 className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
             >
                 <Zap size={18} /> AI Test Generator
