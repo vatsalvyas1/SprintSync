@@ -39,7 +39,7 @@ function FormLocker() {
     if (error) return <div className="min-h-screen bg-gray-50 p-6">Error: {error}</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gray-50 p-6 ml-64">
             {/* Header */}
             <div className="mb-8 flex items-center justify-between">
                 <div>
