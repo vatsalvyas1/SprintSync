@@ -20,10 +20,11 @@ app.use(
 app.use(cookieParser());
 
 import userRouter from "./routes/user.routes.js";
+import formRouter from "./routes/form.routes.js";
 import errorHandler from "./middlewares/errorHandler.middleware.js";
 
 app.use("/api/v1/user", userRouter);
-
+app.use("/api/v1/form", formRouter);
 app.use(errorHandler);
 
 export default app;
