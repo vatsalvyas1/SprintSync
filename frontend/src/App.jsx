@@ -10,6 +10,10 @@ import PublicSprintRetro from "./components/LandingPage/PublicSprintRetro";
 import PublicChecklist from "./components/LandingPage/PublicChecklist";
 import RetroSpectives from "./components/User/RetroSpectives";
 import NotFound from "./components/User/NotFound";
+import AddForm from "./components/User/AddForm";
+import FormList from "./components/User/FormList";
+import FormLocker2 from "./components/FormLocker/FormLocker2";
+import FormLocker from "./components/FormLocker/FormLocker";
 
 function App() {
     return (
@@ -22,6 +26,7 @@ function App() {
                     <Route path="/publicdeployment" element={<PublicChecklist />} />
                     <Route path="/publicretrospectives" element={<PublicSprintRetro />} />
                     <Route path="/publicdashboard" element={<PublicDashboard />} />
+                    <Route path="/public-locker" element={<FormLocker2 />} />
                     {/* User Links */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
@@ -33,6 +38,8 @@ function App() {
                         path="/retrospectives/:userid"
                         element={<RetroSpectives />}
                     ></Route>
+                    <Route path="/add-form/:userid" element={<AddForm />} />
+                    <Route path="/forms" element={<FormLocker />} />
                     <Route path="*" element={<NotFound />}></Route>
                 </Routes>
             </Router>

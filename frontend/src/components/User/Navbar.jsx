@@ -124,7 +124,8 @@ const NavLinks = () => {
                 <BookOpen size={18} /> Task Journal
             </Link>
             <Link
-                to="/form-locker"
+                to='/forms'
+                // to={`/add-form/${userInfoGlobal._id}`}
                 className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
             >
                 <Lock size={18} /> Form Locker
