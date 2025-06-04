@@ -67,11 +67,11 @@ const AddForm = ({ onCancel }) => {
 
         <div>
           <label className="block font-medium text-gray-800 mb-1">
-            Description
+            Version GUID
           </label>
           <textarea
             name="description"
-            placeholder="Describe the purpose of this form"
+            placeholder="Enter Version GUID of this form"
             value={formData.description}
             onChange={handleChange}
             required
