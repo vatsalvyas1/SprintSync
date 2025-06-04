@@ -70,6 +70,7 @@ const registerUser = asyncHandler(async function (req, res) {
     const options = {
         httpOnly: true,
         secure: true,
+        sameSite: "None", // Required for cross-site cookies
     };
 
     return res
