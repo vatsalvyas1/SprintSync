@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/axios";
 import {
@@ -12,36 +12,42 @@ import {
     BookOpen,
     Lock,
 } from "lucide-react";
-import { UserContext } from "./UserProvider";
 
 const NavBar = () => {
     const [mobileMenu, setMobileMenu] = useState(false);
-    const { userInfoGlobal, setUserInfoGlobal } = useContext(UserContext);
+    const [userInfo, setUserInfo] = useState(null);
     const navigate = useNavigate();
 
-    // Simulate logout
+    useEffect(() => {
+        const fetchUserInfo = () => {
+            const storedUser = localStorage.getItem("loggedInUser");
+            if (storedUser) {
+                setUserInfo(JSON.parse(storedUser));
+            } else {
+                console.error("No user info found in localStorage");
+            }
+        };
+        fetchUserInfo();
+    }, []);
+
     const handleLogoutClick = async () => {
         try {
-            const res = await api.get("/logout");
-            console.log(res);
+            await api.get("/logout");
+            localStorage.removeItem("loggedInUser");
             navigate("/login");
         } catch (error) {
-            console.log(error);
+            console.error("Logout failed:", error);
         }
     };
 
-    if (!userInfoGlobal)
-        return <section className="mx-auto">Loading.....</section>;
+    if (!userInfo) return <section className="mx-auto">Loading.....</section>;
 
     return (
         <nav className="w-full bg-[#0F172A] text-white md:fixed md:min-h-screen md:w-64">
-            {/* Top section */}
             <div className="flex items-center justify-between border-b border-slate-600 px-4 py-4 md:block">
                 <h1 className="text-xl font-bold">SprintSync</h1>
-                <p className="hidden text-xs text-slate-400 md:block">
-                    Internal Platform
-                </p>
-                <div className="font-bold">{userInfoGlobal.email}</div>
+                <p className="hidden text-xs text-slate-400 md:block">Internal Platform</p>
+                <div className="font-bold">{userInfo.email}</div>
                 <button
                     className="text-white md:hidden"
                     onClick={() => setMobileMenu(!mobileMenu)}
@@ -50,7 +56,6 @@ const NavBar = () => {
                 </button>
             </div>
 
-            {/* Desktop Menu */}
             <div className="hidden h-full flex-col justify-between md:flex">
                 <div className="mt-4 flex flex-col space-y-1 px-4 text-sm">
                     <NavLinks />
@@ -63,7 +68,6 @@ const NavBar = () => {
                 </button>
             </div>
 
-            {/* Mobile Menu */}
             {mobileMenu && (
                 <div className="flex flex-col space-y-2 px-4 py-4 text-sm md:hidden">
                     <NavLinks />
@@ -80,54 +84,27 @@ const NavBar = () => {
 };
 
 const NavLinks = () => {
-    const { userInfoGlobal, setUserInfoGlobal } = useContext(UserContext);
-
-    if (!userInfoGlobal)
-        return <section className="mx-auto">Loading.....</section>;
-
     return (
         <>
-            <Link
-                to={`/dashboard/${userInfoGlobal._id}`}
-                className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
-            >
+            <Link to="/dashboard" className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700">
                 <LayoutDashboard size={18} /> Dashboard
             </Link>
-            <Link
-                to="/deployment"
-                className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
-            >
+            <Link to="/deployment" className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700">
                 <UploadCloud size={18} /> Deployment
             </Link>
-            <Link
-                to="/qa-testing"
-                className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
-            >
+            <Link to="/qa-testing" className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700">
                 <Bug size={18} /> QA Testing
             </Link>
-            <Link
-                to={`/ai-test-generator/${userInfoGlobal._id}`}
-                className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
-            >
+            <Link to="/ai-test-generator" className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700">
                 <Zap size={18} /> AI Test Generator
             </Link>
-            <Link
-                to={`/retrospectives/${userInfoGlobal._id}`}
-                className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
-            >
+            <Link to="/retrospectives" className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700">
                 <MessageSquare size={18} /> Retrospectives
             </Link>
-            <Link
-                to="/task-journal"
-                className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
-            >
+            <Link to="/task-journal" className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700">
                 <BookOpen size={18} /> Task Journal
             </Link>
-            <Link
-                to='/forms'
-                // to={`/add-form/${userInfoGlobal._id}`}
-                className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700"
-            >
+            <Link to="/forms" className="flex items-center gap-3 rounded-md px-4 py-2 hover:bg-slate-700">
                 <Lock size={18} /> Form Locker
             </Link>
         </>

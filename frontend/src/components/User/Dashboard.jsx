@@ -4,25 +4,35 @@ import NavBar from "./Navbar";
 import { UserContext } from "./UserProvider";
 
 const Dashboard = () => {
-    const { userInfoGlobal, setUserInfoGlobal } = useContext(UserContext);
+    const [userInfoGlobal, setUserInfoGlobal] = useState(null);
 
     useEffect(() => {
-        const getUser = async () => {
-            const getCurrentUser = await api.get("/current-user");
-            setUserInfoGlobal(getCurrentUser.data.data);
-        };
+        const fetchUserInfo = async () => {
+            try {
+                const loggedInUser = localStorage.getItem("loggedInUser");
+                if (loggedInUser) {
+                    const userInfo = JSON.parse(loggedInUser);
+                    setUserInfoGlobal(userInfo);
+                } else {
+                    console.error("No user info found in localStorage");
+                }
+            }
+            catch (error) {
+                console.error("Error fetching user info:", error);
+            }
+        }
 
-        getUser();
+        fetchUserInfo();
     }, []);
 
     if (!userInfoGlobal)
-        return <section className="mx-auto">Loading.....</section>;
+        return <section className="mx-auto">Loading..... login nhi h tu bhadwe</section>;
 
     return (
         <section>
             <NavBar />
+
             <div className="md:ml-64">
-                {console.log(userInfoGlobal)}
                 Hi, {userInfoGlobal.email}
             </div>
         </section>

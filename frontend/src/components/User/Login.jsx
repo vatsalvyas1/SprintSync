@@ -38,7 +38,9 @@ function Login() {
             console.log(res.data.success);
             try {
                 if (res.data.success) {
-                    navigate(`/dashboard/${res.data.data.loggedInUser._id}`);
+                    console.log("Login successful");
+                    localStorage.setItem("loggedInUser", JSON.stringify(res.data.data.loggedInUser));
+                    navigate(`/dashboard`);
                 } else {
                 }
             } catch (error) {}
