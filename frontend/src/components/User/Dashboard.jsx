@@ -4,13 +4,11 @@ import NavBar from "./Navbar";
 import { UserContext } from "./UserProvider";
 
 const Dashboard = () => {
-    const [user, setUser] = useState();
     const { userInfoGlobal, setUserInfoGlobal } = useContext(UserContext);
 
     useEffect(() => {
         const getUser = async () => {
             const getCurrentUser = await api.get("/current-user");
-            setUser(getCurrentUser.data.data.email);
             setUserInfoGlobal(getCurrentUser.data.data);
         };
 
