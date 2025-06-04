@@ -1,7 +1,7 @@
 function FormLocker2() {
   return (
     <div>
-      <section id="form-locker" className="min-h-screen bg-gray-50 p-6 block" >
+      <section id="form-locker" className="min-h-screen bg-gray-50 p-6 block ml-64" >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -194,42 +194,6 @@ function FormLocker2() {
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                     </svg>
-                    Check Out
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Form Item 5 - Locked with Warning */}
-            <div className="p-6 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="text-lg font-medium text-gray-900">Report Generator</h3>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                        🟠 Auto check-in soon
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-4 mt-2">
-                      <div className="flex items-center space-x-2">
-                        <img className="w-6 h-6 rounded-full" src="https://avatar.iran.liara.run/public/23" alt="User" />
-                        <span className="text-sm text-gray-600">Checked out by Emma Wilson</span>
-                      </div>
-                      <span className="text-sm text-gray-500">7 hours ago</span>
-                      <span className="text-sm text-orange-600 font-medium">Auto check-in in 15 minutes</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button onClick={() => requestNotification('report-generator')} className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6zM16 3h5v5h-5V3zM4 3h6v6H4V3z"></path>
-                    </svg>
-                    Notify Me
-                  </button>
-                  <button disabled className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-400 bg-gray-100 cursor-not-allowed">
                     Check Out
                   </button>
                 </div>
