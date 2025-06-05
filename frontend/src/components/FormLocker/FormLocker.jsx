@@ -68,21 +68,28 @@ function FormLocker() {
     if (error) return <div>{error}</div>;
 
     return (
-        <div className="ml-64 min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gray-50 p-6 block ml-64">
             {/* Header */}
-            <div className="mb-8 flex items-center justify-between">
+            <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold">Form Locker</h1>
-                    <p className="text-gray-600">
-                        Prevent multiple devs working on the same form
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Form Locker</h1>
+                    <p className="text-gray-600">Prevent multiple devs working on same form</p>
                 </div>
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className="border bg-white px-4 py-2 text-sm font-medium"
-                >
-                    ➕ Add New Form
-                </button>
+                <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span className="text-sm text-gray-600">Real-time updates</span>
+                    </div>
+                    <button
+                        onClick={() => setIsOpen(true)}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Add New Form
+                    </button>
+                </div>
             </div>
 
             {/* Modal */}
@@ -102,72 +109,50 @@ function FormLocker() {
                 </div>
             </Dialog>
 
-            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
-                    <div className="mb-2 text-2xl font-bold text-red-600">
+            {/* Status Overview Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
+                    <div className="text-2xl font-bold text-red-600 mb-2">
                         {lockedFormsCount}
                     </div>
-                    <div className="text-sm text-gray-600">
-                        Currently Locked
-                    </div>
+                    <div className="text-sm text-gray-600">Currently Locked</div>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
-                    <div className="mb-2 text-2xl font-bold text-green-600">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
+                    <div className="text-2xl font-bold text-green-600 mb-2">
+                        {availableFormsCount}
+                    </div>
+                    <div className="text-sm text-gray-600">Available</div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
+                    <div className="text-2xl font-bold text-blue-600 mb-2">
                         {totalForms}
                     </div>
                     <div className="text-sm text-gray-600">Total Forms</div>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
-                    <div className="mb-2 text-2xl font-bold text-orange-600">
-                        {availableFormsCount}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                        Form Available to Check Out
-                    </div>
-                </div>
             </div>
 
-            {/* Search & Filter */}
-            <div className="mb-6 rounded-lg border border-gray-200 bg-white">
-                <div className="border-b border-gray-200 p-4">
+            {/* Form List */}
+            <div className="bg-white rounded-lg border border-gray-200">
+                <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-900">
-                            Form Status Dashboard
-                        </h2>
+                        <h2 className="text-lg font-semibold text-gray-900">Form Status Dashboard</h2>
                         <div className="flex items-center space-x-3">
-                            {/* Search Input */}
                             <div className="relative">
                                 <input
                                     type="text"
                                     placeholder="Search forms..."
                                     value={searchQuery}
-                                    onChange={(e) =>
-                                        setSearchQuery(e.target.value)
-                                    }
-                                    className="w-64 rounded-md border border-gray-300 px-4 py-2 pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-64 px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
-                                <svg
-                                    className="absolute top-2.5 left-3 h-4 w-4 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                    />
+                                <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
-
-                            {/* Filter Dropdown */}
                             <select
                                 value={filterStatus}
-                                onChange={(e) =>
-                                    setFilterStatus(e.target.value)
-                                }
-                                className="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="All">All Forms</option>
                                 <option value="Available">Available</option>
@@ -176,95 +161,117 @@ function FormLocker() {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Form Cards */}
-            <div className="mt-6 grid gap-4">
-                {forms
-                    .filter((form) => {
-                        const matchesSearch = form.formName
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase());
+                <div className="divide-y divide-gray-200">
+                    {forms
+                        .filter((form) => {
+                            const matchesSearch = form.formName
+                                .toLowerCase()
+                                .includes(searchQuery.toLowerCase());
 
-                        const matchesFilter =
-                            filterStatus === "All"
-                                ? true
-                                : filterStatus === "Locked"
-                                  ? form.isLocked
-                                  : !form.isLocked;
+                            const matchesFilter =
+                                filterStatus === "All"
+                                    ? true
+                                    : filterStatus === "Locked"
+                                      ? form.isLocked
+                                      : !form.isLocked;
 
-                        return matchesSearch && matchesFilter;
-                    })
-                    .map((form) => {
-                        const isLockedByMe =
-                            form.lockedBy?._id === loggedInUser._id;
-                        const isLocked = form.isLocked;
+                            return matchesSearch && matchesFilter;
+                        })
+                        .map((form) => {
+                            const isLockedByMe =
+                                form.lockedBy?._id === loggedInUser._id;
+                            const isLocked = form.isLocked;
 
-                        // Updated logic
-                        const checkOutDisabled = isLocked; // disabled for *everyone* if locked
-                        const checkInDisabled = !isLockedByMe; // only user who locked can check in
+                            // Updated logic
+                            const checkOutDisabled = isLocked; // disabled for *everyone* if locked
+                            const checkInDisabled = !isLockedByMe; // only user who locked can check in
 
-                        return (
-                            <div
-                                key={form._id}
-                                className="rounded-lg border bg-white p-6 shadow-sm hover:bg-gray-50"
-                            >
-                                <div className="flex justify-between">
-                                    <div>
-                                        <h3 className="text-xl font-semibold">
-                                            {form.formName}
-                                        </h3>
-                                        <p className="text-gray-600">
-                                            {form.description}
-                                        </p>
-                                        {form.notes && (
-                                            <p className="text-gray-400 italic">
-                                                {form.notes}
-                                            </p>
-                                        )}
-                                        {form.isLocked && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                Locked by: {form.lockedBy?.name}{" "}
-                                                at{" "}
-                                                {new Date(
-                                                    form.lockedAt
-                                                ).toLocaleTimeString()}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col items-end gap-2">
-                                        <button
-                                            className={`rounded px-3 py-1 text-sm font-medium ${
-                                                checkOutDisabled
-                                                    ? "cursor-not-allowed bg-gray-400 text-white"
-                                                    : "bg-blue-600 text-white hover:bg-blue-700"
-                                            }`}
-                                            disabled={checkOutDisabled}
-                                            onClick={() =>
-                                                handleCheckOut(form._id)
-                                            }
-                                        >
-                                            Check Out
-                                        </button>
+                            return (
+                                <div
+                                    key={form._id}
+                                    className={`p-6 hover:bg-gray-50 transition-colors ${isLockedByMe ? 'bg-blue-50' : ''}`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <div className={`w-3 h-3 rounded-full ${
+                                                isLockedByMe 
+                                                    ? 'bg-blue-500' 
+                                                    : isLocked 
+                                                        ? 'bg-red-500' 
+                                                        : 'bg-green-500'
+                                            }`}></div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center space-x-3">
+                                                    <h3 className="text-lg font-medium text-gray-900">{form.formName}</h3>
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                        isLockedByMe
+                                                            ? 'bg-blue-100 text-blue-800'
+                                                            : isLocked
+                                                                ? 'bg-red-100 text-red-800'
+                                                                : 'bg-green-100 text-green-800'
+                                                    }`}>
+                                                        {isLockedByMe 
+                                                            ? '🔵 Checked out by you' 
+                                                            : isLocked 
+                                                                ? '🔴 Locked' 
+                                                                : '🟢 Available'
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center space-x-4 mt-2">
+                                                    {form.description && (
+                                                        <span className="text-sm text-gray-600">{form.description}</span>
+                                                    )}
+                                                    {form.isLocked && (
+                                                        <>
+                                                            <span className="text-sm text-gray-600">
+                                                                Checked out by {form.lockedBy?.name}
+                                                            </span>
+                                                            <span className="text-sm text-gray-500">
+                                                                {new Date(form.lockedAt).toLocaleTimeString()}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    {form.notes && (
+                                                        <span className="text-sm text-gray-400 italic">{form.notes}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <button
+                                                className={`inline-flex items-center px-3 py-1 border border-transparent rounded-md text-sm font-medium transition-colors ${
+                                                    checkOutDisabled
+                                                        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                                                        : "text-white bg-blue-600 hover:bg-blue-700"
+                                                }`}
+                                                disabled={checkOutDisabled}
+                                                onClick={() => handleCheckOut(form._id)}
+                                            >
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                </svg>
+                                                Check Out
+                                            </button>
 
-                                        <button
-                                            className={`rounded px-3 py-1 text-sm font-medium ${
-                                                isLockedByMe
-                                                    ? "bg-green-600 text-white hover:bg-green-700"
-                                                    : "cursor-not-allowed bg-gray-300 text-white"
-                                            }`}
-                                            disabled={checkInDisabled}
-                                            onClick={() =>
-                                                handleCheckIn(form._id)
-                                            }
-                                        >
-                                            Check In
-                                        </button>
+                                            {isLockedByMe && (
+                                                <button
+                                                    className="inline-flex items-center px-3 py-1 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors"
+                                                    onClick={() => handleCheckIn(form._id)}
+                                                >
+                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Check In
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                </div>
             </div>
         </div>
     );
