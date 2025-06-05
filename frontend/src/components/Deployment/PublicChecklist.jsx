@@ -118,7 +118,7 @@ function PublicChecklist() {
         </div>
 
         {/* Checklist Card 2 */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-orange-300 transition-colors">
+        {/* <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-orange-300 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -162,10 +162,10 @@ function PublicChecklist() {
             </div>
             <button onClick={() => openChecklistDetails('form-validation')} className="text-sm text-blue-600 hover:text-blue-700">View Details</button>
           </div>
-        </div>
+        </div> */}
 
         {/* Checklist Card 3 */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-green-300 transition-colors">
+        {/* <div className="bg-white rounded-lg border border-gray-200 p-6 hover:border-green-300 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -209,7 +209,7 @@ function PublicChecklist() {
             </div>
             <button onClick={() => openChecklistDetails('user-auth')} className="text-sm text-blue-600 hover:text-blue-700">View Details</button>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Timeline Progress Tracker */}
