@@ -12,9 +12,6 @@ const ChecklistItemSchema = new Schema({
     enum: ['pending', 'in_progress', 'done', 'backlog'],
     default: 'pending'
   },
-  assignee: {
-    type: String // You can use Schema.Types.ObjectId if referencing a User
-  },
   notes: {
     type: String
   },
@@ -28,7 +25,7 @@ const ChecklistItemSchema = new Schema({
       }
     }
   ]
-}, { timestamps: true });
+});
 
 const DeploymentChecklistSchema = new Schema({
   name: {

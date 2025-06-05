@@ -7,7 +7,7 @@ import Register from "./components/User/Register";
 import Dashboard from "./components/User/Dashboard";
 import PublicDashboard from "./components/LandingPage/PublicDashboard";
 import PublicSprintRetro from "./components/LandingPage/PublicSprintRetro";
-import PublicChecklist from "./components/LandingPage/PublicChecklist";
+import PublicChecklist from "./components/Deployment/PublicChecklist";
 import RetroSpectives from "./components/User/RetroSpectives";
 import NotFound from "./components/User/NotFound";
 import AddForm from "./components/User/AddForm";
@@ -46,7 +46,7 @@ function App() {
                 <Routes>
                     {/* Public Routes (accessible to everyone) */}
                     <Route path="/ai-test-generator" element={<Chatbot />} />
-                    <Route path="/publicdeployment" element={<PublicChecklist />} />
+                    <Route path="/deployment" element={<PublicChecklist />} />
                     <Route path="/publicretrospectives" element={<PublicSprintRetro />} />
                     <Route path="/publicdashboard" element={<PublicDashboard />} />
                     <Route path="/public-locker" element={<FormLocker2 />} />
