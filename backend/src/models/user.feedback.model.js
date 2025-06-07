@@ -2,9 +2,9 @@ import mongoose, { Schema } from "mongoose";
 
 const userFeedbackSchema = new Schema(
     {
-        email: {
+        author: {
             type: String,
-            required: [true, "Feedback's email is required"],
+            required: [true, "Feedback's name is required"],
             trim: true,
         },
         category: {
@@ -16,6 +16,10 @@ const userFeedbackSchema = new Schema(
             type: String,
             required: [true, "Feedback's message is required"],
             trim: true,
+        },
+        commentCount: {
+            type: Number,
+            min: 0,
         },
         upvotes: {
             type: Number,

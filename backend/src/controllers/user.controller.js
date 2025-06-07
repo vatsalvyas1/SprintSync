@@ -51,7 +51,11 @@ const registerUser = asyncHandler(async function (req, res) {
         await user.validate(); // errors are caught in a controlled try-catch block
         await user.save();
     } catch (error) {
-        const firstError = error.errors.email || error.errors.password || error.errors.name || error.errors.role;
+        const firstError =
+            error.errors.email ||
+            error.errors.password ||
+            error.errors.name ||
+            error.errors.role;
 
         throw new ApiError(200, firstError.properties.message);
     }
@@ -166,10 +170,10 @@ const getCurrentUser = asyncHandler(async function (req, res) {
 });
 
 const registerFeedback = asyncHandler(async function (req, res) {
-    const { email, category, message, upvotes } = req.body;
+    const { author, category, message, upvotes } = req.body;
 
     const feedback = await UserFeedback({
-        email,
+        author,
         category,
         message,
         upvotes,
@@ -186,7 +190,7 @@ const registerFeedback = asyncHandler(async function (req, res) {
         await feedback.save();
     } catch (error) {
         const firstError =
-            error.errors.email ||
+            error.errors.name ||
             error.errors.category ||
             error.errors.message ||
             error.errors.upvotes;
@@ -199,11 +203,11 @@ const registerFeedback = asyncHandler(async function (req, res) {
 });
 
 const registerFeedbackComment = asyncHandler(async function (req, res) {
-    const { feedbackId, email, message } = req.body;
+    const { feedbackId, name, message } = req.body;
 
     const comment = new userFeedbackComment({
         feedback: feedbackId,
-        email,
+        name,
         message,
     });
 
@@ -232,6 +236,14 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
         .json(new ApiResponse(201, comment, "Comment Taken Successfully"));
 });
 
+const getAllFeedback = asyncHandler(async function (req, res) {
+    const feedbacks = await UserFeedback.find();
+    if (!feedbacks) throw new ApiError(200, "Feedbacks couldn't be fetched");
+    return res
+        .status(201)
+        .json(new ApiResponse(201, feedbacks, "Feedback Fetched"));
+});
+
 export {
     registerUser,
     loginUser,
@@ -239,4 +251,5 @@ export {
     getCurrentUser,
     registerFeedback,
     registerFeedbackComment,
+    getAllFeedback
 };
