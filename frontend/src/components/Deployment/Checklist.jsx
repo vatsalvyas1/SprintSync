@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import { Link } from 'react-router-dom';
 function Checklist() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checklists, setChecklists] = useState([]);
@@ -46,11 +46,6 @@ function Checklist() {
       checklistItems: []
     });
     setNewItemDescription('');
-  };
-
-  const openChecklistDetails = (checklistId) => {
-    console.log('Opening checklist details for:', checklistId);
-    // Add your actual logic here
   };
 
   const handleInputChange = (e) => {
@@ -256,12 +251,7 @@ function Checklist() {
                 <img className="w-6 h-6 rounded-full border-2 border-white" src="https://avatar.iran.liara.run/public/12" alt="Assignee" />
                 <img className="w-6 h-6 rounded-full border-2 border-white" src="https://avatar.iran.liara.run/public/23" alt="Assignee" />
               </div>
-              <button 
-                onClick={() => openChecklistDetails(checklist._id)} 
-                className="text-sm text-blue-600 hover:text-blue-700"
-              >
-                View Details
-              </button>
+              <Link className="text-sm text-blue-600 hover:text-blue-700" to={`/deployment/${checklist._id}`}>View Details</Link>
             </div>
           </div>
         ))}
