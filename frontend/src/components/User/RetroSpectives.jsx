@@ -9,6 +9,7 @@ const RetroSpectives = () => {
         poorItems: [],
         suggestions: [],
     });
+    const [comments, setComments] = useState([]);
     useEffect(() => {
         const fetchUserInfo = () => {
             const storedUser = localStorage.getItem("loggedInUser");
@@ -42,6 +43,14 @@ const RetroSpectives = () => {
                 suggestions,
             });
         };
+
+        const fetchComments = async () => {
+            const allComments = await api.get("/get-all-comments");
+            console.log(allComments.data.data)
+            setComments(allComments.data.data);
+            console.log(comments)
+        };
+        fetchComments();
         fetchFeedbacks();
         fetchUserInfo();
     }, []);
@@ -56,23 +65,7 @@ const RetroSpectives = () => {
         anonymous: false,
     });
 
-    const [comments, setComments] = useState([
-        {
-            id: 1,
-            author: "Sarah Chen",
-            text: "Absolutely! The API documentation was also very helpful.",
-            time: "1h ago",
-            avatar: "https://avatar.iran.liara.run/public/23",
-        },
-        {
-            id: 2,
-            author: "Mike Rodriguez",
-            text: "We should continue this approach for future integrations.",
-            time: "45m ago",
-            avatar: "https://avatar.iran.liara.run/public/34",
-        },
-    ]);
-
+    
     const [newComment, setNewComment] = useState("");
 
     const openFeedbackModal = () => {
@@ -121,8 +114,8 @@ const RetroSpectives = () => {
         const feedback = {
             message: newFeedback.message,
             votes: 0,
-            author: newFeedback.anonymous ? "Anonymous" : "Current User",
-            time: "just now",
+            author: newFeedback.anonymous ? "Anonymous" : `${userInfo.name}`,
+            time: "Just Now",
             avatar: "https://avatar.iran.liara.run/public/45",
             comments: 0,
         };
@@ -133,22 +126,20 @@ const RetroSpectives = () => {
                 category: newFeedback.category,
                 message: newFeedback.message,
             });
-            console.log(res);
+            setFeedbackData((prev) => {
+                const categoryKey =
+                    newFeedback.category === "What Went Well"
+                        ? "wellItems"
+                        : newFeedback.category === "What Didn't Go Well"
+                          ? "poorItems"
+                          : "suggestions";
+
+                return {
+                    ...prev,
+                    [categoryKey]: [...prev[categoryKey], feedback],
+                };
+            });
         } catch (error) {}
-
-        setFeedbackData((prev) => {
-            const categoryKey =
-                newFeedback.category === "What Went Well"
-                    ? "wellItems"
-                    : newFeedback.category === "What Didn't Go Well"
-                      ? "poorItems"
-                      : "suggestions";
-
-            return {
-                ...prev,
-                [categoryKey]: [...prev[categoryKey], feedback],
-            };
-        });
 
         closeFeedbackModal();
     };
@@ -163,25 +154,33 @@ const RetroSpectives = () => {
         const diffInHr = Math.floor(diffInMSec / (1000 * 60 * 60));
         const diffInDays = Math.floor(diffInMSec / (1000 * 60 * 60 * 24));
 
-        if (diffInSec < 60) return `${diffInMSec}s ago`;
+        if (diffInSec < 60) return `${diffInSec}s ago`;
         else if (diffInMin < 60) return `${diffInMin}m ago`;
         else if (diffInHr < 24) return `${diffInHr}h ago`;
         return `${diffInDays} days ago`;
     };
 
-    const handleAddComment = () => {
+    const handleAddComment = async () => {
         if (!newComment.trim()) return;
 
         const comment = {
-            id: Date.now(),
-            author: "Current User",
-            text: newComment,
-            time: "just now",
-            avatar: "https://avatar.iran.liara.run/public/45",
+            author: userInfo.name,
+            message: newComment,
+            time: "Just Now",
+            // avatar: "https://avatar.iran.liara.run/public/45",
         };
 
-        setComments((prev) => [...prev, comment]);
-        setNewComment("");
+        try {
+            console.log(typeof selectedFeedback);
+            const res = await api.post("/add-feedback-comment", {
+                feedbackId: selectedFeedback,
+                author: userInfo.name,
+                message: newComment,
+            });
+            console.log(res);
+            setComments((prev) => [...prev, comment]);
+            setNewComment("");
+        } catch (error) {}
     };
 
     const getTotalFeedback = () => {
@@ -214,9 +213,10 @@ const RetroSpectives = () => {
         <div
             className={`${bgColor} ${borderColor} rounded-lg p-4 transition-shadow hover:shadow-sm`}
         >
-            {console.log(feedbackData)}
             <div className="mb-3 flex items-start justify-between">
-                <p className="text-sm text-gray-900 font-medium">{item.message}</p>
+                <p className="text-sm font-medium text-gray-900">
+                    {item.message}
+                </p>
                 <div className="ml-2 flex items-center space-x-1">
                     <button
                         onClick={() => voteFeedback(item.id)}
@@ -253,7 +253,7 @@ const RetroSpectives = () => {
                     </span>
                 </div>
                 <button
-                    onClick={() => openCommentModal(item.id)}
+                    onClick={() => openCommentModal(item._id)}
                     className="text-xs text-blue-600 hover:text-blue-700"
                 >
                     {item.comments} comments
@@ -591,6 +591,8 @@ const RetroSpectives = () => {
 
                                 <div className="flex items-center">
                                     <input
+                                        name="anonymousFeedback"
+                                        id="anonymousFeedback"
                                         type="checkbox"
                                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         checked={newFeedback.anonymous}
@@ -601,7 +603,10 @@ const RetroSpectives = () => {
                                             }))
                                         }
                                     />
-                                    <label className="ml-2 text-sm text-gray-700">
+                                    <label
+                                        htmlFor="anonymousFeedback"
+                                        className="ml-2 text-sm text-gray-700"
+                                    >
                                         Submit anonymously
                                     </label>
                                 </div>
@@ -688,7 +693,7 @@ const RetroSpectives = () => {
                                 <div className="mb-4 max-h-64 space-y-3 overflow-y-auto md:mb-6 md:max-h-96 md:space-y-4">
                                     {comments.map((comment) => (
                                         <div
-                                            key={comment.id}
+                                            key={comment._id}
                                             className="flex items-start space-x-2 md:space-x-3"
                                         >
                                             <img
@@ -699,12 +704,12 @@ const RetroSpectives = () => {
                                             <div className="flex-1">
                                                 <div className="rounded-lg bg-gray-100 p-2 md:p-3">
                                                     <p className="text-xs text-gray-900 md:text-sm">
-                                                        {comment.text}
+                                                        {comment.message}
                                                     </p>
                                                 </div>
                                                 <p className="mt-1 text-xs text-gray-500">
                                                     {comment.author} •{" "}
-                                                    {comment.time}
+                                                    {feedbackTimeAgo(comment.createdAt)}
                                                 </p>
                                             </div>
                                         </div>

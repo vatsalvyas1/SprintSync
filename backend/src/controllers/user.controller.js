@@ -4,6 +4,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
 import UserFeedback from "../models/user.feedback.model.js";
 import userFeedbackComment from "../models/user.feedback.comment.model.js";
+import mongoose from "mongoose";
 
 const generateAccessTokenAndRefreshToken = async function (userId) {
     try {
@@ -203,11 +204,15 @@ const registerFeedback = asyncHandler(async function (req, res) {
 });
 
 const registerFeedbackComment = asyncHandler(async function (req, res) {
-    const { feedbackId, name, message } = req.body;
+        console.log("Is valid ObjectId:", mongoose.Types.ObjectId.isValid(req.body.feedback));
+
+    console.log("REQ BODY:", req.body);
+
+    const { feedbackId, author, message } = req.body;
 
     const comment = new userFeedbackComment({
         feedback: feedbackId,
-        name,
+        author,
         message,
     });
 
@@ -221,7 +226,7 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
         await comment.validate();
         await comment.save();
     } catch (error) {
-        if (error.errors?.email)
+        if (error.errors?.author)
             throw new ApiError(200, error.errors.email.message);
 
         if (error.errors?.message)
@@ -238,10 +243,22 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
 
 const getAllFeedback = asyncHandler(async function (req, res) {
     const feedbacks = await UserFeedback.find();
+
     if (!feedbacks) throw new ApiError(200, "Feedbacks couldn't be fetched");
+
     return res
         .status(201)
         .json(new ApiResponse(201, feedbacks, "Feedback Fetched"));
+});
+
+const getAllComments = asyncHandler(async function (req, res) {
+    const comments = await userFeedbackComment.find();
+
+    if (!comments) throw new ApiError(200, "Comments couldn't be fetched");
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, comments, "Comments Fetched"));
 });
 
 export {
@@ -251,5 +268,6 @@ export {
     getCurrentUser,
     registerFeedback,
     registerFeedbackComment,
-    getAllFeedback
+    getAllFeedback,
+    getAllComments,
 };
