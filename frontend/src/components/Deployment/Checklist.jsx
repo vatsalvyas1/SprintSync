@@ -191,9 +191,9 @@ function Checklist() {
       </div>
 
       {/* Active Checklists Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+      <div className="flex gap-6 mb-8 overflow-x-auto">
         {checklists != [] && checklists.map(checklist => (
-          <div key={checklist._id} className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 transition-colors">
+          <div key={checklist._id} className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 transition-colors md:min-w-1/3">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
