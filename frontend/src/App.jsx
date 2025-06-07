@@ -16,6 +16,7 @@ import FormLocker from "./components/FormLocker/FormLocker";
 import FormLocker2 from "./components/FormLocker/FormLocker2";
 import NavBar from "./components/User/Navbar";
 import DailyJournal from "./components/Journals/DailyJournal";
+import ChecklistDetail from "./components/Deployment/ChecklistDetail";
 
 function App() {
     const [userInfoGlobal, setUserInfoGlobal] = useState(null);
@@ -60,6 +61,7 @@ function App() {
                         <>
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/deployment" element={<Checklist />} />
+                            <Route path="/deployment/:checklistId" element={<ChecklistDetail />} />
                             <Route path="/retrospectives" element={<RetroSpectives />} />
                             <Route path="/add-form/:userid" element={<AddForm />} />
                             <Route path="/forms" element={<FormLocker />} />

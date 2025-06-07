@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const dailyJournalSchema = new mongoose.Schema({
   user: {
@@ -36,4 +36,4 @@ const dailyJournalSchema = new mongoose.Schema({
   timestamps: true // includes createdAt and updatedAt
 });
 
-module.exports = mongoose.model('DailyJournal', dailyJournalSchema);
+export default mongoose.model('DailyJournal', dailyJournalSchema);

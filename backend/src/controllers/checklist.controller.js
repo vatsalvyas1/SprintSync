@@ -62,3 +62,18 @@ export const changeChecklistItemState = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, checklist, "Checklist item status updated successfully"));
 });
 
+export const getChecklistById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        throw new ApiError(400, "Checklist ID is required");
+    }
+
+    const checklist = await DeploymentChecklist.findById(id);
+    if (!checklist) {
+        throw new ApiError(404, "Checklist not found");
+    }
+
+    res.status(200).json(new ApiResponse(200, checklist, "Checklist fetched successfully"));
+});
+

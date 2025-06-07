@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { getChecklists, createChecklist, changeChecklistItemState } from '../controllers/checklist.controller.js';
+import { getChecklists, createChecklist, changeChecklistItemState, getChecklistById } from '../controllers/checklist.controller.js';
 
 const router = express.Router();
 
@@ -12,5 +12,8 @@ router.get('/checklists', getChecklists);
 
 // Route to change the state of a checklist item
 router.post('/change-item-state', changeChecklistItemState);
+
+// Route to get a checklist by its ID
+router.get('/:id', getChecklistById);
 
 export default router;
