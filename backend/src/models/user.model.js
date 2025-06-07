@@ -5,6 +5,18 @@ import jwt from "jsonwebtoken";
 
 const userSchema = new Schema(
     {
+        name: {
+            type: String,
+            required: true,
+            minlength: [6, "Name must be at least 6 characters long"],
+            maxlength: [254, "Name cannot exceed 254 characters"],
+            trim: true
+        },
+        role: {
+            type: String,
+            enum: ["BA", "QA", "Developer", "Manager"],
+            required: true
+        },
         email: {
             type: String,
             required: [true, "Email is required."],

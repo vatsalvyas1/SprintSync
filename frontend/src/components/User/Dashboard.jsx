@@ -26,7 +26,7 @@ const Dashboard = () => {
     }, []);
 
     if (!userInfoGlobal)
-        return <section className="mx-auto">Loading..... login nhi h tu bhadwe</section>;
+        return <section className="mx-auto">Unauthorised User</section>;
 
     return (
         <section>

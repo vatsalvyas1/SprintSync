@@ -6,11 +6,14 @@ function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({
+        name: "",
         email: "",
-        password: ""
+        password: "",
     });
     const navigate = useNavigate();
 
+    const nameRef = useRef(null);
+    const roleRef = useRef(null);
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
 
@@ -19,15 +22,40 @@ function Register() {
     };
 
     const navigateToHomePage = () => {
-        navigate("/")
-    }
+        navigate("/");
+    };
 
     const validateForm = () => {
         const newErrors = {
+            name: "",
             email: "",
-            password: ""
+            role: "",
+            password: "",
         };
         let isValid = true;
+
+        // Name validation
+        const name = nameRef.current.value;
+        if (!name) {
+            newErrors.name = "Name is required";
+            isValid = false;
+        }
+        if(name.length < 6){
+            newErrors.name = "Length of name should be greater than 6 characters"
+            isValid = false
+        }
+
+        if(name.length > 254){
+            newErrors.name = "Length of name should be less than 254 characters"
+            isValid = false
+        }
+
+        // Role Validation
+        const role = roleRef.current.value;
+        if (!role) {
+            newErrors.role = "Role is required";
+            isValid = false;
+        }
 
         // Email validation
         const email = emailRef.current.value;
@@ -37,6 +65,15 @@ function Register() {
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             newErrors.email = "Please enter a valid email address";
             isValid = false;
+        }
+        if(email.length < 6){
+            newErrors.name = "Length of email should be greater than 6 characters"
+            isValid = false
+        }
+
+        if(email.length > 254){
+            newErrors.name = "Length of email should be less than 254 characters"
+            isValid = false
         }
 
         // Password validation
@@ -48,16 +85,19 @@ function Register() {
             newErrors.password = "Password must be at least 8 characters long";
             isValid = false;
         } else if (!/[A-Z]/.test(password)) {
-            newErrors.password = "Password must contain at least one uppercase letter";
+            newErrors.password =
+                "Password must contain at least one uppercase letter";
             isValid = false;
         } else if (!/[a-z]/.test(password)) {
-            newErrors.password = "Password must contain at least one lowercase letter";
+            newErrors.password =
+                "Password must contain at least one lowercase letter";
             isValid = false;
         } else if (!/[0-9]/.test(password)) {
             newErrors.password = "Password must contain at least one number";
             isValid = false;
         } else if (!/[^A-Za-z0-9]/.test(password)) {
-            newErrors.password = "Password must contain at least one special character";
+            newErrors.password =
+                "Password must contain at least one special character";
             isValid = false;
         }
 
@@ -67,7 +107,7 @@ function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
@@ -76,17 +116,21 @@ function Register() {
 
         try {
             console.log("Register form submitted");
+            console.log("Email:", nameRef.current.value);
+            console.log("Role: ", roleRef.current.value);
             console.log("Email:", emailRef.current.value);
             console.log("Password:", passwordRef.current.value);
-            
+
             const res = await api.post("/register", {
+                name: nameRef.current.value,
+                role: roleRef.current.value,
                 email: emailRef.current.value,
                 password: passwordRef.current.value,
             });
-            
+
             console.log(res);
             console.log(res.data.success);
-            
+
             if (res.data.success) {
                 const res2 = await api.get("/current-user");
                 console.log(res2);
@@ -96,9 +140,9 @@ function Register() {
             console.error("Registration error:", error);
             // Handle API errors (like duplicate email)
             if (error.response && error.response.data) {
-                setErrors(prev => ({
+                setErrors((prev) => ({
                     ...prev,
-                    email: error.response.data.message || "Registration failed"
+                    email: error.response.data.message || "Registration failed",
                 }));
             }
         } finally {
@@ -109,16 +153,19 @@ function Register() {
     return (
         <div
             id="root"
-            className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4 overflow-x-hidden relative"
+            className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-gradient-to-br from-purple-50 to-indigo-100 p-4"
         >
-            <section id="login-form" className="w-full max-w-md relative">
+            <section id="login-form" className="relative w-full max-w-md">
                 {/* Login Card */}
-                <div className="bg-white rounded-3xl shadow-lg border border-purple-100 p-8 relative z-10 transition-all duration-500 hover:shadow-xl">
+                <div className="relative z-10 rounded-3xl border border-purple-100 bg-white p-8 shadow-lg transition-all duration-500 hover:shadow-xl">
                     {/* Logo/Brand */}
-                    <div className="text-center mb-8">
-                        <div onClick={navigateToHomePage} className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4">
+                    <div className="mb-8 text-center">
+                        <div
+                            onClick={navigateToHomePage}
+                            className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600"
+                        >
                             <svg
-                                className="w-8 h-8 text-white"
+                                className="h-8 w-8 text-white"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -131,21 +178,87 @@ function Register() {
                                 />
                             </svg>
                         </div>
-                        <h1 onClick={navigateToHomePage} className="text-2xl font-bold text-gray-900 font-inter">
+                        <h1
+                            onClick={navigateToHomePage}
+                            className="font-inter text-2xl font-bold text-gray-900"
+                        >
                             SprintSync
                         </h1>
-                        <p className="text-gray-600 text-sm mt-1">
+                        <p className="mt-1 text-sm text-gray-600">
                             Register for your workspace
                         </p>
                     </div>
 
                     {/* Login Form */}
                     <form className="space-y-6" onSubmit={handleSubmit}>
+                        {/* Name Input */}
+                        <div className="transition-transform duration-300">
+                            <label
+                                htmlFor="name"
+                                className="mb-2 block text-sm font-medium text-gray-700"
+                            >
+                                Name
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    id="name"
+                                    autoFocus
+                                    autoComplete="off"
+                                    name="name"
+                                    ref={nameRef}
+                                    className={`w-full border px-4 py-3 outline-none ${errors.name ? "border-red-500" : "border-gray-200"} rounded-2xl bg-gray-50 transition-all duration-300 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500`}
+                                    placeholder="Enter your email"
+                                    onChange={() =>
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            name: "",
+                                        }))
+                                    }
+                                />
+                            </div>
+                            {errors.name && (
+                                <p className="mt-1 text-sm text-red-600">
+                                    {errors.name}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Role Input */}
+                        <div className="transition-transform duration-300">
+                            <div className="relative">
+                                <label
+                                    htmlFor="role"
+                                    className="mb-2 block text-sm font-medium text-gray-700"
+                                >
+                                    Role
+                                </label>
+                                <select
+                                    ref={roleRef}
+                                    name="role"
+                                    id="role"
+                                    className={`w-full border px-4 py-3 text-gray-500 outline-none ${errors.role ? "border-red-500" : "border-gray-200"} rounded-2xl bg-gray-50 transition-all duration-300 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500`}
+                                >
+                                    <option value="">Enter your role</option>
+                                    <option value="BA">BA</option>
+                                    <option value="QA">QA</option>
+                                    <option value="Developer">Developer</option>
+                                    <option value="Manager">Manager</option>
+                                </select>
+                            </div>
+
+                            {errors.role && (
+                                <p className="mt-1 text-sm text-red-600">
+                                    {errors.role}
+                                </p>
+                            )}
+                        </div>
+
                         {/* Email Input */}
                         <div className="transition-transform duration-300">
                             <label
                                 htmlFor="email"
-                                className="block text-sm font-medium text-gray-700 mb-2"
+                                className="mb-2 block text-sm font-medium text-gray-700"
                             >
                                 Email Address
                             </label>
@@ -153,16 +266,20 @@ function Register() {
                                 <input
                                     type="email"
                                     id="email"
-                                    autoFocus
                                     autoComplete="off"
                                     name="email"
                                     ref={emailRef}
-                                    className={`w-full px-4 outline-none py-3 border ${errors.email ? "border-red-500" : "border-gray-200"} rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white`}
+                                    className={`w-full border px-4 py-3 outline-none ${errors.email ? "border-red-500" : "border-gray-200"} rounded-2xl bg-gray-50 transition-all duration-300 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500`}
                                     placeholder="Enter your email"
-                                    onChange={() => setErrors(prev => ({...prev, email: ""}))}
+                                    onChange={() =>
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            email: "",
+                                        }))
+                                    }
                                 />
                                 <svg
-                                    className="absolute right-3 top-3.5 w-5 h-5 text-gray-400"
+                                    className="absolute top-3.5 right-3 h-5 w-5 text-gray-400"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -176,7 +293,9 @@ function Register() {
                                 </svg>
                             </div>
                             {errors.email && (
-                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                <p className="mt-1 text-sm text-red-600">
+                                    {errors.email}
+                                </p>
                             )}
                         </div>
 
@@ -184,7 +303,7 @@ function Register() {
                         <div className="transition-transform duration-300">
                             <label
                                 htmlFor="password"
-                                className="block text-sm font-medium text-gray-700 mb-2"
+                                className="mb-2 block text-sm font-medium text-gray-700"
                             >
                                 Password
                             </label>
@@ -194,18 +313,23 @@ function Register() {
                                     id="password"
                                     name="password"
                                     ref={passwordRef}
-                                    className={`w-full px-4 py-3 border outline-none ${errors.password ? "border-red-500" : "border-gray-200"} rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white pr-12`}
+                                    className={`w-full border px-4 py-3 outline-none ${errors.password ? "border-red-500" : "border-gray-200"} rounded-2xl bg-gray-50 pr-12 transition-all duration-300 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500`}
                                     placeholder="Enter your password"
-                                    onChange={() => setErrors(prev => ({...prev, password: ""}))}
+                                    onChange={() =>
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            password: "",
+                                        }))
+                                    }
                                 />
                                 <button
                                     type="button"
-                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                                    className="absolute top-3.5 right-3 text-gray-400 hover:text-gray-600"
                                     onClick={togglePassword}
                                 >
                                     {showPassword ? (
                                         <svg
-                                            className="w-5 h-5"
+                                            className="h-5 w-5"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -219,7 +343,7 @@ function Register() {
                                         </svg>
                                     ) : (
                                         <svg
-                                            className="w-5 h-5"
+                                            className="h-5 w-5"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -241,16 +365,67 @@ function Register() {
                                 </button>
                             </div>
                             {errors.password && (
-                                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                                <p className="mt-1 text-sm text-red-600">
+                                    {errors.password}
+                                </p>
                             )}
                             <div className="mt-2 text-xs text-gray-500">
                                 Password must contain:
-                                <ul className="list-disc list-inside">
-                                    <li className={passwordRef.current?.value?.length >= 8 ? "text-green-500" : ""}>At least 8 characters</li>
-                                    <li className={/[A-Z]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One uppercase letter</li>
-                                    <li className={/[a-z]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One lowercase letter</li>
-                                    <li className={/[0-9]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One number</li>
-                                    <li className={/[^A-Za-z0-9]/.test(passwordRef.current?.value || "") ? "text-green-500" : ""}>One special character</li>
+                                <ul className="list-inside list-disc">
+                                    <li
+                                        className={
+                                            passwordRef.current?.value
+                                                ?.length >= 8
+                                                ? "text-green-500"
+                                                : ""
+                                        }
+                                    >
+                                        At least 8 characters
+                                    </li>
+                                    <li
+                                        className={
+                                            /[A-Z]/.test(
+                                                passwordRef.current?.value || ""
+                                            )
+                                                ? "text-green-500"
+                                                : ""
+                                        }
+                                    >
+                                        One uppercase letter
+                                    </li>
+                                    <li
+                                        className={
+                                            /[a-z]/.test(
+                                                passwordRef.current?.value || ""
+                                            )
+                                                ? "text-green-500"
+                                                : ""
+                                        }
+                                    >
+                                        One lowercase letter
+                                    </li>
+                                    <li
+                                        className={
+                                            /[0-9]/.test(
+                                                passwordRef.current?.value || ""
+                                            )
+                                                ? "text-green-500"
+                                                : ""
+                                        }
+                                    >
+                                        One number
+                                    </li>
+                                    <li
+                                        className={
+                                            /[^A-Za-z0-9]/.test(
+                                                passwordRef.current?.value || ""
+                                            )
+                                                ? "text-green-500"
+                                                : ""
+                                        }
+                                    >
+                                        One special character
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -258,22 +433,20 @@ function Register() {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-4 rounded-2xl font-medium hover:from-purple-600 hover:to-indigo-700 focus:ring-4 focus:ring-purple-200 transition-all duration-300 transform hover:scale-101 active:scale-95"
+                            className="w-full transform rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-3 font-medium text-white transition-all duration-300 hover:scale-101 hover:from-purple-600 hover:to-indigo-700 focus:ring-4 focus:ring-purple-200 active:scale-95"
                             disabled={loading}
                         >
-                            {loading
-                                ? "Creating account..."
-                                : "Create Account"}
+                            {loading ? "Creating account..." : "Create Account"}
                         </button>
                     </form>
 
                     {/* Register Link */}
-                    <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                    <div className="mt-8 border-t border-gray-100 pt-6 text-center">
                         <p className="text-sm text-gray-600">
                             Already Registered?
                             <a
                                 href="/login"
-                                className="text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200"
+                                className="font-medium text-purple-600 transition-colors duration-200 hover:text-purple-700"
                             >
                                 {" "}
                                 Login
@@ -283,10 +456,10 @@ function Register() {
                 </div>
 
                 {/* Floating elements */}
-                <div className="absolute top-20 left-10 w-3 h-3 bg-purple-300 rounded-full animate-bounce opacity-60"></div>
-                <div className="absolute bottom-32 right-16 w-2 h-2 bg-indigo-300 rounded-full animate-pulse opacity-40"></div>
+                <div className="absolute top-20 left-10 h-3 w-3 animate-bounce rounded-full bg-purple-300 opacity-60"></div>
+                <div className="absolute right-16 bottom-32 h-2 w-2 animate-pulse rounded-full bg-indigo-300 opacity-40"></div>
                 <div
-                    className="absolute top-1/3 right-8 w-4 h-4 bg-purple-200 rounded-full animate-bounce opacity-30"
+                    className="absolute top-1/3 right-8 h-4 w-4 animate-bounce rounded-full bg-purple-200 opacity-30"
                     style={{ animationDelay: "1s" }}
                 ></div>
             </section>

@@ -19,7 +19,6 @@ const userFeedbackSchema = new Schema(
         },
         upvotes: {
             type: Number,
-            required: [true, "Count of upvotes is required"],
             default: 0,
             min: 0,
         },

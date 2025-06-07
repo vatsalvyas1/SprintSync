@@ -28,9 +28,9 @@ const registerUser = asyncHandler(async function (req, res) {
     //  check if user created
     //  return response
 
-    const { email, password } = req.body;
+    const { name, role, email, password } = req.body;
 
-    if ([email, password].some((field) => field?.trim() === "")) {
+    if ([name, role, email, password].some((field) => field?.trim() === "")) {
         throw new ApiError(200, "All fields are required.");
     }
 
@@ -39,6 +39,8 @@ const registerUser = asyncHandler(async function (req, res) {
     if (existingUser) throw new ApiError(200, "User already exists.");
 
     const user = await User({
+        name,
+        role,
         email,
         password,
     });
@@ -49,7 +51,7 @@ const registerUser = asyncHandler(async function (req, res) {
         await user.validate(); // errors are caught in a controlled try-catch block
         await user.save();
     } catch (error) {
-        const firstError = error.errors.email || error.errors.password;
+        const firstError = error.errors.email || error.errors.password || error.errors.name || error.errors.role;
 
         throw new ApiError(200, firstError.properties.message);
     }
