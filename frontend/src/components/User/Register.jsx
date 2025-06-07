@@ -208,7 +208,7 @@ function Register() {
                                     name="name"
                                     ref={nameRef}
                                     className={`w-full border px-4 py-3 outline-none ${errors.name ? "border-red-500" : "border-gray-200"} rounded-2xl bg-gray-50 transition-all duration-300 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500`}
-                                    placeholder="Enter your email"
+                                    placeholder="Enter your name"
                                     onChange={() =>
                                         setErrors((prev) => ({
                                             ...prev,
