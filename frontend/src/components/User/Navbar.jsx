@@ -47,7 +47,8 @@ const NavBar = () => {
             <div className="flex items-center justify-between border-b border-slate-600 px-4 py-4 md:block">
                 <h1 className="text-xl font-bold">SprintSync</h1>
                 <p className="hidden text-xs text-slate-400 md:block">Internal Platform</p>
-                <div className="font-bold">{userInfo.email}</div>
+                <div className="font-bold">Welcome, {userInfo.name}</div>
+                <div className="hidden text-xs text-slate-400 md:block"> {userInfo.role}</div>
                 <button
                     className="text-white md:hidden"
                     onClick={() => setMobileMenu(!mobileMenu)}
@@ -55,7 +56,7 @@ const NavBar = () => {
                     {mobileMenu ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>
-
+            
             <div className="hidden h-full flex-col justify-between md:flex">
                 <div className="mt-4 flex flex-col space-y-1 px-4 text-sm">
                     <NavLinks />
