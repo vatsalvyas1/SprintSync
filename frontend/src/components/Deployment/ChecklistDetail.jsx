@@ -193,7 +193,7 @@ export default function ChecklistDetail() {
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Checklist Activity Timeline</h2>
         <div className="relative">
-          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+          <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-gray-200"></div>
           <div className="space-y-8">
             {checklist.checklistItems?.length > 0 ? (
               checklist.checklistItems

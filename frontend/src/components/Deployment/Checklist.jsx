@@ -262,7 +262,7 @@ function Checklist() {
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h2>
         
         <div className="relative">
-          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+          <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-gray-200"></div>
           
           <div className="space-y-8">
             {checklists.slice(0, 4).map((checklist, index) => {
