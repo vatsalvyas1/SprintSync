@@ -3,11 +3,7 @@ import {
     registerUser,
     loginUser,
     logoutUser,
-    getCurrentUser,
-    registerFeedback,
-    registerFeedbackComment,
-    getAllFeedback,
-    getAllComments,
+    getCurrentUser
 } from "../controllers/user.controller.js";
 import verifyJWT from "../middlewares/auth.middleware.js";
 
@@ -24,9 +20,6 @@ router.route("/login").post(loginUser);
 // Secure Routes
 router.route("/logout").get(verifyJWT, logoutUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
-router.route("/add-feedback").post(verifyJWT, registerFeedback);
-router.route("/add-feedback-comment").post(verifyJWT, registerFeedbackComment);
-router.route("/get-all-feedbacks").get(verifyJWT, getAllFeedback);
-router.route("/get-all-comments").get(verifyJWT, getAllComments);
+
 
 export default router;

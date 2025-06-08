@@ -46,9 +46,7 @@ const RetroSpectives = () => {
 
         const fetchComments = async () => {
             const allComments = await api.get("/get-all-comments");
-            console.log(allComments.data.data)
             setComments(allComments.data.data);
-            console.log(comments)
         };
         fetchComments();
         fetchFeedbacks();
@@ -57,7 +55,8 @@ const RetroSpectives = () => {
     const [feedbackModal, setFeedbackModal] = useState(false);
     const [commentModal, setCommentModal] = useState(false);
     const [selectedFeedback, setSelectedFeedback] = useState(null);
-    const [anonymousMode, setAnonymousMode] = useState(false);
+    const [selectedFeedbackCommentCount, setSelectedFeedbackCommentCount] =
+        useState(0);
 
     const [newFeedback, setNewFeedback] = useState({
         category: "What Went Well",
@@ -65,7 +64,6 @@ const RetroSpectives = () => {
         anonymous: false,
     });
 
-    
     const [newComment, setNewComment] = useState("");
 
     const openFeedbackModal = () => {
@@ -80,9 +78,25 @@ const RetroSpectives = () => {
         });
     };
 
-    const openCommentModal = (feedbackId) => {
+    const openCommentModal = async (feedbackId) => {
         setSelectedFeedback(feedbackId);
         setCommentModal(true);
+        // setCommentsInContext((prev) => ([]))
+
+        const matchingComments = comments.filter(
+            (c) => c.feedback === feedbackId
+        );
+        console.log(matchingComments.length);
+        // setSelectedFeedbackCommentCount;
+        try {
+            const res = await api.post("/add-feedback-commentCount", {
+                feedbackId: feedbackId,
+                commentCount: matchingComments.length,
+            });
+            console.log(res);
+        } catch (error) {}
+
+        console.log(matchingComments);
     };
     const closeCommentModal = () => {
         setCommentModal(false);
@@ -121,7 +135,7 @@ const RetroSpectives = () => {
         };
 
         try {
-            const res = await api.post("/add-feedback", {
+            await api.post("/add-feedback", {
                 author: newFeedback.anonymous ? "Anonymous" : userInfo.name,
                 category: newFeedback.category,
                 message: newFeedback.message,
@@ -171,16 +185,29 @@ const RetroSpectives = () => {
         };
 
         try {
-            console.log(typeof selectedFeedback);
             const res = await api.post("/add-feedback-comment", {
                 feedbackId: selectedFeedback,
                 author: userInfo.name,
                 message: newComment,
             });
-            console.log(res);
-            setComments((prev) => [...prev, comment]);
-            setNewComment("");
+            console.log(res)
         } catch (error) {}
+        setComments((prev) => [...prev, comment]);
+        setNewComment("");
+        const matchingComments = comments.filter(
+            (c) => c.feedback === selectedFeedback
+        );
+        console.log(matchingComments.length);
+        // setSelectedFeedbackCommentCount;
+        // try {
+        //     const res = await api.post("/add-feedback-commentCount", {
+        //         feedbackId: selectedFeedback,
+        //         commentCount: matchingComments.length,
+        //     });
+        //     console.log(res);
+        // } catch (error) {}
+
+        // console.log(matchingComments);
     };
 
     const getTotalFeedback = () => {
@@ -256,7 +283,7 @@ const RetroSpectives = () => {
                     onClick={() => openCommentModal(item._id)}
                     className="text-xs text-blue-600 hover:text-blue-700"
                 >
-                    {item.comments} comments
+                    {item.commentCount} comments
                 </button>
             </div>
         </div>
@@ -439,7 +466,7 @@ const RetroSpectives = () => {
             </div>
 
             {/* Summary Statistics */}
-            <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-6">
+            <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-3 md:gap-20">
                 <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
                     <div className="mb-1 text-xl font-bold text-green-600 md:mb-2 md:text-2xl">
                         {getTotalFeedback()}
@@ -464,14 +491,14 @@ const RetroSpectives = () => {
                         Comments
                     </div>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                {/* <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
                     <div className="mb-1 text-xl font-bold text-orange-600 md:mb-2 md:text-2xl">
                         85%
                     </div>
                     <div className="text-xs text-gray-600 md:text-sm">
                         Participation
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {/* Word Cloud Visualization */}
@@ -691,29 +718,37 @@ const RetroSpectives = () => {
 
                                 {/* Comments List */}
                                 <div className="mb-4 max-h-64 space-y-3 overflow-y-auto md:mb-6 md:max-h-96 md:space-y-4">
-                                    {comments.map((comment) => (
-                                        <div
-                                            key={comment._id}
-                                            className="flex items-start space-x-2 md:space-x-3"
-                                        >
-                                            <img
-                                                className="h-6 w-6 rounded-full md:h-8 md:w-8"
-                                                src={comment.avatar}
-                                                alt="User"
-                                            />
-                                            <div className="flex-1">
-                                                <div className="rounded-lg bg-gray-100 p-2 md:p-3">
-                                                    <p className="text-xs text-gray-900 md:text-sm">
-                                                        {comment.message}
+                                    {comments
+                                        .filter(
+                                            (comment) =>
+                                                comment.feedback ===
+                                                selectedFeedback
+                                        )
+                                        .map((comment) => (
+                                            <div
+                                                key={comment._id}
+                                                className="flex items-start space-x-2 md:space-x-3"
+                                            >
+                                                <img
+                                                    className="h-6 w-6 rounded-full md:h-8 md:w-8"
+                                                    src={comment.avatar}
+                                                    alt="User"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="rounded-lg bg-gray-100 p-2 md:p-3">
+                                                        <p className="text-xs text-gray-900 md:text-sm">
+                                                            {comment.message}
+                                                        </p>
+                                                    </div>
+                                                    <p className="mt-1 text-xs text-gray-500">
+                                                        {comment.author} •{" "}
+                                                        {feedbackTimeAgo(
+                                                            comment.createdAt
+                                                        )}
                                                     </p>
                                                 </div>
-                                                <p className="mt-1 text-xs text-gray-500">
-                                                    {comment.author} •{" "}
-                                                    {feedbackTimeAgo(comment.createdAt)}
-                                                </p>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
 
                                 {/* Add Comment */}
