@@ -7,9 +7,9 @@ const userFeedbackCommentSchema = new Schema(
             ref: "UserFeedback",
             required: [true, "Feedback reference is required"],
         },
-        email: {
+        author: {
             type: String,
-            required: [true, "Comment's email is required"],
+            required: [true, "Comment's author is required"],
             trim: true,
         },
         message: {
