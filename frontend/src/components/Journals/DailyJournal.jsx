@@ -307,7 +307,7 @@ function DailyJournal() {
                 <div className="p-2 text-center text-sm text-gray-900">12</div>
                 <div className="p-2 text-center text-sm text-gray-900">13</div>
                 <div className="p-2 text-center text-sm text-gray-900 bg-green-100 rounded">14</div>
-                <div className="p-2 text-center text-sm text-gray-900 bg-blue-500 text-white rounded font-medium">15</div>
+                <div className="p-2 text-center text-sm text-gray-900 bg-blue-500 rounded font-medium">15</div>
                 <div className="p-2 text-center text-sm text-gray-900">16</div>
               </div>
               
