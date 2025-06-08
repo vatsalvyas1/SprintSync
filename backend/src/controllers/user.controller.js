@@ -2,9 +2,6 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
-import UserFeedback from "../models/user.feedback.model.js";
-import userFeedbackComment from "../models/user.feedback.comment.model.js";
-import mongoose from "mongoose";
 
 const generateAccessTokenAndRefreshToken = async function (userId) {
     try {
@@ -170,104 +167,11 @@ const getCurrentUser = asyncHandler(async function (req, res) {
         .json(new ApiResponse(201, req.user, "User Fetched Successfully"));
 });
 
-const registerFeedback = asyncHandler(async function (req, res) {
-    const { author, category, message, upvotes } = req.body;
 
-    const feedback = await UserFeedback({
-        author,
-        category,
-        message,
-        upvotes,
-    });
-
-    if (!feedback)
-        throw new ApiError(
-            200,
-            "Something Went Wrong While Saving The Feedback"
-        );
-
-    try {
-        await feedback.validate();
-        await feedback.save();
-    } catch (error) {
-        const firstError =
-            error.errors.name ||
-            error.errors.category ||
-            error.errors.message ||
-            error.errors.upvotes;
-        throw new ApiError(200, firstError.properties.message);
-    }
-
-    return res
-        .status(201)
-        .json(new ApiResponse(201, feedback, "Feedback Taken Successfully"));
-});
-
-const registerFeedbackComment = asyncHandler(async function (req, res) {
-        console.log("Is valid ObjectId:", mongoose.Types.ObjectId.isValid(req.body.feedback));
-
-    console.log("REQ BODY:", req.body);
-
-    const { feedbackId, author, message } = req.body;
-
-    const comment = new userFeedbackComment({
-        feedback: feedbackId,
-        author,
-        message,
-    });
-
-    if (!comment)
-        throw new ApiError(
-            200,
-            "Something Went Wrong While Saving The Comment"
-        );
-
-    try {
-        await comment.validate();
-        await comment.save();
-    } catch (error) {
-        if (error.errors?.author)
-            throw new ApiError(200, error.errors.email.message);
-
-        if (error.errors?.message)
-            throw new ApiError(200, error.errors.message.message);
-
-        if (error.errors?.feedback) {
-            throw new ApiError(200, error.errors.feedback.message);
-        }
-    }
-    return res
-        .status(201)
-        .json(new ApiResponse(201, comment, "Comment Taken Successfully"));
-});
-
-const getAllFeedback = asyncHandler(async function (req, res) {
-    const feedbacks = await UserFeedback.find();
-
-    if (!feedbacks) throw new ApiError(200, "Feedbacks couldn't be fetched");
-
-    return res
-        .status(201)
-        .json(new ApiResponse(201, feedbacks, "Feedback Fetched"));
-});
-
-const getAllComments = asyncHandler(async function (req, res) {
-    const comments = await userFeedbackComment.find();
-
-    if (!comments) throw new ApiError(200, "Comments couldn't be fetched");
-
-    return res
-        .status(201)
-        .json(new ApiResponse(201, comments, "Comments Fetched"));
-});
 
 export {
     registerUser,
     loginUser,
     logoutUser,
     getCurrentUser,
-    registerFeedback,
-    registerFeedbackComment,
-    getAllFeedback,
-    getAllComments,
 };
