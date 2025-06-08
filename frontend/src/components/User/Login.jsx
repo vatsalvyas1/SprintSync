@@ -77,6 +77,7 @@ function Login() {
             if (res.data.success) {
                 console.log("Login successful");
                 localStorage.setItem("loggedInUser", JSON.stringify(res.data.data.loggedInUser));
+                window.dispatchEvent(new Event('storage'));
                 navigate(`/dashboard`);
             } else {
                 setError(res.data.message || "Login failed. Please try again.");

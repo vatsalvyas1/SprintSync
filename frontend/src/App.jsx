@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Chatbot from "./components/TestGenius/Chatbot";
 import Login from "./components/User/Login";
@@ -20,6 +20,7 @@ import ChecklistDetail from "./components/Deployment/ChecklistDetail";
 
 function App() {
     const [userInfoGlobal, setUserInfoGlobal] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -31,11 +32,29 @@ function App() {
                 }
             } catch (error) {
                 console.error("Error fetching user info:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         fetchUserInfo();
+
+        // Listen for storage events to handle login/logout from other tabs
+        const handleStorageChange = () => {
+            fetchUserInfo();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col select-none">
@@ -53,21 +72,44 @@ function App() {
                     <Route path="/publicretrospectives" element={<PublicSprintRetro />} />
                     <Route path="/publicdashboard" element={<PublicDashboard />} />
                     <Route path="/public-locker" element={<FormLocker2 />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={userInfoGlobal ? <Navigate to="/dashboard" /> : <Login />} />
+                    <Route path="/register" element={userInfoGlobal ? <Navigate to="/dashboard" /> : <Register />} />
 
                     {/* Protected Routes (only accessible when logged in) */}
-                    {userInfoGlobal && (
-                        <>
-                            <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/deployment" element={<Checklist />} />
-                            <Route path="/deployment/:checklistId" element={<ChecklistDetail />} />
-                            <Route path="/retrospectives" element={<RetroSpectives />} />
-                            <Route path="/add-form/:userid" element={<AddForm />} />
-                            <Route path="/forms" element={<FormLocker />} />
-                            <Route path="/task-journal" element={<DailyJournal />} />
-                        </>
-                    )}
+                    <Route 
+                        path="/dashboard" 
+                        element={userInfoGlobal ? <Dashboard /> : <Navigate to="/login" />} 
+                    />
+                    <Route 
+                        path="/deployment" 
+                        element={userInfoGlobal ? <Checklist /> : <Navigate to="/login" />} 
+                    />
+                    <Route 
+                        path="/deployment/:checklistId" 
+                        element={userInfoGlobal ? <ChecklistDetail /> : <Navigate to="/login" />} 
+                    />
+                    <Route 
+                        path="/retrospectives" 
+                        element={userInfoGlobal ? <RetroSpectives /> : <Navigate to="/login" />} 
+                    />
+                    <Route 
+                        path="/add-form/:userid" 
+                        element={userInfoGlobal ? <AddForm /> : <Navigate to="/login" />} 
+                    />
+                    <Route 
+                        path="/forms" 
+                        element={userInfoGlobal ? <FormLocker /> : <Navigate to="/login" />} 
+                    />
+                    <Route 
+                        path="/task-journal" 
+                        element={userInfoGlobal ? <DailyJournal /> : <Navigate to="/login" />} 
+                    />
+
+                    {/* Homepage redirect - Fixed */}
+                    <Route 
+                        path="/" 
+                        element={userInfoGlobal ? <Navigate to="/dashboard" /> : <FrontPage />} 
+                    />
 
                     {/* Fallback Route */}
                     <Route path="*" element={<NotFound />} />
