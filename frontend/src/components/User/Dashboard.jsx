@@ -30,7 +30,6 @@ const Dashboard = () => {
 
     return (
         <section>
-            <NavBar />
 
             <div className="md:ml-64">
                 Hi, {userInfoGlobal.email}

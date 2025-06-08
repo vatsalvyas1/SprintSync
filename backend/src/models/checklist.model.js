@@ -25,7 +25,7 @@ const ChecklistItemSchema = new Schema({
       }
     }
   ]
-});
+}, { timestamps: true }); // <-- Added timestamps here
 
 const DeploymentChecklistSchema = new Schema({
   name: {

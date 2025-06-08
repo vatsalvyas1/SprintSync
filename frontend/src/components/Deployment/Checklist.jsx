@@ -284,7 +284,7 @@ function Checklist() {
                           {latestItem.description}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {checklist.name} • {new Date(latestItem.updatedAt).toLocaleString()}
+                          {checklist.name} • {new Date(latestItem.updatedAt).toLocaleDateString()} {new Date(latestItem.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
