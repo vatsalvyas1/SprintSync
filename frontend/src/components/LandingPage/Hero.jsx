@@ -74,16 +74,6 @@ function Hero() {
                 ></div>
             </div>
 
-            {/* Top Login Button */}
-            <div className="mb-16 absolute right-10 top-5 sm:block hidden">
-                <button
-                    onClick={handleStartNowClick}
-                    className="font-inter cursor-pointer inline-flex items-center px-8 py-2 text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
-                >
-                    Login
-                </button>
-            </div>
-
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
                 <div className="text-center">
                     {/* Main Headline */}
