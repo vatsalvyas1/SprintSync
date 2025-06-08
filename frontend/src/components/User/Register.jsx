@@ -5,10 +5,12 @@ import { useNavigate } from "react-router-dom";
 function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [selectedAvatar, setSelectedAvatar] = useState("");
     const [errors, setErrors] = useState({
         name: "",
         email: "",
         password: "",
+        avatar: "",
     });
     const navigate = useNavigate();
 
@@ -16,6 +18,75 @@ function Register() {
     const roleRef = useRef(null);
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
+
+   const avatarOptions = [
+    // Male Avatars
+    {
+        url: "https://avatar.iran.liara.run/public/8",
+        alt: "Male Avatar 1",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/3",
+        alt: "Male Avatar 2",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/50",
+        alt: "Male Avatar 3",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/41",
+        alt: "Male Avatar 4",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/47",
+        alt: "Male Avatar 5",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/10",
+        alt: "Male Avatar 6",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/37",
+        alt: "Male Avatar 7",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/25",
+        alt: "Male Avatar 8",
+    },
+    // Female Avatars
+    {
+        url: "https://avatar.iran.liara.run/public/99",
+        alt: "Female Avatar 1",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/64",
+        alt: "Female Avatar 2",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/79",
+        alt: "Female Avatar 3",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/60",
+        alt: "Female Avatar 4",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/81",
+        alt: "Female Avatar 5",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/56",
+        alt: "Female Avatar 6",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/71",
+        alt: "Female Avatar 7",
+    },
+    {
+        url: "https://avatar.iran.liara.run/public/91",
+        alt: "Female Avatar 8",
+    },
+];
 
     const togglePassword = () => {
         setShowPassword((prev) => !prev);
@@ -25,12 +96,22 @@ function Register() {
         navigate("/");
     };
 
+const handleAvatarChange = (avatarUrl) => {
+    setSelectedAvatar(avatarUrl);
+    setErrors((prev) => ({
+        ...prev,
+        avatar: "",
+    }));
+};
+
+
     const validateForm = () => {
         const newErrors = {
             name: "",
             email: "",
             role: "",
             password: "",
+            avatar: "",
         };
         let isValid = true;
 
@@ -40,14 +121,16 @@ function Register() {
             newErrors.name = "Name is required";
             isValid = false;
         }
-        if(name.length < 6){
-            newErrors.name = "Length of name should be greater than 6 characters"
-            isValid = false
+        if (name.length < 6) {
+            newErrors.name =
+                "Length of name should be greater than 6 characters";
+            isValid = false;
         }
 
-        if(name.length > 254){
-            newErrors.name = "Length of name should be less than 254 characters"
-            isValid = false
+        if (name.length > 254) {
+            newErrors.name =
+                "Length of name should be less than 254 characters";
+            isValid = false;
         }
 
         // Role Validation
@@ -66,14 +149,22 @@ function Register() {
             newErrors.email = "Please enter a valid email address";
             isValid = false;
         }
-        if(email.length < 6){
-            newErrors.name = "Length of email should be greater than 6 characters"
-            isValid = false
+        if (email.length < 6) {
+            newErrors.email =
+                "Length of email should be greater than 6 characters";
+            isValid = false;
         }
 
-        if(email.length > 254){
-            newErrors.name = "Length of email should be less than 254 characters"
-            isValid = false
+        if (email.length > 254) {
+            newErrors.email =
+                "Length of email should be less than 254 characters";
+            isValid = false;
+        }
+
+        // Avatar validation
+        if (!selectedAvatar) {
+            newErrors.avatar = "Please select an avatar";
+            isValid = false;
         }
 
         // Password validation
@@ -116,16 +207,18 @@ function Register() {
 
         try {
             console.log("Register form submitted");
-            console.log("Email:", nameRef.current.value);
+            console.log("Name:", nameRef.current.value);
             console.log("Role: ", roleRef.current.value);
             console.log("Email:", emailRef.current.value);
             console.log("Password:", passwordRef.current.value);
+            console.log("Avatar:", selectedAvatar);
 
             const res = await api.post("/register", {
                 name: nameRef.current.value,
                 role: roleRef.current.value,
                 email: emailRef.current.value,
                 password: passwordRef.current.value,
+                avatar: selectedAvatar,
             });
 
             console.log(res);
@@ -162,7 +255,7 @@ function Register() {
                     <div className="mb-8 text-center">
                         <div
                             onClick={navigateToHomePage}
-                            className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600"
+                            className="mb-4 inline-flex h-16 w-16 cursor-pointer items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600"
                         >
                             <svg
                                 className="h-8 w-8 text-white"
@@ -180,7 +273,7 @@ function Register() {
                         </div>
                         <h1
                             onClick={navigateToHomePage}
-                            className="font-inter text-2xl font-bold text-gray-900"
+                            className="font-inter cursor-pointer text-2xl font-bold text-gray-900"
                         >
                             SprintSync
                         </h1>
@@ -238,6 +331,12 @@ function Register() {
                                     name="role"
                                     id="role"
                                     className={`w-full border px-4 py-3 text-gray-500 outline-none ${errors.role ? "border-red-500" : "border-gray-200"} rounded-2xl bg-gray-50 transition-all duration-300 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500`}
+                                    onChange={() =>
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            role: "",
+                                        }))
+                                    }
                                 >
                                     <option value="">Enter your role</option>
                                     <option value="BA">BA</option>
@@ -253,6 +352,45 @@ function Register() {
                                 </p>
                             )}
                         </div>
+
+                       {/* Avatar Selection */}
+<div className="transition-transform duration-300">
+    <label className="mb-3 block text-sm font-medium text-gray-700">
+        Choose Your Avatar
+    </label>
+    <div className="grid grid-cols-4 gap-3">
+        {avatarOptions.map((avatar) => (
+            <div key={avatar.url} className="relative">
+                <input
+                    type="radio"
+                    name="avatar"
+                    value={avatar.url}
+                    id={`avatar-${avatar.url}`}
+                    checked={selectedAvatar === avatar.url}
+                    onChange={() => handleAvatarChange(avatar.url)}
+                    className="sr-only"
+                />
+                <label
+                    htmlFor={`avatar-${avatar.url}`}
+                    className="block cursor-pointer"
+                >
+                    <img
+                        src={avatar.url}
+                        alt={avatar.alt}
+                        className={`h-12 w-12 rounded-full border-2 transition-colors ${
+                            selectedAvatar === avatar.url
+                                ? "border-purple-500"
+                                : "border-gray-200 hover:border-purple-300"
+                        }`}
+                    />
+                </label>
+            </div>
+        ))}
+    </div>
+    {errors.avatar && (
+        <p className="mt-1 text-sm text-red-600">{errors.avatar}</p>
+    )}
+</div>
 
                         {/* Email Input */}
                         <div className="transition-transform duration-300">

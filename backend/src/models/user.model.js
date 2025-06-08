@@ -10,12 +10,12 @@ const userSchema = new Schema(
             required: true,
             minlength: [6, "Name must be at least 6 characters long"],
             maxlength: [254, "Name cannot exceed 254 characters"],
-            trim: true
+            trim: true,
         },
         role: {
             type: String,
             enum: ["BA", "QA", "Developer", "Manager"],
-            required: true
+            required: true,
         },
         email: {
             type: String,
@@ -32,6 +32,20 @@ const userSchema = new Schema(
             type: String,
             required: [true, "Password is required"],
             validate: [validator.isStrongPassword, "Invalid Password"],
+        },
+        avatar: {
+            type: String,
+            required: [true, "Avatar is required"],
+            trim: true,
+            validate: {
+                validator: (value) => {
+                    return validator.isURL(value, {
+                        protocols: ["http", "https"],
+                        require_protocol: true,
+                    });
+                },
+                message: "Invalid avatar URL",
+            },
         },
         refreshToken: {
             type: String,

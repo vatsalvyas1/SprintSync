@@ -28,9 +28,9 @@ const registerUser = asyncHandler(async function (req, res) {
     //  check if user created
     //  return response
 
-    const { name, role, email, password } = req.body;
+    const { name, role, email, password, avatar } = req.body;
 
-    if ([name, role, email, password].some((field) => field?.trim() === "")) {
+    if ([name, role, email, password, avatar].some((field) => field?.trim() === "")) {
         throw new ApiError(200, "All fields are required.");
     }
 
@@ -43,6 +43,7 @@ const registerUser = asyncHandler(async function (req, res) {
         role,
         email,
         password,
+        avatar,
     });
 
     console.log(user._id);
@@ -51,7 +52,7 @@ const registerUser = asyncHandler(async function (req, res) {
         await user.validate(); // errors are caught in a controlled try-catch block
         await user.save();
     } catch (error) {
-        const firstError = error.errors.email || error.errors.password || error.errors.name || error.errors.role;
+        const firstError = error.errors.avatar || error.errors.email || error.errors.password || error.errors.name || error.errors.role;
 
         throw new ApiError(200, firstError.properties.message);
     }
