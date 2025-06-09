@@ -39,30 +39,29 @@ const registerFeedback = asyncHandler(async function (req, res) {
 
 const addCommentCountToFeedback = asyncHandler(async function (req, res) {
     const { feedbackId, commentCount } = req.body;
-    const feedback = await UserFeedback.findById(feedbackId);
-    if(!feedback)
-         throw new ApiError(200, "Feedback not found");
-    feedback.commentCount = commentCount;
-    console.log(feedback.commentCount);
-    const savedFeedback = await feedback.save({ validateBeforeSave: false });
-    console.log("HI");
-    if (savedFeedback) console.log(savedFeedback);
-    console.log("sd: ", savedFeedback);
+
+    if (!feedbackId || !commentCount == undefined)
+        throw new ApiError(
+            200,
+            "Invalid request: feedbackId or commentCount missing"
+        );
+
+    const result = await UserFeedback.updateOne(
+        { _id: feedbackId },
+        { commentCount: commentCount }
+    );
+
+    if (result.matchedCount == 0) throw new ApiError(200, "Feedback not found");
+
     return res
         .status(201)
-        .json(
-            new ApiResponse(
-                201,
-                savedFeedback,
-                "Comment Count Updated Successfully"
-            )
-        );
+        .json(new ApiResponse(201, {}, "Comment Count Updated Successfully"));
 });
 
 const getAllFeedback = asyncHandler(async function (req, res) {
     const feedbacks = await UserFeedback.find();
-
-    if (!feedbacks.length) throw new ApiError(200, "Feedbacks couldn't be fetched");
+    if (!feedbacks.length)
+        throw new ApiError(200, "Feedbacks couldn't be fetched");
 
     return res
         .status(201)

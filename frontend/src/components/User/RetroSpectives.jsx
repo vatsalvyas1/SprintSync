@@ -32,7 +32,7 @@ const RetroSpectives = () => {
 
         const fetchFeedbacks = async () => {
             const feedbacks = await api.get("/get-all-feedbacks");
-            console.log(feedbacks);
+
             feedbacks.data.data.forEach((element) => {
                 if (element.category == "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
@@ -54,6 +54,7 @@ const RetroSpectives = () => {
 
         const fetchComments = async () => {
             const allComments = await api.get("/get-all-comments");
+
             allComments.data.data.forEach((element) => {
                 element.time = feedbackTimeAgo(element.createdAt);
             });
@@ -68,8 +69,6 @@ const RetroSpectives = () => {
     const [feedbackModal, setFeedbackModal] = useState(false);
     const [commentModal, setCommentModal] = useState(false);
     const [selectedFeedback, setSelectedFeedback] = useState(null);
-    const [selectedFeedbackCommentCount, setSelectedFeedbackCommentCount] =
-        useState(0);
 
     const [newFeedback, setNewFeedback] = useState({
         category: "What Went Well",
@@ -98,6 +97,7 @@ const RetroSpectives = () => {
             avatar: feedback.avatar,
             time: feedback.time,
             message: feedback.message,
+            category: feedback.category,
         });
         setCommentModal(true);
     };
@@ -134,15 +134,18 @@ const RetroSpectives = () => {
             author: newFeedback.anonymous ? "Anonymous" : `${userInfo.name}`,
             time: "Just Now",
             // avatar: "https://avatar.iran.liara.run/public/45",
-            comments: 0,
+            commentCount: 0,
+            
         };
 
         try {
-            await api.post("/add-feedback", {
+            const res = await api.post("/add-feedback", {
                 author: newFeedback.anonymous ? "Anonymous" : userInfo.name,
                 category: newFeedback.category,
                 message: newFeedback.message,
             });
+            feedback._id = res.data.data._id
+            feedback.category = res.data.data.category
             setFeedbackData((prev) => {
                 const categoryKey =
                     newFeedback.category === "What Went Well"
@@ -178,8 +181,8 @@ const RetroSpectives = () => {
     };
 
     const handleAddComment = async () => {
+        console.log("sel: ",selectedFeedback)
         if (!newComment.trim()) return;
-        console.log(selectedFeedback.feedbackId);
         const comment = {
             author: userInfo.name,
             message: newComment,
@@ -188,23 +191,62 @@ const RetroSpectives = () => {
         };
 
         try {
-            const res = await api.post("/add-feedback-comment", {
+            await api.post("/add-feedback-comment", {
                 feedbackId: selectedFeedback.feedbackId,
                 author: userInfo.name,
                 message: newComment,
             });
-            console.log(res);
             setComments((prev) => [...prev, comment]);
             setNewComment("");
         } catch (error) {}
 
+        const updatedComments = [...comments, comment];
+        console.log("UP: ", updatedComments)
+        const matchingComments = updatedComments.filter(
+            (comment) => comment.feedback === selectedFeedback.feedbackId
+        );
+        console.log(matchingComments)
+        console.log("MAtch: ", matchingComments.length)
         try {
             const res = await api.post("/add-feedback-commentCount", {
                 feedbackId: selectedFeedback.feedbackId,
-                commentCount: selectedFeedback.commentCount
-            })
-            console.log(res)
+                commentCount: matchingComments.length,
+            });
         } catch (error) {}
+
+        setFeedbackData((prev) => {
+            let updatedCategory;
+
+            if (selectedFeedback.category === "What Went Well") {
+                updatedCategory = {
+                    ...prev,
+                    wellItems: prev.wellItems.map((item) =>
+                        item._id === selectedFeedback.feedbackId
+                            ? { ...item, commentCount: matchingComments.length }
+                            : item
+                    ),
+                };
+            } else if (selectedFeedback.category === "What Didn't Go Well") {
+                updatedCategory = {
+                    ...prev,
+                    poorItems: prev.poorItems.map((item) =>
+                        item._id === selectedFeedback.feedbackId
+                            ? { ...item, commentCount: matchingComments.length }
+                            : item
+                    ),
+                };
+            } else {
+                updatedCategory = {
+                    ...prev,
+                    suggestions: prev.suggestions.map((item) =>
+                        item._id === selectedFeedback.feedbackI
+                            ? { ...item, commentCount: matchingComments.length }
+                            : item
+                    ),
+                };
+            }
+            return updatedCategory;
+        });
     };
 
     const getTotalFeedback = () => {
@@ -235,12 +277,12 @@ const RetroSpectives = () => {
 
     const FeedbackCard = ({ item, bgColor, borderColor }) => (
         <div
-            className={`${bgColor} ${borderColor} rounded-lg p-4 transition-shadow hover:shadow-sm`}
+            className={`${bgColor} ${borderColor} rounded-lg p-3 transition-shadow hover:shadow-sm`}
         >
             <div className="mb-3 flex items-start justify-between">
-                <p className="text-sm font-medium text-gray-900">
+                <div className="max-w-full text-sm font-medium break-all text-gray-900">
                     {item.message}
-                </p>
+                </div>
                 <div className="ml-2 flex items-center space-x-1">
                     <button
                         onClick={() => voteFeedback(item._id)}
@@ -276,10 +318,10 @@ const RetroSpectives = () => {
                         {item.author} • {item.time}
                     </span>
                 </div>
-                <button
+                <button 
                     onClick={() => openCommentModal(item)}
                     className="text-xs text-blue-600 hover:text-blue-700"
-                >
+                >  
                     {item.commentCount} comments
                 </button>
             </div>
@@ -324,11 +366,11 @@ const RetroSpectives = () => {
             </div>
 
             {/* Kanban Board */}
-            <div className="mb-6 grid grid-cols-1 gap-4 md:mb-8 md:gap-6 lg:grid-cols-3">
+            <div className="mb-6 grid grid-cols-1 gap-4 md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3">
                 {/* What Went Well Column */}
                 <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6">
-                    <div className="mb-4 flex items-center justify-between md:mb-6">
-                        <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
+                        <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-100 md:h-8 md:w-8">
                                 <svg
                                     className="h-3 w-3 text-green-600 md:h-4 md:w-4"
@@ -344,13 +386,13 @@ const RetroSpectives = () => {
                                     ></path>
                                 </svg>
                             </div>
-                            <h2 className="text-base font-semibold text-gray-900 md:text-lg">
+                            <div className="px-2 text-base font-semibold text-gray-900 md:text-lg lg:text-base xl:text-lg">
                                 What Went Well
-                            </h2>
+                            </div>
                         </div>
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 md:px-2 md:py-1">
+                        <div className="ml-auto inline-flex items-center rounded-full border bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 md:px-2 md:py-1">
                             {feedbackData.wellItems.length} items
-                        </span>
+                        </div>
                     </div>
 
                     <div className="space-y-3 md:space-y-4">
@@ -367,8 +409,8 @@ const RetroSpectives = () => {
 
                 {/* What Didn't Go Well Column */}
                 <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6">
-                    <div className="mb-4 flex items-center justify-between md:mb-6">
-                        <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
+                        <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100 md:h-8 md:w-8">
                                 <svg
                                     className="h-3 w-3 text-red-600 md:h-4 md:w-4"
@@ -384,11 +426,11 @@ const RetroSpectives = () => {
                                     ></path>
                                 </svg>
                             </div>
-                            <h2 className="text-base font-semibold text-gray-900 md:text-lg">
+                            <h2 className="px-2 text-base font-semibold text-gray-900 md:text-lg lg:text-base xl:text-lg">
                                 What Didn't Go Well
                             </h2>
                         </div>
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 md:px-2 md:py-1">
+                        <span className="ml-auto inline-flex items-center rounded-full border bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 md:px-2 md:py-1">
                             {feedbackData.poorItems.length} items
                         </span>
                     </div>
@@ -407,8 +449,8 @@ const RetroSpectives = () => {
 
                 {/* Suggestions Column */}
                 <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6">
-                    <div className="mb-4 flex items-center justify-between md:mb-6">
-                        <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
+                        <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 md:h-8 md:w-8">
                                 <svg
                                     className="h-3 w-3 text-blue-600 md:h-4 md:w-4"
@@ -424,11 +466,11 @@ const RetroSpectives = () => {
                                     ></path>
                                 </svg>
                             </div>
-                            <h2 className="text-base font-semibold text-gray-900 md:text-lg">
+                            <h2 className="px-2 text-base font-semibold text-gray-900 md:text-lg lg:text-base xl:text-lg">
                                 Suggestions
                             </h2>
                         </div>
-                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 md:px-2 md:py-1">
+                        <span className="ml-auto inline-flex items-center rounded-full border bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 md:px-2 md:py-1">
                             {feedbackData.suggestions.length} items
                         </span>
                     </div>
