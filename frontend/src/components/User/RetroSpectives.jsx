@@ -135,7 +135,6 @@ const RetroSpectives = () => {
             time: "Just Now",
             // avatar: "https://avatar.iran.liara.run/public/45",
             commentCount: 0,
-            
         };
 
         try {
@@ -144,8 +143,8 @@ const RetroSpectives = () => {
                 category: newFeedback.category,
                 message: newFeedback.message,
             });
-            feedback._id = res.data.data._id
-            feedback.category = res.data.data.category
+            feedback._id = res.data.data._id;
+            feedback.category = res.data.data.category;
             setFeedbackData((prev) => {
                 const categoryKey =
                     newFeedback.category === "What Went Well"
@@ -181,7 +180,7 @@ const RetroSpectives = () => {
     };
 
     const handleAddComment = async () => {
-        console.log("sel: ",selectedFeedback)
+        console.log("sel: ", selectedFeedback);
         if (!newComment.trim()) return;
         const comment = {
             author: userInfo.name,
@@ -201,12 +200,12 @@ const RetroSpectives = () => {
         } catch (error) {}
 
         const updatedComments = [...comments, comment];
-        console.log("UP: ", updatedComments)
+        console.log("UP: ", updatedComments);
         const matchingComments = updatedComments.filter(
             (comment) => comment.feedback === selectedFeedback.feedbackId
         );
-        console.log(matchingComments)
-        console.log("MAtch: ", matchingComments.length)
+        console.log(matchingComments);
+        console.log("MAtch: ", matchingComments.length);
         try {
             const res = await api.post("/add-feedback-commentCount", {
                 feedbackId: selectedFeedback.feedbackId,
@@ -318,10 +317,10 @@ const RetroSpectives = () => {
                         {item.author} • {item.time}
                     </span>
                 </div>
-                <button 
+                <button
                     onClick={() => openCommentModal(item)}
                     className="text-xs text-blue-600 hover:text-blue-700"
-                >  
+                >
                     {item.commentCount} comments
                 </button>
             </div>
@@ -366,9 +365,9 @@ const RetroSpectives = () => {
             </div>
 
             {/* Kanban Board */}
-            <div className="mb-6 grid grid-cols-1 gap-4 md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3">
+            <div className="mb-6 grid h-[500px] grid-cols-1 gap-4 rounded-lg pb-5 shadow-sm md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3">
                 {/* What Went Well Column */}
-                <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6">
+                <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-100 md:h-8 md:w-8">
@@ -408,7 +407,7 @@ const RetroSpectives = () => {
                 </div>
 
                 {/* What Didn't Go Well Column */}
-                <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6">
+                <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6 scrollbar-hide h-[500px] overflow-y-auto">
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100 md:h-8 md:w-8">
@@ -448,7 +447,7 @@ const RetroSpectives = () => {
                 </div>
 
                 {/* Suggestions Column */}
-                <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6">
+                <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6 scrollbar-hide h-[500px] overflow-y-auto">
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 md:h-8 md:w-8">
@@ -715,7 +714,7 @@ const RetroSpectives = () => {
 
                                 {/* Original Feedback */}
                                 <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3 md:mb-6 md:p-4">
-                                    <p className="mb-1 text-sm text-gray-900 md:mb-2">
+                                    <p className="mb-1 truncate text-sm text-gray-900 md:mb-2">
                                         {selectedFeedback.message}
                                     </p>
                                     <div className="flex items-center space-x-2">
