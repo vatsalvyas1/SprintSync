@@ -1,21 +1,16 @@
 import { Router } from "express";
+import verifyJWT from "../middlewares/auth.middleware.js";
 import {
     registerUser,
     loginUser,
     logoutUser,
     getCurrentUser
 } from "../controllers/user.controller.js";
-import verifyJWT from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
-
-// router.post("/test-body", (req, res) => {
-//     console.log("Test Body:", req.body);
-//     res.json({ received: req.body });
-// });
 
 // Secure Routes
 router.route("/logout").get(verifyJWT, logoutUser);

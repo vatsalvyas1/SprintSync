@@ -1,8 +1,11 @@
 import UserFeedback from "../models/user.feedback.model.js";
 import userFeedbackComment from "../models/user.feedback.comment.model.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
 
 const registerFeedback = asyncHandler(async function (req, res) {
-const { author, category, message, upvotes } = req.body;
+    const { author, category, message, upvotes } = req.body;
 
     const feedback = await UserFeedback({
         author,
@@ -37,6 +40,8 @@ const { author, category, message, upvotes } = req.body;
 const addCommentCountToFeedback = asyncHandler(async function (req, res) {
     const { feedbackId, commentCount } = req.body;
     const feedback = await UserFeedback.findById(feedbackId);
+    if(!feedback)
+         throw new ApiError(200, "Feedback not found");
     feedback.commentCount = commentCount;
     console.log(feedback.commentCount);
     const savedFeedback = await feedback.save({ validateBeforeSave: false });
@@ -57,7 +62,7 @@ const addCommentCountToFeedback = asyncHandler(async function (req, res) {
 const getAllFeedback = asyncHandler(async function (req, res) {
     const feedbacks = await UserFeedback.find();
 
-    if (!feedbacks) throw new ApiError(200, "Feedbacks couldn't be fetched");
+    if (!feedbacks.length) throw new ApiError(200, "Feedbacks couldn't be fetched");
 
     return res
         .status(201)
@@ -84,7 +89,7 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
         await comment.save();
     } catch (error) {
         if (error.errors?.author)
-            throw new ApiError(200, error.errors.email.message);
+            throw new ApiError(200, error.errors.author.message);
 
         if (error.errors?.message)
             throw new ApiError(200, error.errors.message.message);

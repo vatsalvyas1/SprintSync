@@ -102,6 +102,7 @@ const NavBar = () => {
                             src={userInfo.avatar}
                             alt={`${userInfo.name}'s avatar`}
                             className="h-8 w-8 rounded-full object-cover"
+                            draggable="false"
                         />
                     </div>
                     <div className="min-w-0 flex-1">

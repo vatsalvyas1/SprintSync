@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from "react";
-import NavBar from "./Navbar";
-import api from "../utils/axios";
+import axios from "axios";
+
+const api = axios.create({
+    baseURL: "http://localhost:8000/api/v1/retrospectives/",
+    withCredentials: true,
+});
 
 const RetroSpectives = () => {
     const [userInfo, setUserInfo] = useState(null);
+
     const [feedbackData, setFeedbackData] = useState({
         wellItems: [],
         poorItems: [],
         suggestions: [],
     });
+
     const [comments, setComments] = useState([]);
+
     useEffect(() => {
         const fetchUserInfo = () => {
             const storedUser = localStorage.getItem("loggedInUser");
@@ -25,6 +32,7 @@ const RetroSpectives = () => {
 
         const fetchFeedbacks = async () => {
             const feedbacks = await api.get("/get-all-feedbacks");
+            console.log(feedbacks);
             feedbacks.data.data.forEach((element) => {
                 if (element.category == "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
@@ -46,12 +54,17 @@ const RetroSpectives = () => {
 
         const fetchComments = async () => {
             const allComments = await api.get("/get-all-comments");
+            allComments.data.data.forEach((element) => {
+                element.time = feedbackTimeAgo(element.createdAt);
+            });
             setComments(allComments.data.data);
         };
+
         fetchComments();
         fetchFeedbacks();
         fetchUserInfo();
     }, []);
+
     const [feedbackModal, setFeedbackModal] = useState(false);
     const [commentModal, setCommentModal] = useState(false);
     const [selectedFeedback, setSelectedFeedback] = useState(null);
@@ -78,25 +91,15 @@ const RetroSpectives = () => {
         });
     };
 
-    const openCommentModal = async (feedbackId) => {
-        setSelectedFeedback(feedbackId);
+    const openCommentModal = async (feedback) => {
+        setSelectedFeedback({
+            feedbackId: feedback._id,
+            author: feedback.author,
+            avatar: feedback.avatar,
+            time: feedback.time,
+            message: feedback.message,
+        });
         setCommentModal(true);
-        // setCommentsInContext((prev) => ([]))
-
-        const matchingComments = comments.filter(
-            (c) => c.feedback === feedbackId
-        );
-        console.log(matchingComments.length);
-        // setSelectedFeedbackCommentCount;
-        try {
-            const res = await api.post("/add-feedback-commentCount", {
-                feedbackId: feedbackId,
-                commentCount: matchingComments.length,
-            });
-            console.log(res);
-        } catch (error) {}
-
-        console.log(matchingComments);
     };
     const closeCommentModal = () => {
         setCommentModal(false);
@@ -130,7 +133,7 @@ const RetroSpectives = () => {
             votes: 0,
             author: newFeedback.anonymous ? "Anonymous" : `${userInfo.name}`,
             time: "Just Now",
-            avatar: "https://avatar.iran.liara.run/public/45",
+            // avatar: "https://avatar.iran.liara.run/public/45",
             comments: 0,
         };
 
@@ -176,38 +179,32 @@ const RetroSpectives = () => {
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
-
+        console.log(selectedFeedback.feedbackId);
         const comment = {
             author: userInfo.name,
             message: newComment,
             time: "Just Now",
-            // avatar: "https://avatar.iran.liara.run/public/45",
+            feedback: selectedFeedback.feedbackId,
         };
 
         try {
             const res = await api.post("/add-feedback-comment", {
-                feedbackId: selectedFeedback,
+                feedbackId: selectedFeedback.feedbackId,
                 author: userInfo.name,
                 message: newComment,
             });
+            console.log(res);
+            setComments((prev) => [...prev, comment]);
+            setNewComment("");
+        } catch (error) {}
+
+        try {
+            const res = await api.post("/add-feedback-commentCount", {
+                feedbackId: selectedFeedback.feedbackId,
+                commentCount: selectedFeedback.commentCount
+            })
             console.log(res)
         } catch (error) {}
-        setComments((prev) => [...prev, comment]);
-        setNewComment("");
-        const matchingComments = comments.filter(
-            (c) => c.feedback === selectedFeedback
-        );
-        console.log(matchingComments.length);
-        // setSelectedFeedbackCommentCount;
-        // try {
-        //     const res = await api.post("/add-feedback-commentCount", {
-        //         feedbackId: selectedFeedback,
-        //         commentCount: matchingComments.length,
-        //     });
-        //     console.log(res);
-        // } catch (error) {}
-
-        // console.log(matchingComments);
     };
 
     const getTotalFeedback = () => {
@@ -246,7 +243,7 @@ const RetroSpectives = () => {
                 </p>
                 <div className="ml-2 flex items-center space-x-1">
                     <button
-                        onClick={() => voteFeedback(item.id)}
+                        onClick={() => voteFeedback(item._id)}
                         className="text-gray-400 transition-colors hover:text-blue-600"
                     >
                         <svg
@@ -280,7 +277,7 @@ const RetroSpectives = () => {
                     </span>
                 </div>
                 <button
-                    onClick={() => openCommentModal(item._id)}
+                    onClick={() => openCommentModal(item)}
                     className="text-xs text-blue-600 hover:text-blue-700"
                 >
                     {item.commentCount} comments
@@ -322,22 +319,6 @@ const RetroSpectives = () => {
                             </svg>
                             Add Feedback
                         </button>
-                        {/* <button className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 md:px-4 md:py-2">
-                            <svg
-                                className="mr-1 h-4 w-4 md:mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                ></path>
-                            </svg>
-                            Export
-                        </button> */}
                     </div>
                 </div>
             </div>
@@ -491,14 +472,6 @@ const RetroSpectives = () => {
                         Comments
                     </div>
                 </div>
-                {/* <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
-                    <div className="mb-1 text-xl font-bold text-orange-600 md:mb-2 md:text-2xl">
-                        85%
-                    </div>
-                    <div className="text-xs text-gray-600 md:text-sm">
-                        Participation
-                    </div>
-                </div> */}
             </div>
 
             {/* Word Cloud Visualization */}
@@ -701,8 +674,7 @@ const RetroSpectives = () => {
                                 {/* Original Feedback */}
                                 <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3 md:mb-6 md:p-4">
                                     <p className="mb-1 text-sm text-gray-900 md:mb-2">
-                                        Great collaboration between frontend and
-                                        backend teams during API integration
+                                        {selectedFeedback.message}
                                     </p>
                                     <div className="flex items-center space-x-2">
                                         <img
@@ -711,7 +683,8 @@ const RetroSpectives = () => {
                                             alt="User"
                                         />
                                         <span className="text-xs text-gray-500">
-                                            Alex Johnson • 2h ago
+                                            {selectedFeedback.author} •{" "}
+                                            {selectedFeedback.time}
                                         </span>
                                     </div>
                                 </div>
@@ -722,7 +695,7 @@ const RetroSpectives = () => {
                                         .filter(
                                             (comment) =>
                                                 comment.feedback ===
-                                                selectedFeedback
+                                                selectedFeedback.feedbackId
                                         )
                                         .map((comment) => (
                                             <div
@@ -742,9 +715,7 @@ const RetroSpectives = () => {
                                                     </div>
                                                     <p className="mt-1 text-xs text-gray-500">
                                                         {comment.author} •{" "}
-                                                        {feedbackTimeAgo(
-                                                            comment.createdAt
-                                                        )}
+                                                        {comment.time}
                                                     </p>
                                                 </div>
                                             </div>
