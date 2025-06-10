@@ -8,18 +8,28 @@ const api = axios.create({
 
 const RetroSpectives = () => {
     const [userInfo, setUserInfo] = useState(null);
-    const [allCommentCount, setAllCommentCount] = useState(null)
+    const [allCommentCount, setAllCommentCount] = useState(null);
     const [feedbackData, setFeedbackData] = useState({
         wellItems: [],
         poorItems: [],
         suggestions: [],
     });
-
     const [comments, setComments] = useState([]);
+   
+    const [feedbackModal, setFeedbackModal] = useState(false);
+    const [commentModal, setCommentModal] = useState(false);
+    const [selectedFeedback, setSelectedFeedback] = useState(null);
+    const [newFeedback, setNewFeedback] = useState({
+        category: "What Went Well",
+        message: "",
+        anonymous: false,
+    });
+    const [newComment, setNewComment] = useState("");
 
     useEffect(() => {
+        let storedUser;
         const fetchUserInfo = () => {
-            const storedUser = localStorage.getItem("loggedInUser");
+            storedUser = localStorage.getItem("loggedInUser");
             if (storedUser) {
                 setUserInfo(JSON.parse(storedUser));
             } else {
@@ -32,6 +42,11 @@ const RetroSpectives = () => {
 
         const fetchFeedbacks = async () => {
             const feedbacks = await api.get("/get-all-feedbacks");
+
+            storedUser = JSON.parse(storedUser);
+
+        
+
             feedbacks.data.data.forEach((element) => {
                 if (element.category == "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
@@ -53,8 +68,8 @@ const RetroSpectives = () => {
 
         const fetchComments = async () => {
             const allComments = await api.get("/get-all-comments");
-            setAllCommentCount(() => (allComments.data.data.length))
-          
+            setAllCommentCount(() => allComments.data.data.length);
+
             allComments.data.data.forEach((element) => {
                 element.time = feedbackTimeAgo(element.createdAt);
             });
@@ -65,18 +80,6 @@ const RetroSpectives = () => {
         fetchFeedbacks();
         fetchUserInfo();
     }, []);
-
-    const [feedbackModal, setFeedbackModal] = useState(false);
-    const [commentModal, setCommentModal] = useState(false);
-    const [selectedFeedback, setSelectedFeedback] = useState(null);
-
-    const [newFeedback, setNewFeedback] = useState({
-        category: "What Went Well",
-        message: "",
-        anonymous: false,
-    });
-
-    const [newComment, setNewComment] = useState("");
 
     const openFeedbackModal = () => {
         setFeedbackModal(true);
@@ -101,27 +104,11 @@ const RetroSpectives = () => {
         });
         setCommentModal(true);
     };
+
     const closeCommentModal = () => {
         setCommentModal(false);
         setSelectedFeedback(null);
         setNewComment("");
-    };
-
-    const voteFeedback = (feedbackId) => {
-        setFeedbackData((prev) => {
-            const updateVotes = (items) =>
-                items.map((item) =>
-                    item.id === feedbackId
-                        ? { ...item, votes: item.votes + 1 }
-                        : item
-                );
-
-            return {
-                wellItems: updateVotes(prev.wellItems),
-                poorItems: updateVotes(prev.poorItems),
-                suggestions: updateVotes(prev.suggestions),
-            };
-        });
     };
 
     const handleSubmitFeedback = async (e) => {
@@ -130,7 +117,6 @@ const RetroSpectives = () => {
 
         const feedback = {
             message: newFeedback.message,
-            votes: 0,
             author: newFeedback.anonymous ? "Anonymous" : `${userInfo.name}`,
             time: "Just Now",
             avatar: userInfo.avatar,
@@ -142,7 +128,6 @@ const RetroSpectives = () => {
                 author: newFeedback.anonymous ? "Anonymous" : userInfo.name,
                 category: newFeedback.category,
                 message: newFeedback.message,
-                upvotes: 0,
                 avatar: userInfo.avatar,
             });
             feedback._id = res.data.data._id;
@@ -188,17 +173,17 @@ const RetroSpectives = () => {
             message: newComment,
             time: "Just Now",
             feedback: selectedFeedback.feedbackId,
-            avatar: userInfo.avatar
+            avatar: userInfo.avatar,
         };
 
         try {
-            const res = await api.post("/add-feedback-comment", {
+            await api.post("/add-feedback-comment", {
                 feedbackId: selectedFeedback.feedbackId,
                 author: userInfo.name,
                 message: newComment,
-                avatar: userInfo.avatar
+                avatar: userInfo.avatar,
             });
-            setAllCommentCount((prev) => (prev + 1))
+            setAllCommentCount((prev) => prev + 1);
             setComments((prev) => [...prev, comment]);
             setNewComment("");
         } catch (error) {}
@@ -208,7 +193,7 @@ const RetroSpectives = () => {
             (comment) => comment.feedback === selectedFeedback.feedbackId
         );
         try {
-             await api.post("/add-feedback-commentCount", {
+            await api.post("/add-feedback-commentCount", {
                 feedbackId: selectedFeedback.feedbackId,
                 commentCount: matchingComments.length,
             });
@@ -257,20 +242,15 @@ const RetroSpectives = () => {
         );
     };
 
-    const getTotalVotes = () => {
-        const allItems = [
-            ...feedbackData.wellItems,
-            ...feedbackData.poorItems,
-            ...feedbackData.suggestions,
-        ];
-        return allItems.reduce((sum, item) => sum + item.votes, 0);
-    };
-
     const getTotalComments = () => {
         return allCommentCount;
     };
 
-    const FeedbackCard = ({ item, bgColor, borderColor }) => (
+    const FeedbackCard = ({
+        item,
+        bgColor,
+        borderColor,
+    }) => (
         <div
             className={`${bgColor} ${borderColor} rounded-lg p-3 transition-shadow hover:shadow-sm`}
         >
@@ -278,29 +258,7 @@ const RetroSpectives = () => {
                 <div className="max-w-full text-sm font-medium break-normal text-gray-900">
                     {item.message}
                 </div>
-                <div className="ml-2 flex items-center space-x-1">
-                    <button
-                        onClick={() => voteFeedback(item._id)}
-                        className="text-gray-400 transition-colors hover:text-blue-600"
-                    >
-                        <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 15l7-7 7 7"
-                            ></path>
-                        </svg>
-                    </button>
-                    <span className="text-xs font-medium text-gray-600">
-                        {item.votes}
-                    </span>
-                </div>
+               
             </div>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -308,9 +266,11 @@ const RetroSpectives = () => {
                         className="h-5 w-5 rounded-full"
                         src={item.avatar}
                         alt="User"
+                        draggable="false"
                     />
                     <span className="text-xs text-gray-500">
-                        <span className="whitespace-nowrap">{item.author}</span> • <span className="whitespace-nowrap">{item.time}</span>
+                        <span className="whitespace-nowrap">{item.author}</span>{" "}
+                        • <span className="whitespace-nowrap">{item.time}</span>
                     </span>
                 </div>
                 <button
@@ -322,6 +282,8 @@ const RetroSpectives = () => {
             </div>
         </div>
     );
+
+    // if (userInfo == null) return <section>Loading...</section>;
 
     return (
         <section className="min-h-screen bg-gray-50 p-4 md:ml-64 md:p-6">
@@ -361,8 +323,9 @@ const RetroSpectives = () => {
             </div>
 
             {/* Kanban Board */}
-            <div className="mb-6 grid h-[500px] grid-cols-1 gap-4 rounded-lg pb-5 shadow-sm md:mb-8 scrollbar-hide h-[500px] overflow-y-auto lg:overflow-hidden md:grid-cols-1 md:gap-6 lg:grid-cols-3">
+            <div className="scrollbar-hide mb-6 grid h-[500px] grid-cols-1 gap-4 overflow-y-auto rounded-lg pb-5 shadow-sm md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3 lg:overflow-hidden">
                 {/* What Went Well Column */}
+
                 <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
@@ -394,10 +357,13 @@ const RetroSpectives = () => {
                         {feedbackData.wellItems.map((item) => (
                             <FeedbackCard
                                 key={item._id}
+                               
                                 item={item}
                                 bgColor="bg-green-50"
                                 borderColor="border-green-200"
-                            />
+                            >
+                                {" "}
+                            </FeedbackCard>
                         ))}
                     </div>
                 </div>
@@ -491,14 +457,6 @@ const RetroSpectives = () => {
                     </div>
                     <div className="text-xs text-gray-600 md:text-sm">
                         Total Feedback
-                    </div>
-                </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
-                    <div className="mb-1 text-xl font-bold text-blue-600 md:mb-2 md:text-2xl">
-                        {getTotalVotes()}
-                    </div>
-                    <div className="text-xs text-gray-600 md:text-sm">
-                        Total Votes
                     </div>
                 </div>
                 <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
@@ -615,6 +573,7 @@ const RetroSpectives = () => {
                                     <textarea
                                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                         rows="4"
+                                        autoFocus
                                         placeholder="Share your thoughts about this sprint..."
                                         value={newFeedback.text}
                                         onChange={(e) =>
@@ -718,6 +677,7 @@ const RetroSpectives = () => {
                                             className="h-4 w-4 rounded-full md:h-5 md:w-5"
                                             src={selectedFeedback.avatar}
                                             alt="User"
+                                            draggable="false"
                                         />
                                         <span className="text-xs text-gray-500">
                                             {selectedFeedback.author} •{" "}
@@ -743,10 +703,11 @@ const RetroSpectives = () => {
                                                     className="h-6 w-6 rounded-full md:h-8 md:w-8"
                                                     src={comment.avatar}
                                                     alt="User"
+                                                    draggable="false"
                                                 />
                                                 <div className="flex-1">
                                                     <div className="rounded-lg bg-gray-100 p-2 md:p-3">
-                                                        <p className="text-xs text-gray-900 md:text-sm">
+                                                        <p className="text-xs break-normal text-gray-900 md:text-sm">
                                                             {comment.message}
                                                         </p>
                                                     </div>
@@ -766,11 +727,13 @@ const RetroSpectives = () => {
                                             className="h-6 w-6 rounded-full md:h-8 md:w-8"
                                             src={userInfo.avatar}
                                             alt="Current user"
+                                            draggable="false"
                                         />
                                         <div className="flex-1">
                                             <textarea
                                                 className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none md:px-3 md:py-2 md:text-sm"
                                                 rows="2"
+                                                autoFocus
                                                 placeholder="Add a comment..."
                                                 value={newComment}
                                                 onChange={(e) =>

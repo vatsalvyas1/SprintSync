@@ -22,15 +22,10 @@ const userFeedbackSchema = new Schema(
             default: 0,
             min: 0,
         },
-        upvotes: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
         avatar: {
             type: String,
-            required: [true, "Feedbacker's Avatar is required"]
-        }
+            required: [true, "Feedbacker's Avatar is required"],
+        },
     },
     {
         timestamps: true,

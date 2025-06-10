@@ -5,20 +5,16 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const registerFeedback = asyncHandler(async function (req, res) {
-    const { author, category, message, upvotes, avatar } = req.body;
+    const { author, category, message, avatar } = req.body;
     if (!author || !category || !message || !avatar)
         throw new ApiError(
             200,
             "Invalid or Missing Details for Registering Feedback"
         );
-    else if (!Number.isInteger(upvotes) || upvotes < 0)
-        throw new ApiError(200, "Upvotes can't be negative");
-
     const feedback = await UserFeedback({
         author,
         category,
         message,
-        upvotes,
         avatar,
     });
 
@@ -33,10 +29,7 @@ const registerFeedback = asyncHandler(async function (req, res) {
         await feedback.save();
     } catch (error) {
         const firstError =
-            error.errors.name ||
-            error.errors.category ||
-            error.errors.message ||
-            error.errors.upvotes;
+            error.errors.name || error.errors.category || error.errors.message;
         throw new ApiError(200, firstError.properties.message);
     }
 
@@ -133,6 +126,8 @@ const getAllComments = asyncHandler(async function (req, res) {
         .status(201)
         .json(new ApiResponse(201, comments, "Comments Fetched"));
 });
+
+
 
 export {
     registerFeedback,
