@@ -17,6 +17,10 @@ const userFeedbackCommentSchema = new Schema(
             required: [true, "Comment's message is required"],
             trim: true,
         },
+        avatar: {
+            type: String,
+            required: [true, "Commenter's Avatar is required"]
+        }
     },
     {
         timestamps: true,

@@ -1,17 +1,25 @@
-import UserFeedback from "../models/user.feedback.model.js";
-import userFeedbackComment from "../models/user.feedback.comment.model.js";
+import UserFeedback from "../models/retrospective.feedback.model.js";
+import userFeedbackComment from "../models/retrospective.feedback.comment.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const registerFeedback = asyncHandler(async function (req, res) {
-    const { author, category, message, upvotes } = req.body;
+    const { author, category, message, upvotes, avatar } = req.body;
+    if (!author || !category || !message || !avatar)
+        throw new ApiError(
+            200,
+            "Invalid or Missing Details for Registering Feedback"
+        );
+    else if (!Number.isInteger(upvotes) || upvotes < 0)
+        throw new ApiError(200, "Upvotes can't be negative");
 
     const feedback = await UserFeedback({
         author,
         category,
         message,
         upvotes,
+        avatar,
     });
 
     if (!feedback)
@@ -69,12 +77,23 @@ const getAllFeedback = asyncHandler(async function (req, res) {
 });
 
 const registerFeedbackComment = asyncHandler(async function (req, res) {
-    const { feedbackId, author, message } = req.body;
+    const { feedbackId, author, message, avatar } = req.body;
+    if (
+        [feedbackId, author, message, avatar].some(
+            (field) => field?.trim() === ""
+        )
+    ) {
+        throw new ApiError(
+            200,
+            "Invalid or missing details for registering feedback's comment"
+        );
+    }
 
     const comment = new userFeedbackComment({
         feedback: feedbackId,
         author,
         message,
+        avatar,
     });
 
     if (!comment)
@@ -89,6 +108,9 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
     } catch (error) {
         if (error.errors?.author)
             throw new ApiError(200, error.errors.author.message);
+
+        if (error.errors?.avatar)
+            throw new ApiError(200, error.errors.avatar.message);
 
         if (error.errors?.message)
             throw new ApiError(200, error.errors.message.message);

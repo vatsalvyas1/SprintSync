@@ -27,6 +27,10 @@ const userFeedbackSchema = new Schema(
             default: 0,
             min: 0,
         },
+        avatar: {
+            type: String,
+            required: [true, "Feedbacker's Avatar is required"]
+        }
     },
     {
         timestamps: true,

@@ -8,7 +8,7 @@ const api = axios.create({
 
 const RetroSpectives = () => {
     const [userInfo, setUserInfo] = useState(null);
-
+    const [allCommentCount, setAllCommentCount] = useState(null)
     const [feedbackData, setFeedbackData] = useState({
         wellItems: [],
         poorItems: [],
@@ -32,7 +32,6 @@ const RetroSpectives = () => {
 
         const fetchFeedbacks = async () => {
             const feedbacks = await api.get("/get-all-feedbacks");
-
             feedbacks.data.data.forEach((element) => {
                 if (element.category == "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
@@ -54,7 +53,8 @@ const RetroSpectives = () => {
 
         const fetchComments = async () => {
             const allComments = await api.get("/get-all-comments");
-
+            setAllCommentCount(() => (allComments.data.data.length))
+          
             allComments.data.data.forEach((element) => {
                 element.time = feedbackTimeAgo(element.createdAt);
             });
@@ -133,7 +133,7 @@ const RetroSpectives = () => {
             votes: 0,
             author: newFeedback.anonymous ? "Anonymous" : `${userInfo.name}`,
             time: "Just Now",
-            // avatar: "https://avatar.iran.liara.run/public/45",
+            avatar: userInfo.avatar,
             commentCount: 0,
         };
 
@@ -142,6 +142,8 @@ const RetroSpectives = () => {
                 author: newFeedback.anonymous ? "Anonymous" : userInfo.name,
                 category: newFeedback.category,
                 message: newFeedback.message,
+                upvotes: 0,
+                avatar: userInfo.avatar,
             });
             feedback._id = res.data.data._id;
             feedback.category = res.data.data.category;
@@ -180,34 +182,33 @@ const RetroSpectives = () => {
     };
 
     const handleAddComment = async () => {
-        console.log("sel: ", selectedFeedback);
         if (!newComment.trim()) return;
         const comment = {
             author: userInfo.name,
             message: newComment,
             time: "Just Now",
             feedback: selectedFeedback.feedbackId,
+            avatar: userInfo.avatar
         };
 
         try {
-            await api.post("/add-feedback-comment", {
+            const res = await api.post("/add-feedback-comment", {
                 feedbackId: selectedFeedback.feedbackId,
                 author: userInfo.name,
                 message: newComment,
+                avatar: userInfo.avatar
             });
+            setAllCommentCount((prev) => (prev + 1))
             setComments((prev) => [...prev, comment]);
             setNewComment("");
         } catch (error) {}
 
         const updatedComments = [...comments, comment];
-        console.log("UP: ", updatedComments);
         const matchingComments = updatedComments.filter(
             (comment) => comment.feedback === selectedFeedback.feedbackId
         );
-        console.log(matchingComments);
-        console.log("MAtch: ", matchingComments.length);
         try {
-            const res = await api.post("/add-feedback-commentCount", {
+             await api.post("/add-feedback-commentCount", {
                 feedbackId: selectedFeedback.feedbackId,
                 commentCount: matchingComments.length,
             });
@@ -238,7 +239,7 @@ const RetroSpectives = () => {
                 updatedCategory = {
                     ...prev,
                     suggestions: prev.suggestions.map((item) =>
-                        item._id === selectedFeedback.feedbackI
+                        item._id === selectedFeedback.feedbackId
                             ? { ...item, commentCount: matchingComments.length }
                             : item
                     ),
@@ -266,12 +267,7 @@ const RetroSpectives = () => {
     };
 
     const getTotalComments = () => {
-        const allItems = [
-            ...feedbackData.wellItems,
-            ...feedbackData.poorItems,
-            ...feedbackData.suggestions,
-        ];
-        return allItems.reduce((sum, item) => sum + item.comments, 0);
+        return allCommentCount;
     };
 
     const FeedbackCard = ({ item, bgColor, borderColor }) => (
@@ -279,7 +275,7 @@ const RetroSpectives = () => {
             className={`${bgColor} ${borderColor} rounded-lg p-3 transition-shadow hover:shadow-sm`}
         >
             <div className="mb-3 flex items-start justify-between">
-                <div className="max-w-full text-sm font-medium break-all text-gray-900">
+                <div className="max-w-full text-sm font-medium break-normal text-gray-900">
                     {item.message}
                 </div>
                 <div className="ml-2 flex items-center space-x-1">
@@ -314,7 +310,7 @@ const RetroSpectives = () => {
                         alt="User"
                     />
                     <span className="text-xs text-gray-500">
-                        {item.author} • {item.time}
+                        <span className="whitespace-nowrap">{item.author}</span> • <span className="whitespace-nowrap">{item.time}</span>
                     </span>
                 </div>
                 <button
@@ -365,7 +361,7 @@ const RetroSpectives = () => {
             </div>
 
             {/* Kanban Board */}
-            <div className="mb-6 grid h-[500px] grid-cols-1 gap-4 rounded-lg pb-5 shadow-sm md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3">
+            <div className="mb-6 grid h-[500px] grid-cols-1 gap-4 rounded-lg pb-5 shadow-sm md:mb-8 scrollbar-hide h-[500px] overflow-y-auto lg:overflow-hidden md:grid-cols-1 md:gap-6 lg:grid-cols-3">
                 {/* What Went Well Column */}
                 <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
@@ -407,7 +403,7 @@ const RetroSpectives = () => {
                 </div>
 
                 {/* What Didn't Go Well Column */}
-                <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6 scrollbar-hide h-[500px] overflow-y-auto">
+                <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100 md:h-8 md:w-8">
@@ -447,7 +443,7 @@ const RetroSpectives = () => {
                 </div>
 
                 {/* Suggestions Column */}
-                <div className="rounded-lg border border-gray-200 bg-white p-4 md:p-6 scrollbar-hide h-[500px] overflow-y-auto">
+                <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 md:h-8 md:w-8">
@@ -720,7 +716,7 @@ const RetroSpectives = () => {
                                     <div className="flex items-center space-x-2">
                                         <img
                                             className="h-4 w-4 rounded-full md:h-5 md:w-5"
-                                            src="https://avatar.iran.liara.run/public/12"
+                                            src={selectedFeedback.avatar}
                                             alt="User"
                                         />
                                         <span className="text-xs text-gray-500">
@@ -768,7 +764,7 @@ const RetroSpectives = () => {
                                     <div className="flex items-start space-x-2 md:space-x-3">
                                         <img
                                             className="h-6 w-6 rounded-full md:h-8 md:w-8"
-                                            src="https://avatar.iran.liara.run/public/45"
+                                            src={userInfo.avatar}
                                             alt="Current user"
                                         />
                                         <div className="flex-1">
