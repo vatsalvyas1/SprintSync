@@ -5,6 +5,7 @@ import {
     getJournalById,
     updateJournal,
     deleteJournal,
+    getAllEntriesForUser
 } from "../controllers/journal.controller.js";
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.get("/", getJournals);
 router.get("/:id", getJournalById);
 router.put("/:id", updateJournal);
 router.delete("/:id", deleteJournal);
+router.post('/user', getAllEntriesForUser); 
 
 export default router;
