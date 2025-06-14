@@ -15,8 +15,9 @@ import AddForm from "./components/User/AddForm";
 import FormLocker from "./components/FormLocker/FormLocker";
 import FormLocker2 from "./components/FormLocker/FormLocker2";
 import NavBar from "./components/User/Navbar";
-import DailyJournal from "./components/Journals/DailyJournal";
+import DailyJournal from "./components/Journals/DailyJournal2";
 import ChecklistDetail from "./components/Deployment/ChecklistDetail";
+import JournalPage from "./components/Journals/JournalPage";
 
 function App() {
     const [userInfoGlobal, setUserInfoGlobal] = useState(null);
@@ -102,7 +103,7 @@ function App() {
                     />
                     <Route 
                         path="/task-journal" 
-                        element={userInfoGlobal ? <DailyJournal /> : <Navigate to="/login" />} 
+                        element={userInfoGlobal ? <JournalPage /> : <Navigate to="/login" />} 
                     />
 
                     {/* Homepage redirect - Fixed */}

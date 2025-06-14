@@ -30,7 +30,7 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/retrospectives", retrospectiveRouter)
 app.use("/api/v1/form", formRouter);
 app.use("/api/v1/checklist", checklistRouter);
-app.use("api/v1/journal", journalRouter);
+app.use("/api/v1/journal", journalRouter);
 app.use(errorHandler);
 
 export default app;
