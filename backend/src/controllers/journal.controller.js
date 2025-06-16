@@ -1,4 +1,4 @@
-import DailyJournal from "../models/Journal.model.js";
+import DailyJournal from "../models/journal.model.js";
 import mongoose from "mongoose";
 
 // Helper to validate ObjectId
