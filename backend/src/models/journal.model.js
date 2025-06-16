@@ -36,4 +36,5 @@ const dailyJournalSchema = new mongoose.Schema({
   timestamps: true // includes createdAt and updatedAt
 });
 
-export default mongoose.model('DailyJournal', dailyJournalSchema);
+const DailyJournal = mongoose.model('DailyJournal', dailyJournalSchema);
+export default DailyJournal;
