@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/axios";
 import {
     Menu,
@@ -12,13 +12,13 @@ import {
     BookOpen,
     Lock,
     LogOut,
-    User,
 } from "lucide-react";
 
 const NavBar = () => {
     const [mobileMenu, setMobileMenu] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const fetchUserInfo = () => {
@@ -71,11 +71,6 @@ const NavBar = () => {
                 {/* User Info - Mobile */}
                 <div className="flex items-center space-x-2 md:hidden">
                     <div className="text-right">
-                        {/* <img
-            src={userInfo.avatar}
-            alt={`${userInfo.name}'s avatar`}
-            className="h-8 w-8 rounded-full object-cover mb-1 mx-auto"
-        /> */}
                         <div className="text-sm font-semibold">
                             Welcome, {userInfo.name}
                         </div>
@@ -120,7 +115,7 @@ const NavBar = () => {
             <div className="hidden h-full flex-col justify-between md:flex">
                 <div className="mt-4 flex-1">
                     <nav className="space-y-1 px-4">
-                        <NavLinks />
+                        <NavLinks currentPath={location.pathname} />
                     </nav>
                 </div>
 
@@ -140,7 +135,7 @@ const NavBar = () => {
             {mobileMenu && (
                 <div className="border-t border-slate-600/30 md:hidden">
                     <nav className="space-y-2 px-4 py-4">
-                        <NavLinks />
+                        <NavLinks currentPath={location.pathname} />
                     </nav>
                     <div className="px-4 pb-4">
                         <button
@@ -157,106 +152,46 @@ const NavBar = () => {
     );
 };
 
-const NavLinks = () => {
+const NavLinks = ({ currentPath }) => {
+    const links = [
+        { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { to: "/deployment", label: "Deployment", icon: UploadCloud },
+        { to: "/qa-testing", label: "QA Testing", icon: Bug },
+        { to: "/ai-test-generator", label: "AI Test Generator", icon: Zap },
+        { to: "/retrospectives", label: "Retrospectives", icon: MessageSquare },
+        { to: "/task-journal", label: "Task Journal", icon: BookOpen },
+        { to: "/forms", label: "Form Locker", icon: Lock },
+    ];
+
     return (
         <>
-            <Link
-                to="/dashboard"
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-white"
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"></div>
-                <LayoutDashboard
-                    size={18}
-                    className="relative z-10 transition-colors duration-200 group-hover:text-purple-400"
-                />
-                <span className="relative z-10 text-sm font-medium">
-                    Dashboard
-                </span>
-            </Link>
-
-            <Link
-                to="/deployment"
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-white"
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"></div>
-                <UploadCloud
-                    size={18}
-                    className="relative z-10 transition-colors duration-200 group-hover:text-purple-400"
-                />
-                <span className="relative z-10 text-sm font-medium">
-                    Deployment
-                </span>
-            </Link>
-
-            <Link
-                to="/qa-testing"
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-white"
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"></div>
-                <Bug
-                    size={18}
-                    className="relative z-10 transition-colors duration-200 group-hover:text-purple-400"
-                />
-                <span className="relative z-10 text-sm font-medium">
-                    QA Testing
-                </span>
-            </Link>
-
-            <Link
-                to="/ai-test-generator"
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-white"
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"></div>
-                <Zap
-                    size={18}
-                    className="relative z-10 transition-colors duration-200 group-hover:text-purple-400"
-                />
-                <span className="relative z-10 text-sm font-medium">
-                    AI Test Generator
-                </span>
-            </Link>
-
-            <Link
-                to="/retrospectives"
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-white"
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"></div>
-                <MessageSquare
-                    size={18}
-                    className="relative z-10 transition-colors duration-200 group-hover:text-purple-400"
-                />
-                <span className="relative z-10 text-sm font-medium">
-                    Retrospectives
-                </span>
-            </Link>
-
-            <Link
-                to="/task-journal"
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-white"
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"></div>
-                <BookOpen
-                    size={18}
-                    className="relative z-10 transition-colors duration-200 group-hover:text-purple-400"
-                />
-                <span className="relative z-10 text-sm font-medium">
-                    Task Journal
-                </span>
-            </Link>
-
-            <Link
-                to="/forms"
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-white"
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"></div>
-                <Lock
-                    size={18}
-                    className="relative z-10 transition-colors duration-200 group-hover:text-purple-400"
-                />
-                <span className="relative z-10 text-sm font-medium">
-                    Form Locker
-                </span>
-            </Link>
+            {links.map(({ to, label, icon: Icon }) => {
+                const isActive = currentPath === to;
+                return (
+                    <Link
+                        key={to}
+                        to={to}
+                        className={`group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 transition-all duration-200 ${
+                            isActive
+                                ? "bg-slate-700/50 text-white"
+                                : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                        }`}
+                    >
+                        <div
+                            className={`absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 transition-opacity duration-200 ${
+                                isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            }`}
+                        />
+                        <Icon
+                            size={18}
+                            className={`relative z-10 transition-colors duration-200 ${
+                                isActive ? "text-purple-400" : "group-hover:text-purple-400"
+                            }`}
+                        />
+                        <span className="relative z-10 text-sm font-medium">{label}</span>
+                    </Link>
+                );
+            })}
         </>
     );
 };
