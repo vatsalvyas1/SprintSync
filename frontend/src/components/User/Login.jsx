@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import api from "../utils/axios.js";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -303,13 +303,13 @@ function Login() {
                     <div className="mt-8 pt-6 border-t border-gray-100 text-center">
                         <p className="text-sm text-gray-600">
                             New here?
-                            <a
-                                href="/register"
+                            <Link
+                                to={"/register"}
                                 className="text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200"
                             >
                                 {" "}
                                 Register Now
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </div>
