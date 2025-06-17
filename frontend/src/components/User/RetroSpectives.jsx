@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { backendUrl } from "../../constant";
 
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1/retrospectives/",
+    baseURL: `${backendUrl}/api/v1/retrospectives/`,
     withCredentials: true,
 });
 

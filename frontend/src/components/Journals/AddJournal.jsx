@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { backendUrl } from "../../constant";
 
 function AddJournal({ onAdd }) {
     const [formData, setFormData] = useState({
@@ -45,7 +46,7 @@ function AddJournal({ onAdd }) {
                 user: loggedInUser._id,
             };
 
-            const res = await fetch("http://localhost:8000/api/v1/journal", {
+            const res = await fetch(`${backendUrl}/api/v1/journal`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

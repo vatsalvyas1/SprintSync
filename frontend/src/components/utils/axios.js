@@ -1,7 +1,8 @@
 import axios from "axios";
+import { backendUrl } from "../../constant";
 
 const api =  axios.create({
-    baseURL: "http://localhost:8000/api/v1/user/",
+    baseURL: `${backendUrl}/v1/user/`,
     withCredentials: true
 })
 

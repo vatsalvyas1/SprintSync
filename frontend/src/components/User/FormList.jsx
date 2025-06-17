@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { backendUrl } from "../../constant";
 
 const FormList = () => {
   const [forms, setForms] = useState([]);
@@ -6,7 +7,7 @@ const FormList = () => {
   useEffect(() => {
     const fetchForms = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/form", {
+        const res = await fetch(`${backendUrl}/api/v1/form`, {
           credentials: "include"
         });
 

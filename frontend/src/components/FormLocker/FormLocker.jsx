@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import AddForm from "../User/AddForm";
+import { backendUrl } from "../../constant";
 
 function FormLocker() {
     const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ function FormLocker() {
 
     const fetchForms = async () => {
         try {
-            const res = await fetch("http://localhost:8000/api/v1/form/");
+            const res = await fetch(`${backendUrl}/api/v1/form/`);
             const data = await res.json();
             setForms(data);
         } catch (err) {
@@ -40,7 +41,7 @@ function FormLocker() {
 
     const handleCheckOut = async (formId) => {
         try {
-            await fetch(`http://localhost:8000/api/v1/form/${formId}/lock`, {
+            await fetch(`${backendUrl}/api/v1/form/${formId}/lock`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -55,7 +56,7 @@ function FormLocker() {
 
     const handleCheckIn = async (formId) => {
         try {
-            await fetch(`http://localhost:8000/api/v1/form/${formId}/unlock`, {
+            await fetch(`${backendUrl}/api/v1/form/${formId}/unlock`, {
                 method: "PATCH",
             });
             fetchForms();

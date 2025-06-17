@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { backendUrl } from "../../constant";
 
 function JournalList({ newEntry }) {
     const [journals, setJournals] = useState([]);
@@ -12,7 +13,7 @@ function JournalList({ newEntry }) {
 
     const fetchJournals = async () => {
         try {
-            const res = await fetch(`http://localhost:8000/api/v1/journal`);
+            const res = await fetch(`${backendUrl}/api/v1/journal`);
             if (!res.ok) throw new Error("Failed to fetch journals");
             const data = await res.json();
             setJournals(data);

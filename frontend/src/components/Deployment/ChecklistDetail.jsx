@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { backendUrl } from "../../constant.js" 
 
 export default function ChecklistDetail() {
   const { checklistId } = useParams();
@@ -17,7 +18,7 @@ export default function ChecklistDetail() {
       }
 
       try {
-        const response = await axios.get(`http://localhost:8000/api/v1/checklist/${checklistId}`);
+        const response = await axios.get(`${backendUrl}/api/v1/checklist/${checklistId}`);
         setChecklist(response.data.data);
       } catch (err) {
         setError(err.response?.data?.message || err.message || "An error occurred");
@@ -31,13 +32,13 @@ export default function ChecklistDetail() {
 
   const updateItemStatus = async (itemId, newStatus) => {
     try {
-      await axios.post('http://localhost:8000/api/v1/checklist/change-item-state', {
+      await axios.post('${backendUrl}/api/v1/checklist/change-item-state', {
         checklistId,
         itemId,
         status: newStatus
       });
       // Refresh checklist data
-      const response = await axios.get(`http://localhost:8000/api/v1/checklist/${checklistId}`);
+      const response = await axios.get(`${backendUrl}/api/v1/checklist/${checklistId}`);
       setChecklist(response.data.data);
     } catch (error) {
       console.error('Error updating item status:', error);

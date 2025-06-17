@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { backendUrl } from "../../constant";
 
 const AddForm = ({ onCancel }) => {
   const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ const AddForm = ({ onCancel }) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/form", {
+      const res = await fetch(`${backendUrl}/api/v1/form`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

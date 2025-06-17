@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { backendUrl } from '../../constant.js';
 function Checklist() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checklists, setChecklists] = useState([]);
@@ -21,7 +22,7 @@ function Checklist() {
 
   const fetchChecklists = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/checklist/checklists');
+      const response = await axios.get(`${backendUrl}/api/v1/checklist/checklists`);
       setChecklists(response.data.data);
     } catch (error) {
       console.error('Error fetching checklists:', error);
@@ -77,7 +78,7 @@ function Checklist() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/v1/checklist/create', newChecklist);
+      await axios.post(`${backendUrl}/api/v1/checklist/create`, newChecklist);
       fetchChecklists();
       closeNewChecklistModal();
     } catch (error) {
@@ -87,7 +88,7 @@ function Checklist() {
 
   const updateItemStatus = async (checklistId, itemId, newStatus) => {
     try {
-      await axios.post('http://localhost:8000/api/v1/checklist/change-item-state', {
+      await axios.post(`${backendUrl}/api/v1/checklist/change-item-state`, {
         checklistId,
         itemId,
         status: newStatus
