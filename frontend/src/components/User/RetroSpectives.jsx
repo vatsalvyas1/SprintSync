@@ -5,8 +5,7 @@ import { Check, ChevronUp, Lightbulb, Plus, X } from "lucide-react";
 
 const api = axios.create({
     baseURL: `${backendUrl}/api/v1/retrospectives/`,
-    withCredentials: true,
-});
+ });
 
 const RetroSpectives = () => {
     const [userInfo, setUserInfo] = useState(null);
