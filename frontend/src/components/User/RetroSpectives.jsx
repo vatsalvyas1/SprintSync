@@ -37,7 +37,7 @@ const RetroSpectives = () => {
 
             storedUser = JSON.parse(storedUser);
 
-            feedbacks.data.data.forEach((element) => {
+            feedbacks?.data?.data?.forEach((element) => {
                 if (element.category == "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
                     suggestions.push(element);
