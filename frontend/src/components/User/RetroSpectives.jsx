@@ -212,6 +212,7 @@ const RetroSpectives = () => {
 
     const [newComment, setNewComment] = useState("");
     const [commentModal, setCommentModal] = useState(false);
+    const [addCommentDisabled, setAddCommentDisabled] = useState(false)
 
     const openCommentModal = async (feedback) => {
         setSelectedFeedback({
@@ -246,6 +247,7 @@ const RetroSpectives = () => {
         };
 
         try {
+            setAddCommentDisabled(() => (true))
             await api.post("/add-feedback-comment", {
                 feedbackId: selectedFeedback.feedbackId,
                 author: userInfo.name,
@@ -255,6 +257,7 @@ const RetroSpectives = () => {
             setAllCommentCount((prev) => prev + 1);
             setComments((prev) => [...prev, comment]);
             setNewComment("");
+            setAddCommentDisabled(() => (false))
         } catch (error) {
             console.log(error);
         }
@@ -712,8 +715,9 @@ const RetroSpectives = () => {
                                                 <button
                                                     onClick={handleAddComment}
                                                     disabled={
-                                                        !newComment.trim()
+                                                        !newComment.trim() || addCommentDisabled
                                                     }
+
                                                     className="rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 md:px-3 md:py-1.5 md:text-sm"
                                                 >
                                                     Comment
