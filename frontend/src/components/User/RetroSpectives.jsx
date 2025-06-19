@@ -20,7 +20,7 @@ const RetroSpectives = () => {
 
     useEffect(() => {
         console.log("Not even Fetching")
-        onsole.log("BACKEND URL BEING USED:", backendUrl); // ✅ Add this line here
+        console.log("BACKEND URL BEING USED:", backendUrl); // ✅ Add this line here
 
         let storedUser;
         const fetchUserInfo = () => {
