@@ -19,6 +19,7 @@ const RetroSpectives = () => {
     const [allCommentCount, setAllCommentCount] = useState(null);
 
     useEffect(() => {
+        console.log("Not even Fetching")
         let storedUser;
         const fetchUserInfo = () => {
             storedUser = localStorage.getItem("loggedInUser");
