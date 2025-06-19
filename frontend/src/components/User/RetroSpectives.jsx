@@ -58,9 +58,9 @@ const RetroSpectives = () => {
 
         const fetchComments = async () => {
             const allComments = await api.get("/get-all-comments");
-            setAllCommentCount(() => (allComments?.data.data.length));
+            setAllCommentCount(() => (allComments?.data?.data?.length));
 
-            allComments.data.data.forEach((element) => {
+            allComments?.data?.data?.forEach((element) => {
                 element.time = feedbackTimeAgo(element.createdAt);
             });
             setComments(allComments.data.data);
