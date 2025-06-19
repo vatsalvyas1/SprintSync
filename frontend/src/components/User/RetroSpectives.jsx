@@ -46,7 +46,8 @@ const RetroSpectives = () => {
             const feedbacks = await res.json();
             console.log("First: ",feedbacks)
 
-            storedUser = JSON.parse(storedUser);
+            if (storedUser) storedUser = JSON.parse(storedUser);
+
 
             feedbacks?.data?.forEach((element) => {
                 if (element.category == "Suggestions") {
