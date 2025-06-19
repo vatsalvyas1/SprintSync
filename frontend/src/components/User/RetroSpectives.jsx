@@ -33,11 +33,19 @@ const RetroSpectives = () => {
         let suggestions = [];
 
         const fetchFeedbacks = async () => {
-            const feedbacks = await api.get("/get-all-feedbacks");
+            // const feedbacks = await api.get("/get-all-feedbacks");
+            const res = await fetch(`${backendUrl}/api/v1/retrospectives/get-all-feedbacks`, {
+                credentials: "include",
+            });
+
+            if (!res.ok) throw new Error("Failed to create form");
+
+            const feedbacks = await res.json();
+            console.log("First: ",feedbacks)
 
             storedUser = JSON.parse(storedUser);
 
-            feedbacks?.data?.data?.forEach((element) => {
+            feedbacks?.data?.forEach((element) => {
                 if (element.category == "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
                     suggestions.push(element);
@@ -192,7 +200,7 @@ const RetroSpectives = () => {
                 };
             });
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
 
         closeFeedbackModal();
@@ -244,7 +252,7 @@ const RetroSpectives = () => {
             setComments((prev) => [...prev, comment]);
             setNewComment("");
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
 
         const updatedComments = [...comments, comment];
@@ -257,7 +265,7 @@ const RetroSpectives = () => {
                 commentCount: matchingComments.length,
             });
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
 
         setFeedbackData((prev) => {
@@ -295,11 +303,10 @@ const RetroSpectives = () => {
         });
     };
 
-    const handleUpvote = () => {
+    const handleUpvote = () => {};
 
-    }
-
-    if (userInfo == null || comments == undefined) return <section> Loading </section>;
+    if (userInfo == null || comments == undefined)
+        return <section> Loading </section>;
 
     return (
         <section className="mx-5 mt-10 mb-5 md:mr-5 md:ml-70">
