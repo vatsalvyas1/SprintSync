@@ -191,7 +191,9 @@ const RetroSpectives = () => {
                     [categoryKey]: [...prev[categoryKey], feedback],
                 };
             });
-        } catch (error) {}
+        } catch (error) {
+            console.log(error)
+        }
 
         closeFeedbackModal();
     };
@@ -241,7 +243,9 @@ const RetroSpectives = () => {
             setAllCommentCount((prev) => prev + 1);
             setComments((prev) => [...prev, comment]);
             setNewComment("");
-        } catch (error) {}
+        } catch (error) {
+            console.log(error)
+        }
 
         const updatedComments = [...comments, comment];
         const matchingComments = updatedComments.filter(
@@ -252,7 +256,9 @@ const RetroSpectives = () => {
                 feedbackId: selectedFeedback.feedbackId,
                 commentCount: matchingComments.length,
             });
-        } catch (error) {}
+        } catch (error) {
+            console.log(error)
+        }
 
         setFeedbackData((prev) => {
             let updatedCategory;
@@ -290,7 +296,7 @@ const RetroSpectives = () => {
     };
 
     const handleUpvote = () => {
-        
+
     }
 
     if (userInfo == null) return <section> Loading </section>;
