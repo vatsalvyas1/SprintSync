@@ -90,7 +90,7 @@ const loginUser = asyncHandler(async function (req, res) {
     //  generate refresh token and generate access token
     //  save refresh token in db
     //  return response after removing password and refresh token with cookie
-
+    console.log(req.body)
     const { email, password } = req.body;
 
     if (!email || !password)
@@ -130,7 +130,7 @@ const loginUser = asyncHandler(async function (req, res) {
                 },
                 "User Logged In Successfully"
             )
-        );
+        );      
 });
 
 const logoutUser = asyncHandler(async function (req, res) {
