@@ -299,7 +299,7 @@ const RetroSpectives = () => {
 
     }
 
-    if (userInfo == null) return <section> Loading </section>;
+    if (userInfo == null || comments == undefined) return <section> Loading </section>;
 
     return (
         <section className="mx-5 mt-10 mb-5 md:mr-5 md:ml-70">
