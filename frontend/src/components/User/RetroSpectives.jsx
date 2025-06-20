@@ -10,18 +10,17 @@ const api = axios.create({
 
 const RetroSpectives = () => {
     const [userInfo, setUserInfo] = useState(null);
-    const [comments, setComments] = useState([]);
     const [feedbackData, setFeedbackData] = useState({
         wellItems: [],
         poorItems: [],
         suggestions: [],
     });
+    const [comments, setComments] = useState([]);
     const [allCommentCount, setAllCommentCount] = useState(null);
+    const [upvotes, setUpvotes] = useState();
+    const [allUpvoteCount, setAllUpvoteCount] = useState(null);
 
     useEffect(() => {
-        console.log("Not even Fetching")
-        console.log("BACKEND URL BEING USED:", backendUrl); // ✅ Add this line here
-
         let storedUser;
         const fetchUserInfo = () => {
             storedUser = localStorage.getItem("loggedInUser");
@@ -36,20 +35,11 @@ const RetroSpectives = () => {
         let suggestions = [];
 
         const fetchFeedbacks = async () => {
-            // const feedbacks = await api.get("/get-all-feedbacks");
-            const res = await fetch(`${backendUrl}/api/v1/retrospectives/get-all-feedbacks`, {
-                credentials: "include",
-            });
-
-            if (!res.ok) throw new Error("Failed to create form");
-
-            const feedbacks = await res.json();
-            console.log("First: ",feedbacks)
-
+            const feedbacks = await api.get("/get-all-feedbacks");
+            console.log(feedbacks)
             if (storedUser) storedUser = JSON.parse(storedUser);
 
-
-            feedbacks?.data?.forEach((element) => {
+            feedbacks?.data?.data?.forEach((element) => {
                 if (element.category == "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
                     suggestions.push(element);
@@ -75,12 +65,19 @@ const RetroSpectives = () => {
             allComments?.data?.data?.forEach((element) => {
                 element.time = feedbackTimeAgo(element.createdAt);
             });
-            setComments(allComments.data.data);
+            setComments(allComments?.data?.data);
         };
 
-        fetchComments();
-        fetchFeedbacks();
+        const fetchUpvotes = async () => {
+            const allUpvotes = await api.get("/get-all-upvotes");
+            setAllUpvoteCount(() => allUpvotes?.data?.data?.length);
+            setUpvotes(allUpvotes?.data?.data);
+        };
+
         fetchUserInfo();
+        fetchFeedbacks();
+        fetchComments();
+        fetchUpvotes();
     }, []);
 
     const feedbackTimeAgo = (timeStamp) => {
@@ -110,51 +107,74 @@ const RetroSpectives = () => {
     {
         /* Template For All Feedback Cards */
     }
-    const FeedbackCard = ({ item, bgColor, borderColor }) => (
-        <div
-            className={`${bgColor} ${borderColor} rounded-lg p-3 transition-shadow hover:shadow-sm`}
-        >
-            <div className="mb-3 flex items-start justify-between">
-                <div className="max-w-full text-sm font-medium break-normal text-gray-900">
-                    {item.message}
+    const FeedbackCard = ({ item, bgColor, borderColor }) => {
+        const isUpvotedByUser =
+            upvotes?.some(
+                (vote) =>
+                    vote.user === userInfo?._id && vote.feedback === item._id
+            ) ?? false;
+        return (
+            <div
+                className={`${bgColor} ${borderColor} rounded-lg p-3 transition-shadow hover:shadow-sm`}
+            >
+                <div className="mb-3 flex items-start justify-between">
+                    <div className="max-w-full text-sm font-medium break-normal text-gray-900">
+                        {item.message}
+                    </div>
+                    <div className="no-wrap flex items-center">
+                        <button onClick={() => handleUpvote(item)}>
+                            <ChevronUp
+                                size={20}
+                                className={`cursor-pointer transition-colors ${
+                                    isUpvotedByUser
+                                        ? "text-blue-600"
+                                        : "text-gray-400"
+                                } hover:text-blue-700`}
+                            />
+                        </button>
+                        <div className="text-xs text-gray-600">
+                            &nbsp;{item.upvoteCount}
+                        </div>
+                    </div>
                 </div>
-                <div className="no-wrap flex items-center">
-                    <button onClick={() => handleUpvote}>
-                        <ChevronUp size={20} className="text-gray-600" />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <img
+                            className="h-5 w-5 rounded-full"
+                            src={item.avatar}
+                            alt="User"
+                            draggable="false"
+                        />
+                        <span className="text-xs text-gray-500">
+                            <span className="whitespace-nowrap">
+                                {item.author}
+                            </span>{" "}
+                            •{" "}
+                            <span className="whitespace-nowrap">
+                                {item.time}
+                            </span>
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => openCommentModal(item)}
+                        className="text-xs text-blue-600 hover:text-blue-700"
+                    >
+                        {item.commentCount} comments
                     </button>
-                    <div className="text-xs text-gray-600">&nbsp;0</div>
                 </div>
             </div>
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <img
-                        className="h-5 w-5 rounded-full"
-                        src={item.avatar}
-                        alt="User"
-                        draggable="false"
-                    />
-                    <span className="text-xs text-gray-500">
-                        <span className="whitespace-nowrap">{item.author}</span>{" "}
-                        • <span className="whitespace-nowrap">{item.time}</span>
-                    </span>
-                </div>
-                <button
-                    onClick={() => openCommentModal(item)}
-                    className="text-xs text-blue-600 hover:text-blue-700"
-                >
-                    {item.commentCount} comments
-                </button>
-            </div>
-        </div>
-    );
+        );
+    };
 
     const [selectedFeedback, setSelectedFeedback] = useState(null);
     const [newFeedback, setNewFeedback] = useState({
         category: "What Went Well",
         message: "",
         anonymous: false,
+        upvotes: 0
     });
     const [feedbackModal, setFeedbackModal] = useState(false);
+    const [addFeedbackDisabled, setAddFeedbackDisabled] = useState(false);
 
     const openFeedbackModal = () => {
         setFeedbackModal(true);
@@ -179,9 +199,11 @@ const RetroSpectives = () => {
             time: "Just Now",
             avatar: userInfo.avatar,
             commentCount: 0,
+            upvoteCount: 0,
         };
 
         try {
+            setAddFeedbackDisabled(() => (true));
             const res = await api.post("/add-feedback", {
                 author: newFeedback.anonymous ? "Anonymous" : userInfo.name,
                 category: newFeedback.category,
@@ -203,6 +225,7 @@ const RetroSpectives = () => {
                     [categoryKey]: [...prev[categoryKey], feedback],
                 };
             });
+            setAddFeedbackDisabled(() => false);
         } catch (error) {
             console.log(error);
         }
@@ -212,7 +235,7 @@ const RetroSpectives = () => {
 
     const [newComment, setNewComment] = useState("");
     const [commentModal, setCommentModal] = useState(false);
-    const [addCommentDisabled, setAddCommentDisabled] = useState(false)
+    const [addCommentDisabled, setAddCommentDisabled] = useState(false);
 
     const openCommentModal = async (feedback) => {
         setSelectedFeedback({
@@ -247,7 +270,7 @@ const RetroSpectives = () => {
         };
 
         try {
-            setAddCommentDisabled(() => (true))
+            setAddCommentDisabled(() => true);
             await api.post("/add-feedback-comment", {
                 feedbackId: selectedFeedback.feedbackId,
                 author: userInfo.name,
@@ -257,7 +280,7 @@ const RetroSpectives = () => {
             setAllCommentCount((prev) => prev + 1);
             setComments((prev) => [...prev, comment]);
             setNewComment("");
-            setAddCommentDisabled(() => (false))
+            setAddCommentDisabled(() => false);
         } catch (error) {
             console.log(error);
         }
@@ -310,7 +333,94 @@ const RetroSpectives = () => {
         });
     };
 
-    const handleUpvote = () => {};
+    const getTotalUpvotes = () => {
+        return allUpvoteCount;
+    };
+
+    const handleUpvote = async (feedback) => {
+        const upvote = {
+            user: userInfo._id,
+            feedback: feedback._id,
+        };
+
+        try {
+            const res = await api.post("/add-feedback-upvote", {
+                userId: userInfo._id,
+                feedbackId: feedback._id,
+            });
+
+            setUpvotes((prev) => {
+                let updatedUpvotes;
+                if (res.data.message === "Upvote removed successfully") {
+                    updatedUpvotes = prev.filter(
+                        (item) =>
+                            !(
+                                item.user === upvote.user &&
+                                item.feedback === upvote.feedback
+                            )
+                    );
+                } else {
+                    updatedUpvotes = [...prev, upvote];
+                }
+                return updatedUpvotes;
+            });
+
+            const totalCountRes = await api.get("/get-total-upvote-count");
+            const totalUpvotes = totalCountRes?.data?.data?.count || 0;
+            setAllUpvoteCount(totalUpvotes);
+
+            setFeedbackData((prev) => {
+                let updatedCategory;
+
+                if (feedback.category === "What Went Well") {
+                    updatedCategory = {
+                        ...prev,
+                        wellItems: prev.wellItems.map((item) =>
+                            item._id === feedback._id
+                                ? {
+                                      ...item,
+                                      upvoteCount: res.data.data.upvoteCount,
+                                  }
+                                : item
+                        ),
+                    };
+                } else if (feedback.category === "What Didn't Go Well") {
+                    updatedCategory = {
+                        ...prev,
+                        poorItems: prev.poorItems.map((item) =>
+                            item._id === feedback._id
+                                ? {
+                                      ...item,
+                                      upvoteCount: res.data.data.upvoteCount,
+                                  }
+                                : item
+                        ),
+                    };
+                } else {
+                    updatedCategory = {
+                        ...prev,
+                        suggestions: prev.suggestions.map((item) =>
+                            item._id === feedback._id
+                                ? {
+                                      ...item,
+                                      upvoteCount: res.data.data.upvoteCount,
+                                  }
+                                : item
+                        ),
+                    };
+                }
+                return updatedCategory;
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        // console.log(upvotes);
+
+        {
+            /* Updated FeedbackData ForUpvotes */
+        }
+        // console.log("Updated: ", updatedUpvotes);
+    };
 
     if (userInfo == null || comments == undefined)
         return <section> Loading </section>;
@@ -359,16 +469,18 @@ const RetroSpectives = () => {
                     </div>
 
                     <div className="space-y-3 md:space-y-4">
-                        {feedbackData.wellItems.map((item) => (
-                            <FeedbackCard
-                                key={item._id}
-                                item={item}
-                                bgColor="bg-green-50"
-                                borderColor="border-green-200"
-                            >
-                                {" "}
-                            </FeedbackCard>
-                        ))}
+                        <div className="space-y-3 md:space-y-4">
+                        {[...feedbackData.wellItems]
+                            .sort((a, b) => b.upvoteCount - a.upvoteCount)
+                            .map((item) => (
+                                <FeedbackCard
+                                    key={item._id}
+                                    item={item}
+                                    bgColor="bg-green-50"
+                                    borderColor="border-green-200"
+                                />
+                            ))}
+                    </div>
                     </div>
                 </div>
                 {/* What Didn't Go Well Card */}
@@ -386,16 +498,17 @@ const RetroSpectives = () => {
                             {feedbackData.poorItems.length} items
                         </span>
                     </div>
-
                     <div className="space-y-3 md:space-y-4">
-                        {feedbackData.poorItems.map((item) => (
-                            <FeedbackCard
-                                key={item._id}
-                                item={item}
-                                bgColor="bg-red-50"
-                                borderColor="border-red-200"
-                            />
-                        ))}
+                        {[...feedbackData.poorItems]
+                            .sort((a, b) => b.upvoteCount - a.upvoteCount)
+                            .map((item) => (
+                                <FeedbackCard
+                                    key={item._id}
+                                    item={item}
+                                    bgColor="bg-red-50"
+                                    borderColor="border-red-200"
+                                />
+                            ))}
                     </div>
                 </div>
                 {/* Suggestions Card */}
@@ -418,14 +531,18 @@ const RetroSpectives = () => {
                     </div>
 
                     <div className="space-y-3 md:space-y-4">
-                        {feedbackData.suggestions.map((item) => (
-                            <FeedbackCard
-                                key={item._id}
-                                item={item}
-                                bgColor="bg-blue-50"
-                                borderColor="border-blue-200"
-                            />
-                        ))}
+                        <div className="space-y-3 md:space-y-4">
+                        {[...feedbackData.suggestions]
+                            .sort((a, b) => b.upvoteCount - a.upvoteCount)
+                            .map((item) => (
+                                <FeedbackCard
+                                    key={item._id}
+                                    item={item}
+                                    bgColor="bg-blue-50"
+                                    borderColor="border-blue-200"
+                                />
+                            ))}
+                    </div>
                     </div>
                 </div>
             </div>
@@ -449,7 +566,9 @@ const RetroSpectives = () => {
                     </div>
                 </div>
                 <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
-                    <div className="mb-1 text-xl font-bold text-purple-600 md:mb-2 md:text-2xl"></div>
+                    <div className="mb-1 text-xl font-bold text-sky-600 md:mb-2 md:text-2xl">
+                        {getTotalUpvotes()}
+                    </div>
                     <div className="text-xs text-gray-600 md:text-sm">
                         Upvotes
                     </div>
@@ -457,9 +576,6 @@ const RetroSpectives = () => {
             </div>
 
             {/* Feedback Themes */}
-            {console.log("User: ", userInfo)}
-            {console.log("Comments", comments)}
-            {console.log("Feedback: ", feedbackData)}
             <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-md md:p-6">
                 <h3 className="mb-4 text-base font-semibold text-gray-900 md:mb-6 md:text-lg">
                     Feedback Themes
@@ -596,6 +712,7 @@ const RetroSpectives = () => {
                                     <button
                                         type="button"
                                         onClick={handleSubmitFeedback}
+                                        disabled={addFeedbackDisabled}
                                         className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                                     >
                                         Add Feedback
@@ -715,9 +832,9 @@ const RetroSpectives = () => {
                                                 <button
                                                     onClick={handleAddComment}
                                                     disabled={
-                                                        !newComment.trim() || addCommentDisabled
+                                                        !newComment.trim() ||
+                                                        addCommentDisabled
                                                     }
-
                                                     className="rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 md:px-3 md:py-1.5 md:text-sm"
                                                 >
                                                     Comment
