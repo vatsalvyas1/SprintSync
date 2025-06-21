@@ -22,68 +22,68 @@ function Register() {
    const avatarOptions = [
     // Male Avatars
     {
-        url: "https://avatar.iran.liara.run/public/8",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/8_hszqlt.png",
         alt: "Male Avatar 1",
     },
     {
-        url: "https://avatar.iran.liara.run/public/3",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/3_va6uqp.png",
         alt: "Male Avatar 2",
     },
     {
-        url: "https://avatar.iran.liara.run/public/50",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528457/50_htffed.png",
         alt: "Male Avatar 3",
     },
     {
-        url: "https://avatar.iran.liara.run/public/41",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/41_jasslu.png",
         alt: "Male Avatar 4",
     },
     {
-        url: "https://avatar.iran.liara.run/public/47",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/47_slrxow.png",
         alt: "Male Avatar 5",
     },
     {
-        url: "https://avatar.iran.liara.run/public/10",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528457/10_n8r5x3.png",
         alt: "Male Avatar 6",
     },
     {
-        url: "https://avatar.iran.liara.run/public/37",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/37_hzik3l.png",
         alt: "Male Avatar 7",
     },
     {
-        url: "https://avatar.iran.liara.run/public/25",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/25_m0aktb.png",
         alt: "Male Avatar 8",
     },
     // Female Avatars
     {
-        url: "https://avatar.iran.liara.run/public/99",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528460/99_brsnyz.png",
         alt: "Female Avatar 1",
     },
     {
-        url: "https://avatar.iran.liara.run/public/64",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528460/64_u0ccja.png",
         alt: "Female Avatar 2",
     },
     {
-        url: "https://avatar.iran.liara.run/public/79",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528459/79_xmdrno.png",
         alt: "Female Avatar 3",
     },
     {
-        url: "https://avatar.iran.liara.run/public/60",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/60_eoi5dx.png",
         alt: "Female Avatar 4",
     },
     {
-        url: "https://avatar.iran.liara.run/public/81",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528459/81_yvgr0y.png",
         alt: "Female Avatar 5",
     },
     {
-        url: "https://avatar.iran.liara.run/public/56",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/56_tclvyg.png",
         alt: "Female Avatar 6",
     },
     {
-        url: "https://avatar.iran.liara.run/public/71",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528459/71_wgiu5w.png",
         alt: "Female Avatar 7",
     },
     {
-        url: "https://avatar.iran.liara.run/public/91",
+        url: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528459/91_xggt0w.png",
         alt: "Female Avatar 8",
     },
 ];
