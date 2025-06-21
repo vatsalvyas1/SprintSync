@@ -10,3 +10,17 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;               /* Chrome/Safari */
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 2px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #2563EB;  
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+   background-color: #2563EB;   /* Tailwind indigo-700 */
+}

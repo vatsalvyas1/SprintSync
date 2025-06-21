@@ -6,6 +6,12 @@ const userFeedbackCommentSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "UserFeedback",
             required: [true, "Feedback reference is required"],
+            index: true,
+        },
+        sprint: {
+            type: String,
+            required: [true, "Feedback reference is required"],
+            index: true,
         },
         author: {
             type: String,
@@ -19,8 +25,8 @@ const userFeedbackCommentSchema = new Schema(
         },
         avatar: {
             type: String,
-            required: [true, "Commenter's Avatar is required"]
-        }
+            required: [true, "Commenter's Avatar is required"],
+        },
     },
     {
         timestamps: true,

@@ -2,6 +2,11 @@ import mongoose, { Schema } from "mongoose";
 
 const userFeedbackSchema = new Schema(
     {
+        sprint: {
+            type: String,
+            required: [true, "Sprint Id Referecne is required"],
+            index: true,
+        },
         author: {
             type: String,
             required: [true, "Feedback's name is required"],

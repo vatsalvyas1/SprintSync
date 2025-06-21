@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { backendUrl } from "../../constant.js";
-import { Check, ChevronUp, Lightbulb, Plus, X } from "lucide-react";
+import { Check, ChevronUp, CirclePlus, Lightbulb, Plus, X } from "lucide-react";
 
 const api = axios.create({
     baseURL: `${backendUrl}/api/v1/retrospectives/`,
     withCredentials: true,
 });
 
-const RetroSpectives = () => {
+const RetroSpectives = ({ sprintId }) => {
     const [userInfo, setUserInfo] = useState(null);
     const [feedbackData, setFeedbackData] = useState({
         wellItems: [],
@@ -21,6 +21,7 @@ const RetroSpectives = () => {
     const [allUpvoteCount, setAllUpvoteCount] = useState(null);
 
     useEffect(() => {
+        console.log("UIser", sprintId);
         let storedUser;
         const fetchUserInfo = () => {
             storedUser = localStorage.getItem("loggedInUser");
@@ -35,15 +36,18 @@ const RetroSpectives = () => {
         let suggestions = [];
 
         const fetchFeedbacks = async () => {
-            const feedbacks = await api.get("/get-all-feedbacks");
-            console.log(feedbacks)
+            const feedbacks = await api.post("/get-all-feedbacks", {
+                sprintId,
+            });
+            console.log(feedbacks);
+            console.log("Sprint", sprintId);
             if (storedUser) storedUser = JSON.parse(storedUser);
 
-            feedbacks?.data?.data?.forEach((element) => {
-                if (element.category == "Suggestions") {
+            feedbacks?.data?.data?.map((element) => {
+                if (element.category === "Suggestions") {
                     element.time = feedbackTimeAgo(element.createdAt);
                     suggestions.push(element);
-                } else if (element.category == "What Didn't Go Well") {
+                } else if (element.category === "What Didn't Go Well") {
                     element.time = feedbackTimeAgo(element.createdAt);
                     poorItems.push(element);
                 } else {
@@ -59,7 +63,10 @@ const RetroSpectives = () => {
         };
 
         const fetchComments = async () => {
-            const allComments = await api.get("/get-all-comments");
+            console.log("Commnets");
+            const allComments = await api.post("/get-all-comments", {
+                sprintId,
+            });
             setAllCommentCount(() => allComments?.data?.data?.length);
 
             allComments?.data?.data?.forEach((element) => {
@@ -69,7 +76,7 @@ const RetroSpectives = () => {
         };
 
         const fetchUpvotes = async () => {
-            const allUpvotes = await api.get("/get-all-upvotes");
+            const allUpvotes = await api.post("/get-all-upvotes", {sprintId});
             setAllUpvoteCount(() => allUpvotes?.data?.data?.length);
             setUpvotes(allUpvotes?.data?.data);
         };
@@ -78,7 +85,7 @@ const RetroSpectives = () => {
         fetchFeedbacks();
         fetchComments();
         fetchUpvotes();
-    }, []);
+    }, [sprintId]);
 
     const feedbackTimeAgo = (timeStamp) => {
         const now = new Date();
@@ -115,25 +122,40 @@ const RetroSpectives = () => {
             ) ?? false;
         return (
             <div
-                className={`${bgColor} ${borderColor} rounded-lg p-3 transition-shadow hover:shadow-sm`}
+                className={`${bgColor} ${borderColor} rounded-lg border-1 p-3 transition-shadow hover:shadow-sm`}
             >
                 <div className="mb-3 flex items-start justify-between">
                     <div className="max-w-full text-sm font-medium break-normal text-gray-900">
                         {item.message}
                     </div>
-                    <div className="no-wrap flex items-center">
-                        <button onClick={() => handleUpvote(item)}>
-                            <ChevronUp
-                                size={20}
-                                className={`cursor-pointer transition-colors ${
-                                    isUpvotedByUser
-                                        ? "text-blue-600"
-                                        : "text-gray-400"
-                                } hover:text-blue-700`}
+                    <div className="ml-1 flex items-center">
+                        <button
+                            onClick={() => handleActionItem(item)}
+                            title="Add Action Items"
+                        >
+                            <CirclePlus
+                                size={18}
+                                className="cursor-pointer text-gray-800"
                             />
                         </button>
-                        <div className="text-xs text-gray-600">
-                            &nbsp;{item.upvoteCount}
+                        &nbsp;
+                        <div
+                            className="no-wrap flex items-center"
+                            title="Upvote"
+                        >
+                            <button onClick={() => handleUpvote(item)}>
+                                <ChevronUp
+                                    size={18}
+                                    className={`cursor-pointer transition-colors ${
+                                        isUpvotedByUser
+                                            ? "text-blue-600"
+                                            : "text-gray-400"
+                                    } hover:text-blue-700`}
+                                />
+                            </button>
+                            <div className="text-xs text-gray-600">
+                                &nbsp;{item.upvoteCount}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -157,7 +179,7 @@ const RetroSpectives = () => {
                     </div>
                     <button
                         onClick={() => openCommentModal(item)}
-                        className="text-xs text-blue-600 hover:text-blue-700"
+                        className="ml-2 text-xs text-blue-600 hover:text-blue-700"
                     >
                         {item.commentCount} comments
                     </button>
@@ -171,8 +193,10 @@ const RetroSpectives = () => {
         category: "What Went Well",
         message: "",
         anonymous: false,
-        upvotes: 0
+        upvoteCount: 0,
+        sprintId: sprintId,
     });
+
     const [feedbackModal, setFeedbackModal] = useState(false);
     const [addFeedbackDisabled, setAddFeedbackDisabled] = useState(false);
 
@@ -200,11 +224,13 @@ const RetroSpectives = () => {
             avatar: userInfo.avatar,
             commentCount: 0,
             upvoteCount: 0,
+            sprintId: sprintId,
         };
 
         try {
-            setAddFeedbackDisabled(() => (true));
+            setAddFeedbackDisabled(() => true);
             const res = await api.post("/add-feedback", {
+                sprintId: sprintId,
                 author: newFeedback.anonymous ? "Anonymous" : userInfo.name,
                 category: newFeedback.category,
                 message: newFeedback.message,
@@ -272,12 +298,12 @@ const RetroSpectives = () => {
         try {
             setAddCommentDisabled(() => true);
             await api.post("/add-feedback-comment", {
+                sprintId: sprintId,
                 feedbackId: selectedFeedback.feedbackId,
                 author: userInfo.name,
                 message: newComment,
                 avatar: userInfo.avatar,
             });
-            setAllCommentCount((prev) => prev + 1);
             setComments((prev) => [...prev, comment]);
             setNewComment("");
             setAddCommentDisabled(() => false);
@@ -285,18 +311,16 @@ const RetroSpectives = () => {
             console.log(error);
         }
 
+        const totalCountRes = await api.post("/get-total-comment-count", {
+            sprintId: sprintId,
+        });
+        const totalComments = totalCountRes?.data?.data?.count || 0;
+        setAllCommentCount(totalComments);
+
         const updatedComments = [...comments, comment];
         const matchingComments = updatedComments.filter(
             (comment) => comment.feedback === selectedFeedback.feedbackId
         );
-        try {
-            await api.post("/add-feedback-commentCount", {
-                feedbackId: selectedFeedback.feedbackId,
-                commentCount: matchingComments.length,
-            });
-        } catch (error) {
-            console.log(error);
-        }
 
         setFeedbackData((prev) => {
             let updatedCategory;
@@ -339,12 +363,14 @@ const RetroSpectives = () => {
 
     const handleUpvote = async (feedback) => {
         const upvote = {
+            sprintId: sprintId,
             user: userInfo._id,
             feedback: feedback._id,
         };
 
         try {
             const res = await api.post("/add-feedback-upvote", {
+                sprintId: sprintId,
                 userId: userInfo._id,
                 feedbackId: feedback._id,
             });
@@ -355,6 +381,7 @@ const RetroSpectives = () => {
                     updatedUpvotes = prev.filter(
                         (item) =>
                             !(
+                                item.sprintId === upvote.sprintId &&
                                 item.user === upvote.user &&
                                 item.feedback === upvote.feedback
                             )
@@ -365,7 +392,7 @@ const RetroSpectives = () => {
                 return updatedUpvotes;
             });
 
-            const totalCountRes = await api.get("/get-total-upvote-count");
+            const totalCountRes = await api.post("/get-total-upvote-count", {sprintId});
             const totalUpvotes = totalCountRes?.data?.data?.count || 0;
             setAllUpvoteCount(totalUpvotes);
 
@@ -414,40 +441,32 @@ const RetroSpectives = () => {
         } catch (error) {
             console.log(error);
         }
-        // console.log(upvotes);
 
         {
             /* Updated FeedbackData ForUpvotes */
         }
-        // console.log("Updated: ", updatedUpvotes);
     };
+
+    const handleActionItem = async (feedback) => {};
 
     if (userInfo == null || comments == undefined)
         return <section> Loading </section>;
 
     return (
-        <section className="mx-5 mt-10 mb-5 md:mr-5 md:ml-70">
-            {/* Header */}
-            <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="mb-1 text-2xl font-bold text-gray-900 md:mb-2 md:text-3xl">
-                        Sprint Retro Board
-                    </h1>
-                    <p className="text-sm text-gray-600 md:text-base">
-                        Collect and track retrospective feedback
-                    </p>
-                </div>
-                <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-                    <div className="flex gap-2">
-                        <button
-                            onClick={openFeedbackModal}
-                            className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 md:px-4 md:py-2"
-                        >
-                            <Plus size={20} className="mr-2" />
-                            Add Feedback
-                        </button>
-                    </div>
-                </div>
+        <section className="mt-5">
+            {/* Sub-Header */}
+
+            <div className="mb-5 flex justify-between gap-2">
+                <button
+                    onClick={openFeedbackModal}
+                    className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 md:px-4 md:py-2"
+                >
+                    <Plus size={18} className="mr-2" />
+                    Add Feedback
+                </button>
+                <button className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 md:px-4 md:py-2">
+                    Show Action Items
+                </button>
             </div>
 
             {/* Container For All Cards */}
@@ -457,9 +476,9 @@ const RetroSpectives = () => {
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-100 md:h-8 md:w-8">
-                                <Check size={20} className="text-green-800" />
+                                <Check size={18} className="text-green-800" />
                             </div>
-                            <div className="px-2 text-base font-semibold text-gray-900 md:text-lg lg:text-base xl:text-lg">
+                            <div className="px-2 text-base font-semibold text-gray-900">
                                 What Went Well
                             </div>
                         </div>
@@ -470,17 +489,17 @@ const RetroSpectives = () => {
 
                     <div className="space-y-3 md:space-y-4">
                         <div className="space-y-3 md:space-y-4">
-                        {[...feedbackData.wellItems]
-                            .sort((a, b) => b.upvoteCount - a.upvoteCount)
-                            .map((item) => (
-                                <FeedbackCard
-                                    key={item._id}
-                                    item={item}
-                                    bgColor="bg-green-50"
-                                    borderColor="border-green-200"
-                                />
-                            ))}
-                    </div>
+                            {[...feedbackData.wellItems]
+                                .sort((a, b) => b.upvoteCount - a.upvoteCount)
+                                .map((item) => (
+                                    <FeedbackCard
+                                        key={item._id}
+                                        item={item}
+                                        bgColor="bg-green-50"
+                                        borderColor="border-green-200"
+                                    />
+                                ))}
+                        </div>
                     </div>
                 </div>
                 {/* What Didn't Go Well Card */}
@@ -488,9 +507,9 @@ const RetroSpectives = () => {
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100 md:h-8 md:w-8">
-                                <X size={20} className="text-red-800" />
+                                <X size={18} className="text-red-800" />
                             </div>
-                            <h2 className="px-2 text-base font-semibold text-gray-900 md:text-lg lg:text-base xl:text-lg">
+                            <h2 className="px-2 text-base font-semibold text-gray-900">
                                 What Didn't Go Well
                             </h2>
                         </div>
@@ -517,11 +536,11 @@ const RetroSpectives = () => {
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 md:h-8 md:w-8">
                                 <Lightbulb
-                                    size={20}
+                                    size={18}
                                     className="text-blue-800"
                                 />
                             </div>
-                            <h2 className="px-2 text-base font-semibold text-gray-900 md:text-lg lg:text-base xl:text-lg">
+                            <h2 className="px-2 text-base font-semibold text-gray-900">
                                 Suggestions
                             </h2>
                         </div>
@@ -532,17 +551,17 @@ const RetroSpectives = () => {
 
                     <div className="space-y-3 md:space-y-4">
                         <div className="space-y-3 md:space-y-4">
-                        {[...feedbackData.suggestions]
-                            .sort((a, b) => b.upvoteCount - a.upvoteCount)
-                            .map((item) => (
-                                <FeedbackCard
-                                    key={item._id}
-                                    item={item}
-                                    bgColor="bg-blue-50"
-                                    borderColor="border-blue-200"
-                                />
-                            ))}
-                    </div>
+                            {[...feedbackData.suggestions]
+                                .sort((a, b) => b.upvoteCount - a.upvoteCount)
+                                .map((item) => (
+                                    <FeedbackCard
+                                        key={item._id}
+                                        item={item}
+                                        bgColor="bg-blue-50"
+                                        borderColor="border-blue-200"
+                                    />
+                                ))}
+                        </div>
                     </div>
                 </div>
             </div>

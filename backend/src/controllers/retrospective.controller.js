@@ -6,13 +6,14 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const registerFeedback = asyncHandler(async function (req, res) {
-    const { author, category, message, avatar } = req.body;
-    if (!author || !category || !message || !avatar)
+    const { sprintId, author, category, message, avatar } = req.body;
+    if (!sprintId || !author || !category || !message || !avatar)
         throw new ApiError(
             200,
             "Invalid or Missing Details for Registering Feedback"
         );
     const feedback = await UserFeedback({
+        sprint: sprintId,
         author,
         category,
         message,
@@ -30,7 +31,10 @@ const registerFeedback = asyncHandler(async function (req, res) {
         await feedback.save();
     } catch (error) {
         const firstError =
-            error.errors.name || error.errors.category || error.errors.message;
+            error.errors.sprint ||
+            error.errors.author ||
+            error.errors.category ||
+            error.errors.message;
         throw new ApiError(200, firstError.properties.message);
     }
 
@@ -40,9 +44,11 @@ const registerFeedback = asyncHandler(async function (req, res) {
 });
 
 const getAllFeedback = asyncHandler(async function (req, res) {
-    const feedbacks = await UserFeedback.find();
-    if (!feedbacks.length)
-        throw new ApiError(200, "Feedbacks couldn't be fetched");
+    const { sprintId } = req.body;
+
+    if (!sprintId) throw new ApiError(200, "Sprint Reference is Required");
+
+    const feedbacks = await UserFeedback.find({ sprint: sprintId });
 
     return res
         .status(201)
@@ -50,9 +56,9 @@ const getAllFeedback = asyncHandler(async function (req, res) {
 });
 
 const registerFeedbackComment = asyncHandler(async function (req, res) {
-    const { feedbackId, author, message, avatar } = req.body;
+    const { sprintId, feedbackId, author, message, avatar } = req.body;
     if (
-        [feedbackId, author, message, avatar].some(
+        [sprintId, feedbackId, author, message, avatar].some(
             (field) => field?.trim() === ""
         )
     ) {
@@ -63,6 +69,7 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
     }
 
     const comment = await userFeedbackComment({
+        sprint: sprintId,
         feedback: feedbackId,
         author,
         message,
@@ -88,58 +95,79 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
         if (error.errors?.message)
             throw new ApiError(200, error.errors.message.message);
 
+        if (error.errors?.sprint)
+            throw new ApiError(200, error.errors.message.message);
+
         if (error.errors?.feedback) {
             throw new ApiError(200, error.errors.feedback.message);
         }
     }
+
+    const updatedCommentCount = await userFeedbackComment.countDocuments({
+        feedback: feedbackId,
+        sprint: sprintId,
+    });
+
+    const result = await UserFeedback.updateOne(
+        { _id: feedbackId },
+        { commentCount: updatedCommentCount }
+    );
+
+    if (result.matchedCount === 0)
+        throw new ApiError(200, "Feedback not found");
+
     return res
         .status(201)
         .json(new ApiResponse(201, comment, "Comment Taken Successfully"));
 });
 
 const getAllComments = asyncHandler(async function (req, res) {
-    const comments = await userFeedbackComment.find();
+    const { sprintId } = req.body;
 
-    if (!comments) throw new ApiError(200, "Comments couldn't be fetched");
+    if (!sprintId) {
+        throw new ApiError(200, "SprintId is required to fetch comments");
+    }
+
+    const comments = await userFeedbackComment.find({ sprint: sprintId });
+
+    if (!comments) {
+        throw new ApiError(200, "Error in Fetching Comments");
+    }
 
     return res
         .status(201)
         .json(new ApiResponse(201, comments, "Comments Fetched"));
 });
 
-const addCommentCountToFeedback = asyncHandler(async function (req, res) {
-    const { feedbackId, commentCount } = req.body;
+const getTotalCommentCount = asyncHandler(async (req, res) => {
+    const { sprintId } = req.body;
 
-    if (!feedbackId || !commentCount == undefined)
-        throw new ApiError(
-            200,
-            "Invalid request: feedbackId or Count of Comments  missing"
-        );
+    if (!sprintId) throw new ApiError(200, "SprintId reference is required");
 
-    const result = await UserFeedback.updateOne(
-        { _id: feedbackId },
-        { commentCount: commentCount }
-    );
-
-    if (result.matchedCount == 0) throw new ApiError(200, "Feedback not found");
-
-    return res
-        .status(201)
-        .json(new ApiResponse(201, {}, "Comment Count Updated Successfully"));
+    try {
+        const count = await userFeedbackComment.countDocuments({
+            sprint: sprintId,
+        });
+        return res
+            .status(201)
+            .json(
+                new ApiResponse(201, { count }, "Total upvotes count fetched")
+            );
+    } catch (error) {
+        console.error("Error fetching total upvote count:", error);
+        throw new ApiError(200, "Failed to fetch upvote count");
+    }
 });
 
 const handleFeedbackUpvote = asyncHandler(async function (req, res) {
-    const { feedbackId, userId } = req.body;
+    const { sprintId, feedbackId, userId } = req.body;
 
-    if (!feedbackId || !userId) {
-        throw new ApiError(
-            200,
-            "feedbackId and userId are required"
-        );
+    if (!sprintId || !feedbackId || !userId) {
+        throw new ApiError(200, "feedbackId and userId are required");
     }
 
-    // Check if upvote already exists
     const existingUpvote = await userFeedbackUpvote.findOne({
+        sprint: sprintId,
         user: userId,
         feedback: feedbackId,
     });
@@ -147,24 +175,22 @@ const handleFeedbackUpvote = asyncHandler(async function (req, res) {
     let message;
 
     if (existingUpvote) {
-        // Remove the upvote 
         await userFeedbackUpvote.deleteOne({ _id: existingUpvote._id });
         message = "Upvote removed successfully";
     } else {
-        // Add the upvote  
         await userFeedbackUpvote.create({
+            sprint: sprintId,
             user: userId,
             feedback: feedbackId,
         });
         message = "Upvote added successfully";
     }
 
-    // Recalculate total upvotes for this feedback
     const updatedUpvoteCount = await userFeedbackUpvote.countDocuments({
         feedback: feedbackId,
+        sprint: sprintId,
     });
 
-    // Update the feedback document's upvote count
     const result = await UserFeedback.updateOne(
         { _id: feedbackId },
         { upvoteCount: updatedUpvoteCount }
@@ -174,15 +200,17 @@ const handleFeedbackUpvote = asyncHandler(async function (req, res) {
         throw new ApiError(200, "Feedback not found");
     }
 
-    return res.status(200).json(
-        new ApiResponse(200, { upvoteCount: updatedUpvoteCount }, message)
-    );
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, { upvoteCount: updatedUpvoteCount }, message)
+        );
 });
 
 const getAllUpvotes = asyncHandler(async function (req, res) {
-    const upvotes = await userFeedbackUpvote.find();
+    const { sprintId } = req.body;
 
-    if (!upvotes) throw new ApiError(200, "Upvotes couldn't be fetched");
+    const upvotes = await userFeedbackUpvote.find({ sprint: sprintId });
 
     return res
         .status(201)
@@ -190,24 +218,29 @@ const getAllUpvotes = asyncHandler(async function (req, res) {
 });
 
 const getTotalUpvoteCount = asyncHandler(async (req, res) => {
+    const { sprintId } = req.body;
     try {
-        const count = await userFeedbackUpvote.countDocuments();
-        return res.status(201).json(
-            new ApiResponse(201, { count }, "Total upvotes count fetched")
-        );
+        const count = await userFeedbackUpvote.countDocuments({
+            sprint: sprintId,
+        });
+        return res
+            .status(201)
+            .json(
+                new ApiResponse(201, { count }, "Total upvotes count fetched")
+            );
     } catch (error) {
         console.error("Error fetching total upvote count:", error);
         throw new ApiError(200, "Failed to fetch upvote count");
     }
-})
+});
 
 export {
     registerFeedback,
     getAllFeedback,
     registerFeedbackComment,
     getAllComments,
-    addCommentCountToFeedback,
     handleFeedbackUpvote,
     getAllUpvotes,
-    getTotalUpvoteCount
+    getTotalUpvoteCount,
+    getTotalCommentCount,
 };

@@ -8,7 +8,6 @@ import Dashboard from "./components/User/Dashboard";
 import PublicDashboard from "./components/LandingPage/PublicDashboard";
 import PublicSprintRetro from "./components/LandingPage/PublicSprintRetro";
 import Checklist from "./components/Deployment/Checklist";
-import RetroSpectives from "./components/User/RetroSpectives";
 import NotFound from "./components/User/NotFound";
 import AddForm from "./components/User/AddForm";
 import FormLocker from "./components/FormLocker/FormLocker";
@@ -16,6 +15,8 @@ import NavBar from "./components/User/Navbar";
 import DailyJournal from "./components/Journals/DailyJournal2";
 import ChecklistDetail from "./components/Deployment/ChecklistDetail";
 import JournalPage from "./components/Journals/JournalPage";
+import RetroSpectives from "./components/RetroSpectives/RetroSpectives";
+import SprintManageRetroSpectives from "./components/RetroSpectives/SprintManageRetroSpectives";
 
 function App() {
     const [userInfoGlobal, setUserInfoGlobal] = useState(null);
@@ -87,7 +88,7 @@ function App() {
                     />
                     <Route 
                         path="/retrospectives" 
-                        element={userInfoGlobal ? <RetroSpectives /> : <Navigate to="/login" />} 
+                        element={userInfoGlobal ? <SprintManageRetroSpectives /> : <Navigate to="/login" />} 
                     />
                     <Route 
                         path="/add-form/:userid" 
