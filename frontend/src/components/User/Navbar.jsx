@@ -153,7 +153,7 @@ const NavLinks = ({ currentPath }) => {
     const links = [
         { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { to: "/deployment", label: "Deployment", icon: UploadCloud },
-        { to: "/qa-testing", label: "QA Testing", icon: Bug },
+        // { to: "/qa-testing", label: "QA Testing", icon: Bug },
         { to: "/ai-test-generator", label: "AI Test Generator", icon: Zap },
         { to: "/retrospectives", label: "Retrospectives", icon: MessageSquare },
         { to: "/task-journal", label: "Task Journal", icon: BookOpen },

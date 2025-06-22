@@ -87,7 +87,7 @@ function AppContent() {
                 {/* Protected Routes (only accessible when logged in) */}
                 <Route 
                     path="/dashboard" 
-                    element={userInfoGlobal ? <Dashboard /> : <Navigate to="/login" />} 
+                    element={userInfoGlobal ? <PublicDashboard /> : <Navigate to="/login" />} 
                 />
                 <Route 
                     path="/deployment" 
