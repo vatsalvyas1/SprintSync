@@ -74,9 +74,6 @@ const NavBar = () => {
                         <div className="text-sm font-semibold">
                             Welcome, {userInfo.name}
                         </div>
-                        <div className="text-xs text-slate-400">
-                            {userInfo.role}
-                        </div>
                     </div>
                 </div>
 
