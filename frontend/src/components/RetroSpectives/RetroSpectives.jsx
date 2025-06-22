@@ -590,7 +590,7 @@ const RetroSpectives = ({ sprintId }) => {
         return <section> Loading </section>;
 
     return (
-        <section className="mt-5">
+        <section className="mt-5 p-4">
             {/* Sub-Header */}
 
             <div className="mb-5 flex justify-between gap-2">

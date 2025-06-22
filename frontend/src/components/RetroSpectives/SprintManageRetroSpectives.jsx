@@ -24,10 +24,10 @@ const SprintManageRetroSpectives = () => {
         Audit: ["Audit-1", "Audit-2", "Audit-3", "Audit-4"],
         Survey: ["Survey-1", "Survey-2", "Survey-3", "Survey-4"],
         SubraSource: [
-            "SubraSource-1",
-            "SubraSource-2",
-            "SubraSource-3",
-            "SubraSource-4",
+            "SubroSource-1",
+            "SubroSource-2",
+            "SubroSource-3",
+            "SubroSource-4",
         ],
         MedConnection: [
             "MedConnection-1",
@@ -47,7 +47,7 @@ const SprintManageRetroSpectives = () => {
     const [sprintChangeId, setSprintChangeId] = useState("Audit-1");
 
     return (
-        <section className="my-5 sm:mx-2 md:ml-67">
+        <section className="my-5 sm:mx-2 md:ml-67 px-4">
             {/* Header */}
             <div className="mx-auto flex items-center justify-between">
                 <div>
