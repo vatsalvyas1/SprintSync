@@ -162,8 +162,7 @@ function FormLocker() {
                         </div>
                     </div>
                 </div>
-
-                <div className="divide-y divide-gray-200">
+<div className="divide-y divide-gray-200">
                     {forms
                         .filter((form) => {
                             const matchesSearch = form.formName
@@ -191,9 +190,89 @@ function FormLocker() {
                             return (
                                 <div
                                     key={form._id}
-                                    className={`p-6 hover:bg-gray-50 transition-colors ${isLockedByMe ? 'bg-blue-50' : ''}`}
+                                    className={`p-4 sm:p-6 hover:bg-gray-50 transition-colors ${isLockedByMe ? 'bg-blue-50' : ''}`}
                                 >
-                                    <div className="flex items-center justify-between">
+                                    {/* Mobile Layout */}
+                                    <div className="block sm:hidden">
+                                        <div className="flex items-center space-x-3 mb-3">
+                                            <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                                                isLockedByMe 
+                                                    ? 'bg-blue-500' 
+                                                    : isLocked 
+                                                        ? 'bg-red-500' 
+                                                        : 'bg-green-500'
+                                            }`}></div>
+                                            <h3 className="text-lg font-medium text-gray-900 flex-1 min-w-0">{form.formName}</h3>
+                                        </div>
+                                        
+                                        <div className="mb-3">
+                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                isLockedByMe
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : isLocked
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : 'bg-green-100 text-green-800'
+                                            }`}>
+                                                {isLockedByMe 
+                                                    ? '🔵 Checked out by you' 
+                                                    : isLocked 
+                                                        ? '🔴 Locked' 
+                                                        : '🟢 Available'
+                                                }
+                                            </span>
+                                        </div>
+
+                                        <div className="space-y-2 mb-4">
+                                            {form.description && (
+                                                <div className="text-sm text-gray-600">{form.description}</div>
+                                            )}
+                                            {form.isLocked && (
+                                                <div className="space-y-1">
+                                                    <div className="text-sm text-gray-600">
+                                                        Checked out by {form.lockedBy?.name}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        {new Date(form.lockedAt).toLocaleTimeString()}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {form.notes && (
+                                                <div className="text-sm text-gray-400 italic">{form.notes}</div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                                            <button
+                                                className={`inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-md text-sm font-medium transition-colors w-full ${
+                                                    checkOutDisabled
+                                                        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                                                        : "text-white bg-blue-600 hover:bg-blue-700"
+                                                }`}
+                                                disabled={checkOutDisabled}
+                                                onClick={() => handleCheckOut(form._id)}
+                                            >
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                </svg>
+                                                Check Out
+                                            </button>
+
+                                            {isLockedByMe && (
+                                                <button
+                                                    className="inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors w-full"
+                                                    onClick={() => handleCheckIn(form._id)}
+                                                >
+                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Check In
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Desktop Layout */}
+                                    <div className="hidden sm:flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
                                             <div className={`w-3 h-3 rounded-full ${
                                                 isLockedByMe 
