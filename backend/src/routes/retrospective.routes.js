@@ -8,7 +8,10 @@ import {
     registerFeedback,
     registerFeedbackComment,
     getTotalUpvoteCount,
-    getTotalCommentCount
+    getTotalCommentCount,
+    handleActionItems,
+    getAllActionItems,
+    getTotalActionItemsCount
 } from "../controllers/retrospective.controller.js";
 
 const router = Router();
@@ -22,6 +25,8 @@ router.route("/get-total-comment-count").post(verifyJWT, getTotalCommentCount);
 router.route("/add-feedback-upvote").post(verifyJWT, handleFeedbackUpvote);
 router.route("/get-all-upvotes").post(verifyJWT, getAllUpvotes);
 router.route("/get-total-upvote-count").post(verifyJWT, getTotalUpvoteCount);
-
+router.route("/add-action-item").patch(verifyJWT, handleActionItems);
+router.route("/get-all-action-items").post(verifyJWT, getAllActionItems);
+router.route("/get-total-action-item-count").post(verifyJWT, getTotalActionItemsCount)
 
 export default router;

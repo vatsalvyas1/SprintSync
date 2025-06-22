@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { backendUrl } from "../../constant.js";
-import { Check, ChevronUp, CirclePlus, Lightbulb, Plus, X } from "lucide-react";
+import {
+    Check,
+    CheckCircle,
+    ChevronUp,
+    CirclePlus,
+    Lightbulb,
+    Plus,
+    X,
+} from "lucide-react";
 
 const api = axios.create({
     baseURL: `${backendUrl}/api/v1/retrospectives/`,
@@ -19,9 +27,25 @@ const RetroSpectives = ({ sprintId }) => {
     const [allCommentCount, setAllCommentCount] = useState(null);
     const [upvotes, setUpvotes] = useState();
     const [allUpvoteCount, setAllUpvoteCount] = useState(null);
+    const [selectedFeedback, setSelectedFeedback] = useState(null);
+    const [newFeedback, setNewFeedback] = useState({
+        category: "What Went Well",
+        message: "",
+        anonymous: false,
+        upvoteCount: 0,
+        sprintId: sprintId,
+    });
+    const [feedbackModal, setFeedbackModal] = useState(false);
+    const [addFeedbackDisabled, setAddFeedbackDisabled] = useState(false);
+
+    const [actionItemModal, setActionItemsModal] = useState(false);
+    const [newComment, setNewComment] = useState("");
+    const [commentModal, setCommentModal] = useState(false);
+    const [addCommentDisabled, setAddCommentDisabled] = useState(false);
+    const [actionItems, setActionItems] = useState([]);
+    const [allActionItemsCount, setAllActionItemsCount] = useState(null);
 
     useEffect(() => {
-        console.log("UIser", sprintId);
         let storedUser;
         const fetchUserInfo = () => {
             storedUser = localStorage.getItem("loggedInUser");
@@ -40,7 +64,6 @@ const RetroSpectives = ({ sprintId }) => {
                 sprintId,
             });
             console.log(feedbacks);
-            console.log("Sprint", sprintId);
             if (storedUser) storedUser = JSON.parse(storedUser);
 
             feedbacks?.data?.data?.map((element) => {
@@ -63,7 +86,6 @@ const RetroSpectives = ({ sprintId }) => {
         };
 
         const fetchComments = async () => {
-            console.log("Commnets");
             const allComments = await api.post("/get-all-comments", {
                 sprintId,
             });
@@ -76,16 +98,30 @@ const RetroSpectives = ({ sprintId }) => {
         };
 
         const fetchUpvotes = async () => {
-            const allUpvotes = await api.post("/get-all-upvotes", {sprintId});
+            const allUpvotes = await api.post("/get-all-upvotes", { sprintId });
             setAllUpvoteCount(() => allUpvotes?.data?.data?.length);
             setUpvotes(allUpvotes?.data?.data);
+        };
+
+        const fetchActionItems = async () => {
+            if (!actionItemModal || !sprintId) return;
+
+            try {
+                const res = await api.post("/get-all-action-items", {
+                    sprintId,
+                });
+                setActionItems(res.data?.data || []);
+            } catch (error) {
+                console.error("Error fetching action items:", error);
+            }
         };
 
         fetchUserInfo();
         fetchFeedbacks();
         fetchComments();
         fetchUpvotes();
-    }, [sprintId]);
+        fetchActionItems();
+    }, [sprintId, actionItemModal]);
 
     const feedbackTimeAgo = (timeStamp) => {
         const now = new Date();
@@ -120,6 +156,11 @@ const RetroSpectives = ({ sprintId }) => {
                 (vote) =>
                     vote.user === userInfo?._id && vote.feedback === item._id
             ) ?? false;
+
+        const isActionItem = item.actionItem === true;
+        const isAddedByCurrentUser =
+            item.actionItemMeta?.addedByUser === userInfo?._id;
+
         return (
             <div
                 className={`${bgColor} ${borderColor} rounded-lg border-1 p-3 transition-shadow hover:shadow-sm`}
@@ -128,17 +169,39 @@ const RetroSpectives = ({ sprintId }) => {
                     <div className="max-w-full text-sm font-medium break-normal text-gray-900">
                         {item.message}
                     </div>
-                    <div className="ml-1 flex items-center">
-                        <button
-                            onClick={() => handleActionItem(item)}
-                            title="Add Action Items"
-                        >
-                            <CirclePlus
-                                size={18}
-                                className="cursor-pointer text-gray-800"
-                            />
-                        </button>
-                        &nbsp;
+                    <div className="ml-1 flex items-center space-x-2">
+                        {/* Action Item Toggle */}
+                        {isActionItem ? (
+                            isAddedByCurrentUser ? (
+                                <button
+                                    onClick={() => handleActionItem(item)}
+                                    title="Remove Action Item"
+                                >
+                                    <CirclePlus
+                                        size={18}
+                                        className="cursor-pointer text-blue-600 hover:text-blue-700"
+                                    />
+                                </button>
+                            ) : (
+                                <CheckCircle
+                                    size={18}
+                                    className="cursor-default text-green-600"
+                                    title={`Action Item by ${item.actionItemMeta?.addedByUserName}`}
+                                />
+                            )
+                        ) : (
+                            <button
+                                onClick={() => handleActionItem(item)}
+                                title="Mark as Action Item"
+                            >
+                                <CirclePlus
+                                    size={18}
+                                    className="cursor-pointer text-gray-800 hover:text-blue-700"
+                                />
+                            </button>
+                        )}
+
+                        {/* Upvote Button */}
                         <div
                             className="no-wrap flex items-center"
                             title="Upvote"
@@ -153,12 +216,14 @@ const RetroSpectives = ({ sprintId }) => {
                                     } hover:text-blue-700`}
                                 />
                             </button>
-                            <div className="text-xs text-gray-600">
-                                &nbsp;{item.upvoteCount}
+                            <div className="ml-1 text-xs text-gray-600">
+                                {item.upvoteCount}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Footer: avatar, author, time, comments */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                         <img
@@ -188,17 +253,13 @@ const RetroSpectives = ({ sprintId }) => {
         );
     };
 
-    const [selectedFeedback, setSelectedFeedback] = useState(null);
-    const [newFeedback, setNewFeedback] = useState({
-        category: "What Went Well",
-        message: "",
-        anonymous: false,
-        upvoteCount: 0,
-        sprintId: sprintId,
-    });
+    const openActionItemsModal = () => {
+        setActionItemsModal(true);
+    };
 
-    const [feedbackModal, setFeedbackModal] = useState(false);
-    const [addFeedbackDisabled, setAddFeedbackDisabled] = useState(false);
+    const closeActionItemsModal = () => {
+        setActionItemsModal(false);
+    };
 
     const openFeedbackModal = () => {
         setFeedbackModal(true);
@@ -258,10 +319,6 @@ const RetroSpectives = ({ sprintId }) => {
 
         closeFeedbackModal();
     };
-
-    const [newComment, setNewComment] = useState("");
-    const [commentModal, setCommentModal] = useState(false);
-    const [addCommentDisabled, setAddCommentDisabled] = useState(false);
 
     const openCommentModal = async (feedback) => {
         setSelectedFeedback({
@@ -376,8 +433,10 @@ const RetroSpectives = ({ sprintId }) => {
             });
 
             setUpvotes((prev) => {
+                console.log("Upvote: ", prev);
+
                 let updatedUpvotes;
-                if (res.data.message === "Upvote removed successfully") {
+                if (res.data.message === false) {
                     updatedUpvotes = prev.filter(
                         (item) =>
                             !(
@@ -392,7 +451,9 @@ const RetroSpectives = ({ sprintId }) => {
                 return updatedUpvotes;
             });
 
-            const totalCountRes = await api.post("/get-total-upvote-count", {sprintId});
+            const totalCountRes = await api.post("/get-total-upvote-count", {
+                sprintId,
+            });
             const totalUpvotes = totalCountRes?.data?.data?.count || 0;
             setAllUpvoteCount(totalUpvotes);
 
@@ -447,7 +508,83 @@ const RetroSpectives = ({ sprintId }) => {
         }
     };
 
-    const handleActionItem = async (feedback) => {};
+    const getTotalActionItems = () => {
+        return allActionItemsCount;
+    };
+
+    const handleActionItem = async (feedback) => {
+        try {
+            const res = await api.patch("/add-action-item", {
+                sprintId,
+                feedbackId: feedback._id,
+                userId: userInfo._id,
+                userName: userInfo.name,
+            });
+
+            const newStatus = res.data?.data?.actionItem;
+            const actionItemMeta = res.data?.data?.actionItemMeta;
+
+            const actionItem = {
+                sprintId,
+                feedbackId: feedback._id,
+                addedByUser: userInfo._id,
+                addedByUserName: userInfo.name,
+            };
+
+            setActionItems((prev) =>
+                newStatus
+                    ? [...prev, feedback]
+                    : prev.filter((item) => item._id !== feedback._id)
+            );
+
+            const totalCountRes = await api.post(
+                "/get-total-action-item-count",
+                {
+                    sprintId,
+                }
+            );
+            setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
+
+            setFeedbackData((prev) => {
+                const updateCategory = (items) =>
+                    items.map((item) =>
+                        item._id === feedback._id
+                            ? {
+                                  ...item,
+                                  actionItem: newStatus,
+                                  actionItemMeta: newStatus
+                                      ? actionItemMeta
+                                      : null,
+                              }
+                            : item
+                    );
+
+                if (feedback.category === "What Went Well") {
+                    return {
+                        ...prev,
+                        wellItems: updateCategory(prev.wellItems),
+                    };
+                } else if (feedback.category === "What Didn't Go Well") {
+                    return {
+                        ...prev,
+                        poorItems: updateCategory(prev.poorItems),
+                    };
+                } else {
+                    return {
+                        ...prev,
+                        suggestions: updateCategory(prev.suggestions),
+                    };
+                }
+            });
+
+            const refreshedItems = await api.post("/get-all-action-items", {
+                sprintId,
+            });
+            setActionItems(refreshedItems.data?.data || []);
+        } catch (error) {
+            console.error("Failed to toggle action item:", error);
+        }
+    };
 
     if (userInfo == null || comments == undefined)
         return <section> Loading </section>;
@@ -464,7 +601,10 @@ const RetroSpectives = ({ sprintId }) => {
                     <Plus size={18} className="mr-2" />
                     Add Feedback
                 </button>
-                <button className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 md:px-4 md:py-2">
+                <button
+                    onClick={openActionItemsModal}
+                    className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 md:px-4 md:py-2"
+                >
                     Show Action Items
                 </button>
             </div>
@@ -567,7 +707,7 @@ const RetroSpectives = ({ sprintId }) => {
             </div>
 
             {/* Summary Statistics */}
-            <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-3 md:gap-20">
+            <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-20">
                 <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
                     <div className="mb-1 text-xl font-bold text-green-600 md:mb-2 md:text-2xl">
                         {getTotalFeedback()}
@@ -590,6 +730,14 @@ const RetroSpectives = ({ sprintId }) => {
                     </div>
                     <div className="text-xs text-gray-600 md:text-sm">
                         Upvotes
+                    </div>
+                </div>
+                <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                    <div className="mb-1 text-xl font-bold text-pink-600 md:mb-2 md:text-2xl">
+                        16
+                    </div>
+                    <div className="text-xs text-gray-600 md:text-sm">
+                        Sprints
                     </div>
                 </div>
             </div>
@@ -737,6 +885,91 @@ const RetroSpectives = ({ sprintId }) => {
                                         Add Feedback
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Show Action Items Modal */}
+            {actionItemModal && (
+                <div
+                    className="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm"
+                    aria-modal="true"
+                >
+                    <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
+                        <div
+                            className="bg-opacity-75 fixed bg-gray-500 transition-opacity"
+                            onClick={closeActionItemsModal}
+                        ></div>
+
+                        <div className="relative mx-auto w-full max-w-lg transform rounded-lg bg-white p-6 shadow-xl transition-all">
+                            <div className="mb-6 flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Action Items
+                                </h3>
+                                <button
+                                    onClick={closeActionItemsModal}
+                                    className="text-gray-400 transition-colors hover:text-gray-600"
+                                >
+                                    <X size={25} className="text-grey-500" />
+                                </button>
+                            </div>
+                            <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-2">
+                                {[
+                                    "What Went Well",
+                                    "What Didn't Go Well",
+                                    "Suggestions",
+                                ].map((category) => {
+                                    const items = actionItems.filter(
+                                        (item) => item.category === category
+                                    );
+                                    if (items.length === 0) return null;
+
+                                    const bgColor =
+                                        category === "What Went Well"
+                                            ? "bg-green-100"
+                                            : category === "What Didn't Go Well"
+                                              ? "bg-red-100"
+                                              : "bg-blue-100";
+
+                                    return (
+                                        <div key={category} className="mb-4">
+                                            <h4 className="mb-2 text-sm font-semibold text-gray-800">
+                                                {category}
+                                            </h4>
+                                            <div className="space-y-3">
+                                                {items.map((item) => (
+                                                    <div
+                                                        key={item._id}
+                                                        className={`${bgColor} rounded-md border border-gray-300 p-3`}
+                                                    >
+                                                        <p className="text-sm text-gray-800">
+                                                            {item.message}
+                                                        </p>
+                                                        <div className="mt-2 text-xs text-gray-600">
+                                                            By {item.author}
+                                                            {item.actionItemMeta
+                                                                ?.addedByUserName && (
+                                                                <>
+                                                                    {" "}
+                                                                    • Added by{" "}
+                                                                    <strong>
+                                                                        {
+                                                                            item
+                                                                                .actionItemMeta
+                                                                                .addedByUserName
+                                                                        }
+                                                                    </strong>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

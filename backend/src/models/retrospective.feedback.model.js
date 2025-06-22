@@ -36,6 +36,22 @@ const userFeedbackSchema = new Schema(
             type: String,
             required: [true, "Feedbacker's Avatar is required"],
         },
+        actionItem: {
+            type: Boolean,
+            default: false,
+        },
+        actionItemMeta: {
+            addedByUserName: {
+                type: String,
+                default: null,
+            },
+            addedByUserName: String,
+            addedByUser: {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                index: true,
+            },
+        },
     },
     {
         timestamps: true,

@@ -125,7 +125,7 @@ const getAllComments = asyncHandler(async function (req, res) {
     const { sprintId } = req.body;
 
     if (!sprintId) {
-        throw new ApiError(200, "SprintId is required to fetch comments");
+        throw new ApiError(200, "Sprint is required to fetch comments");
     }
 
     const comments = await userFeedbackComment.find({ sprint: sprintId });
@@ -142,7 +142,7 @@ const getAllComments = asyncHandler(async function (req, res) {
 const getTotalCommentCount = asyncHandler(async (req, res) => {
     const { sprintId } = req.body;
 
-    if (!sprintId) throw new ApiError(200, "SprintId reference is required");
+    if (!sprintId) throw new ApiError(200, "Sprint reference is required");
 
     try {
         const count = await userFeedbackComment.countDocuments({
@@ -151,11 +151,11 @@ const getTotalCommentCount = asyncHandler(async (req, res) => {
         return res
             .status(201)
             .json(
-                new ApiResponse(201, { count }, "Total upvotes count fetched")
+                new ApiResponse(201, { count }, "Total comment count fetched")
             );
     } catch (error) {
-        console.error("Error fetching total upvote count:", error);
-        throw new ApiError(200, "Failed to fetch upvote count");
+        console.error("Error fetching total comment count:", error);
+        throw new ApiError(200, "Failed to fetch comment count");
     }
 });
 
@@ -176,14 +176,14 @@ const handleFeedbackUpvote = asyncHandler(async function (req, res) {
 
     if (existingUpvote) {
         await userFeedbackUpvote.deleteOne({ _id: existingUpvote._id });
-        message = "Upvote removed successfully";
+        message = false; // Upvote removed successfully
     } else {
         await userFeedbackUpvote.create({
             sprint: sprintId,
             user: userId,
             feedback: feedbackId,
         });
-        message = "Upvote added successfully";
+        message = true; //Upvote added successfully
     }
 
     const updatedUpvoteCount = await userFeedbackUpvote.countDocuments({
@@ -201,9 +201,9 @@ const handleFeedbackUpvote = asyncHandler(async function (req, res) {
     }
 
     return res
-        .status(200)
+        .status(201)
         .json(
-            new ApiResponse(200, { upvoteCount: updatedUpvoteCount }, message)
+            new ApiResponse(201, { upvoteCount: updatedUpvoteCount }, message)
         );
 });
 
@@ -234,6 +234,129 @@ const getTotalUpvoteCount = asyncHandler(async (req, res) => {
     }
 });
 
+const handleActionItems = asyncHandler(async (req, res) => {
+    const { sprintId, feedbackId, userId, userName } = req.body;
+
+    if (!sprintId || !feedbackId || !userId || !userName) {
+        throw new ApiError(
+            200,
+            "sprintId, feedbackId, userId, and userName are required"
+        );
+    }
+
+    const feedback = await UserFeedback.findOne({
+        sprint: sprintId,
+        _id: feedbackId,
+    });
+
+    if (!feedback) {
+        throw new ApiError(200, "Feedback not found");
+    }
+
+    if (
+        feedback.actionItem &&
+        feedback.actionItemMeta?.addedByUser?.toString() !== userId
+    ) {
+        throw new ApiError(
+            200,
+            "Only the user who added the action item can remove it."
+        );
+    }
+
+    const newStatus = !feedback.actionItem;
+
+    const updateData = {
+        actionItem: newStatus,
+        actionItemMeta: newStatus
+            ? {
+                  addedByUserName: userName,
+                  addedByUser: userId,
+              }
+            : {
+                  addedByUserName: null,
+                  addedByUser: null,
+              },
+    };
+
+    const result = await UserFeedback.updateOne(
+        { _id: feedbackId, sprint: sprintId },
+        updateData
+    );
+
+    if (result.matchedCount === 0) {
+        throw new ApiError(200, "Feedback not found");
+    }
+
+    return res.status(201).json(
+        new ApiResponse(
+            201,
+            {
+                actionItem: newStatus,
+                actionItemMeta: newStatus
+                    ? {
+                          addedByUserName: userName,
+                          addedByUser: userId,
+                      }
+                    : {
+                          addedByUserName: null,
+                          addedByUser: null,
+                      },
+            },
+            newStatus
+                ? "Action Item added successfully"
+                : "Action Item removed successfully"
+        )
+    );
+});
+
+const getAllActionItems = asyncHandler(async (req, res) => {
+    const { sprintId } = req.body;
+
+    if (!sprintId) {
+        throw new ApiError(200, "Sprint ID reference is required");
+    }
+
+    const actionItems = await UserFeedback.find({
+        sprint: sprintId,
+        actionItem: true,
+    })
+    .select("message category author avatar createdAt actionItemMeta")  
+    .sort({ createdAt: -1 }); // sort new first 
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, actionItems, "Action Items Fetched"));
+});
+
+
+const getTotalActionItemsCount = asyncHandler(async (req, res) => {
+    const { sprintId } = req.body;
+
+    if (!sprintId) {
+        throw new ApiError(200, "Sprint ID reference is required");
+    }
+
+    try {
+        const count = await UserFeedback.countDocuments({
+            sprint: sprintId,
+            actionItem: true,
+        });
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { count },
+                    "Total action items count fetched"
+                )
+            );
+    } catch (error) {
+        console.error("Error fetching total action items count:", error);
+        throw new ApiError(200, "Failed to fetch action items count");
+    }
+});
+
 export {
     registerFeedback,
     getAllFeedback,
@@ -243,4 +366,7 @@ export {
     getAllUpvotes,
     getTotalUpvoteCount,
     getTotalCommentCount,
+    handleActionItems,
+    getAllActionItems,
+    getTotalActionItemsCount,
 };
