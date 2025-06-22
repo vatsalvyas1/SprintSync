@@ -227,7 +227,8 @@ const handleAvatarChange = (avatarUrl) => {
             if (res.data.success) {
                 const res2 = await api.get("/current-user");
                 console.log(res2);
-                navigate(`/dashboard/${res.data.data._id}`);
+                alert("Registration successful. Please login.");
+                navigate("/login");
             }
         } catch (error) {
             console.error("Registration error:", error);
