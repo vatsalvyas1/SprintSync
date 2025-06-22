@@ -249,8 +249,8 @@ function Checklist() {
             
             <div className="flex items-center justify-between">
               <div className="flex -space-x-2">
-                <img className="w-6 h-6 rounded-full border-2 border-white" src="https://avatar.iran.liara.run/public/12" alt="Assignee" />
-                <img className="w-6 h-6 rounded-full border-2 border-white" src="https://avatar.iran.liara.run/public/23" alt="Assignee" />
+                <img className="w-6 h-6 rounded-full border-2 border-white" src="https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/60_eoi5dx.png" alt="Assignee" />
+                <img className="w-6 h-6 rounded-full border-2 border-white" src="https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/47_slrxow.png" alt="Assignee" />
               </div>
               <Link className="text-sm text-blue-600 hover:text-blue-700" to={`/deployment/${checklist._id}`}>View Details</Link>
             </div>
@@ -289,7 +289,7 @@ function Checklist() {
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <img className="w-6 h-6 rounded-full" src="https://avatar.iran.liara.run/public/12" alt="User" />
+                        <img className="w-6 h-6 rounded-full" src="https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/47_slrxow.png" alt="User" />
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           latestItem.status === 'done' ? 'bg-green-100 text-green-800' : 
                           latestItem.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
