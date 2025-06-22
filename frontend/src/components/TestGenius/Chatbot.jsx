@@ -32,7 +32,6 @@ function Chatbot() {
 
   return (
     <ChatProvider>
-      <NavBar />
       
       {/* Main Chatbot Layout */}
       <div className="flex flex-col h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white">

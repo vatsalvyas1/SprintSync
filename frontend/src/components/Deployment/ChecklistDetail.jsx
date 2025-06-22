@@ -184,8 +184,8 @@ export default function ChecklistDetail() {
 
         <div className="flex items-center justify-between">
           <div className="flex -space-x-2">
-            <img className="w-6 h-6 rounded-full border-2 border-white" src="https://avatar.iran.liara.run/public/12" alt="Assignee" />
-            <img className="w-6 h-6 rounded-full border-2 border-white" src="https://avatar.iran.liara.run/public/23" alt="Assignee" />
+            <img className="w-6 h-6 rounded-full border-2 border-white" src="https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/8_hszqlt.png" alt="Assignee" />
+            <img className="w-6 h-6 rounded-full border-2 border-white" src="https://res.cloudinary.com/dhrhfuzb0/image/upload/v1750528458/56_tclvyg.png" alt="Assignee" />
           </div>
         </div>
       </div>

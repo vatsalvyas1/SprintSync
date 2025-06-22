@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
-import api from "../utils/axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar from "./Navbar";
-import { UserContext } from "./UserProvider";
 
 const Dashboard = () => {
     const [userInfoGlobal, setUserInfoGlobal] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -14,23 +14,22 @@ const Dashboard = () => {
                     const userInfo = JSON.parse(loggedInUser);
                     setUserInfoGlobal(userInfo);
                 } else {
-                    console.error("No user info found in localStorage");
+                    navigate("/login");
+                    window.location.reload();
                 }
+            } catch (error) {
+                navigate("/login");
+                window.location.reload();
             }
-            catch (error) {
-                console.error("Error fetching user info:", error);
-            }
-        }
+        };
 
         fetchUserInfo();
-    }, []);
+    }, [navigate]);
 
-    if (!userInfoGlobal)
-        return <section className="mx-auto">Unauthorised User</section>;
+    if (!userInfoGlobal) return null;
 
     return (
         <section>
-
             <div className="md:ml-64">
                 Hi, {userInfoGlobal.email}
             </div>
