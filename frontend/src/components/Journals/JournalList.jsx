@@ -269,7 +269,7 @@ function JournalList({ newEntry }) {
                                         <div className="h-3 w-3 rounded-full bg-blue-500"></div>
                                         <h2 className="text-xl font-semibold text-gray-900">
                                             {new Date(date).toLocaleDateString(
-                                                "en-US",
+                                                "en-IN",
                                                 {
                                                     weekday: "long",
                                                     year: "numeric",
@@ -338,7 +338,7 @@ function JournalList({ newEntry }) {
                                                             {new Date(
                                                                 journal.startTime
                                                             ).toLocaleTimeString(
-                                                                "en-US",
+                                                                "en-IN",
                                                                 {
                                                                     hour: "numeric",
                                                                     minute: "2-digit",
