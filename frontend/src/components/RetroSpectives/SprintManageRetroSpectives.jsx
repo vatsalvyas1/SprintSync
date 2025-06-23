@@ -251,7 +251,7 @@ const SprintManageRetroSpectives = () => {
                                     >
                                         <option>Audit</option>
                                         <option>Survey</option>
-                                        <option>SubraSource</option>
+                                        <option>SubroSource</option>
                                         <option>MedConnection</option>
                                     </select>
                                 </div>
