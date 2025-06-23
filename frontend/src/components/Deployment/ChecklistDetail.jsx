@@ -140,7 +140,7 @@ export default function ChecklistDetail() {
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 hover:text-blue-700"
                   >
-                    View Sprint
+                    Open Deployment Link
                   </a>
                 )}
               </div>
