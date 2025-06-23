@@ -7,6 +7,7 @@ function PublicDashboard() {
   const [journals, setJournals] = useState([]);
   const [checklists, setChecklists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sprintCount, setSprintCount] = useState();
 
   const fetchForms = async () => {
     try {
@@ -39,6 +40,16 @@ function PublicDashboard() {
     }
   };
 
+  const fetchSprintCount = async () => {
+    try {
+        const res = await fetch(`${backendUrl}/api/v1/retrospectives/get-all-sprint-count`);
+        const data = await res.json();
+        setSprintCount(data.data.count)
+    } catch (error) {
+        console.error("Error fetching sprints:", error);
+    }
+  }
+
   const fetchData = async () => {
     await Promise.all([fetchForms(), fetchJournals(), fetchChecklists()]);
     setLoading(false);
@@ -46,6 +57,7 @@ function PublicDashboard() {
 
   useEffect(() => {
     fetchData();
+    fetchSprintCount()
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -113,9 +125,9 @@ function PublicDashboard() {
 
         <DashboardCard
           color="indigo"
-          count="4"
-          title="Action Items"
-          description="Favorites from retrospectives"
+          count={sprintCount}
+          title="Total Sprints"
+          description="Retrospective Summary"
           iconPath="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
         />
       </div>

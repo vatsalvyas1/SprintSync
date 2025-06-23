@@ -394,6 +394,20 @@ const getAllSprint = asyncHandler(async (req, res) => {
         .json(new ApiResponse(201, sprints, "Sprints Fetched"));
 });
 
+const getAllSprintCount = asyncHandler(async (req, res) => {
+    try {
+        const count = await RetrospectiveSprint.countDocuments({});
+        return res
+            .status(201)
+            .json(
+                new ApiResponse(201, { count }, "Total sprints count fetched")
+            );
+    } catch (error) {
+        console.error("Error fetching sprint count:", error);
+        throw new ApiError(200, "Failed to fetch sprint count");
+    }
+});
+
 export {
     registerFeedback,
     getAllFeedback,
@@ -408,4 +422,5 @@ export {
     getTotalActionItemsCount,
     registerSprint,
     getAllSprint,
+    getAllSprintCount,
 };

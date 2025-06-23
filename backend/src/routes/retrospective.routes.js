@@ -14,6 +14,7 @@ import {
     getTotalActionItemsCount,
     registerSprint,
     getAllSprint,
+    getAllSprintCount,
 } from "../controllers/retrospective.controller.js";
 
 const router = Router();
@@ -34,5 +35,6 @@ router
     .post(verifyJWT, getTotalActionItemsCount);
 router.route("/add-sprint").post(verifyJWT, registerSprint);
 router.route("/get-all-sprint").get(verifyJWT, getAllSprint);
+router.route("/get-all-sprint-count").get(getAllSprintCount);
 
 export default router;
