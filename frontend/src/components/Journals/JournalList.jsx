@@ -22,6 +22,27 @@ function JournalList({ newEntry }) {
         }
     };
 
+    // Helper function to convert date to India time
+    const toIndiaTime = (date) => {
+        return new Date(date).toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata"
+        });
+    };
+
+    // Helper function to get India date string
+    const toIndiaDateString = (date) => {
+        return new Date(date).toLocaleDateString("en-IN", {
+            timeZone: "Asia/Kolkata"
+        });
+    };
+
+    // Helper function to get current India time
+    const getCurrentIndiaTime = () => {
+        return new Date().toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata"
+        });
+    };
+
     useEffect(() => {
         fetchJournals();
     }, []);
@@ -38,22 +59,26 @@ function JournalList({ newEntry }) {
 
     const applyFilters = (entries) => {
         const now = new Date();
+        // Convert current time to India timezone for comparison
+        const indiaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
 
         return entries.filter((entry) => {
             const entryDate = new Date(entry.startTime);
+            // Convert entry time to India timezone for comparison
+            const entryIndiaTime = new Date(entryDate.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
 
             if (filters.date === "today") {
-                if (entryDate.toDateString() !== now.toDateString())
+                if (entryIndiaTime.toDateString() !== indiaTime.toDateString())
                     return false;
             } else if (filters.date === "week") {
-                const startOfWeek = new Date(now);
-                startOfWeek.setDate(now.getDate() - now.getDay());
+                const startOfWeek = new Date(indiaTime);
+                startOfWeek.setDate(indiaTime.getDate() - indiaTime.getDay());
                 startOfWeek.setHours(0, 0, 0, 0);
-                if (entryDate < startOfWeek) return false;
+                if (entryIndiaTime < startOfWeek) return false;
             } else if (filters.date === "month") {
                 if (
-                    entryDate.getMonth() !== now.getMonth() ||
-                    entryDate.getFullYear() !== now.getFullYear()
+                    entryIndiaTime.getMonth() !== indiaTime.getMonth() ||
+                    entryIndiaTime.getFullYear() !== indiaTime.getFullYear()
                 )
                     return false;
             }
@@ -82,13 +107,16 @@ function JournalList({ newEntry }) {
 
     const getThisWeekSummary = () => {
         const now = new Date();
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
+        // Convert to India timezone for week calculation
+        const indiaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+        const startOfWeek = new Date(indiaTime);
+        startOfWeek.setDate(indiaTime.getDate() - indiaTime.getDay());
         startOfWeek.setHours(0, 0, 0, 0);
 
         const thisWeekEntries = journals.filter((j) => {
             const entryDate = new Date(j.startTime);
-            const isThisWeek = entryDate >= startOfWeek;
+            const entryIndiaTime = new Date(entryDate.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+            const isThisWeek = entryIndiaTime >= startOfWeek;
 
             // Filter by selected user (if not "all")
             const isMatchingUser =
@@ -134,11 +162,14 @@ function JournalList({ newEntry }) {
     const groupJournalsByDate = (journals) => {
         const grouped = {};
         journals.forEach((journal) => {
-            const date = new Date(journal.startTime).toDateString();
-            if (!grouped[date]) {
-                grouped[date] = [];
+            // Group by India date
+            const indiaDate = new Date(journal.startTime).toLocaleDateString("en-IN", {
+                timeZone: "Asia/Kolkata"
+            });
+            if (!grouped[indiaDate]) {
+                grouped[indiaDate] = [];
             }
-            grouped[date].push(journal);
+            grouped[indiaDate].push(journal);
         });
         return grouped;
     };
@@ -268,9 +299,10 @@ function JournalList({ newEntry }) {
                                     <div className="flex items-center space-x-3">
                                         <div className="h-3 w-3 rounded-full bg-blue-500"></div>
                                         <h2 className="text-xl font-semibold text-gray-900">
-                                            {new Date(date).toLocaleDateString(
-                                                "en-US",
+                                            {new Date(entries[0].startTime).toLocaleDateString(
+                                                "en-IN",
                                                 {
+                                                    timeZone: "Asia/Kolkata",
                                                     weekday: "long",
                                                     year: "numeric",
                                                     month: "long",
@@ -338,8 +370,9 @@ function JournalList({ newEntry }) {
                                                             {new Date(
                                                                 journal.startTime
                                                             ).toLocaleTimeString(
-                                                                "en-US",
+                                                                "en-IN",
                                                                 {
+                                                                    timeZone: "Asia/Kolkata",
                                                                     hour: "numeric",
                                                                     minute: "2-digit",
                                                                     hour12: true,
