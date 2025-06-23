@@ -72,10 +72,7 @@ function Login() {
                 password: passwordRef.current.value.trim(),
             });
 
-            console.log("Login response:", res);
-            console.log(res.data.data)
             if (res.data.success) {
-                console.log("Login successful");
                 localStorage.setItem("loggedInUser", JSON.stringify(res.data.data.loggedInUser));
                 window.dispatchEvent(new Event('storage'));
                 navigate(`/dashboard`);
