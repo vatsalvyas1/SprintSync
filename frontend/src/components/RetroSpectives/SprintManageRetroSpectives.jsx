@@ -23,8 +23,7 @@ const SprintManageRetroSpectives = () => {
         createdBy: "",
     });
     const [addSprintDisabled, setAddSprintDisabled] = useState(false);
-    const [activeSprintName, setActiveSprintName] = useState("Sprint");
-    const [isLoading, setIsLoading] = useState(true);
+    const [activeSprintName, setActiveSprintName] = useState("");
 
     useEffect(() => {
         let storedUser;
@@ -42,15 +41,10 @@ const SprintManageRetroSpectives = () => {
                 const res = await api.get("/get-all-sprint");
                 const sprints = res?.data?.data || [];
                 setSprintData(sprints);
-                if (sprints.length > 0) {
-                    setSprintId(sprints[0]._id);
-                    setActiveSprintName(sprints[0].sprintName);
-                }
+                
             } catch (error) {
                 console.error("Error fetching sprints", error);
-            } finally {
-                setIsLoading(false);
-            }
+            } 
         };
 
         const handleClickOutside = (e) => {
@@ -137,13 +131,14 @@ const SprintManageRetroSpectives = () => {
                         Collect and track retrospective feedback
                     </div>
                 </div>
+                
                 {/*Dropdown*/}
                 <div ref={dropdownRef}>
                     <button
                         onClick={() => setShowMain(!showMain)}
                         className="mx-auto w-[110px] rounded-xl border-1 bg-white py-2 text-xs font-medium whitespace-nowrap text-gray-600 hover:text-blue-700 sm:w-[200px] sm:text-base"
                     >
-                        {activeSprintName}
+                        Project
                     </button>
                     {showMain && (
                         <ul className="absolute z-10 mt-2 -ml-25 w-52 rounded border border-gray-200 bg-white text-xs shadow-lg sm:-ml-2 sm:text-base">
@@ -208,6 +203,7 @@ const SprintManageRetroSpectives = () => {
                     )}
                 </div>
             </div>
+            <div className="whitespace-nowrap mt-2 text-center font-medium">{activeSprintName}</div>
             <RetroSpectives sprintId={sprintId} />
             {/* Add sprint Modal */}
             {sprintModal && (

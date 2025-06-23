@@ -8,6 +8,7 @@ import {
     CirclePlus,
     Lightbulb,
     Plus,
+    ThumbsUp,
     X,
 } from "lucide-react";
 
@@ -215,8 +216,8 @@ const RetroSpectives = ({ sprintId }) => {
                             title="Upvote"
                         >
                             <button onClick={() => handleUpvote(item)}>
-                                <ChevronUp
-                                    size={18}
+                                <ThumbsUp
+                                    size={15}
                                     className={`cursor-pointer transition-colors ${
                                         isUpvotedByUser
                                             ? "text-blue-600"
@@ -594,11 +595,18 @@ const RetroSpectives = ({ sprintId }) => {
         }
     };
 
-    if (userInfo == null || comments == undefined || sprintId == null)
+     if (sprintId == null )
+        return <div className="text-center mt-5 font-medium">Select Sprint To View Its Retro Board</div>;
+
+
+    if (userInfo == null || comments == undefined )
         return <div className="text-center mt-5 font-medium"> No Sprint Present</div>;
 
+    
+    
+
     return (
-        <section className="mt-5 p-4">
+        <section className="p-4">
             {/* Sub-Header */}
 
             <div className="mb-5 flex justify-between gap-2">
