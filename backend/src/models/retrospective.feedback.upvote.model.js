@@ -2,8 +2,9 @@ import mongoose, { Schema } from "mongoose";
 
 const userFeedbackUpvoteSchema = new Schema({
     sprint: {
-        type: String,
-        required: [true, "User reference is required"],
+        type: Schema.Types.ObjectId,
+        ref: "RetrospectiveSprint",
+        required: [true, "Sprint reference is required"],
         index: true,
     },
     user: {

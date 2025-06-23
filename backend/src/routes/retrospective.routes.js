@@ -11,7 +11,9 @@ import {
     getTotalCommentCount,
     handleActionItems,
     getAllActionItems,
-    getTotalActionItemsCount
+    getTotalActionItemsCount,
+    registerSprint,
+    getAllSprint,
 } from "../controllers/retrospective.controller.js";
 
 const router = Router();
@@ -27,6 +29,10 @@ router.route("/get-all-upvotes").post(verifyJWT, getAllUpvotes);
 router.route("/get-total-upvote-count").post(verifyJWT, getTotalUpvoteCount);
 router.route("/add-action-item").patch(verifyJWT, handleActionItems);
 router.route("/get-all-action-items").post(verifyJWT, getAllActionItems);
-router.route("/get-total-action-item-count").post(verifyJWT, getTotalActionItemsCount)
+router
+    .route("/get-total-action-item-count")
+    .post(verifyJWT, getTotalActionItemsCount);
+router.route("/add-sprint").post(verifyJWT, registerSprint);
+router.route("/get-all-sprint").get(verifyJWT, getAllSprint);
 
 export default router;

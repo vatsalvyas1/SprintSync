@@ -3,7 +3,8 @@ import mongoose, { Schema } from "mongoose";
 const userFeedbackSchema = new Schema(
     {
         sprint: {
-            type: String,
+            type: Schema.Types.ObjectId,
+            ref: "RetrospectiveSprint",
             required: [true, "Sprint Id Referecne is required"],
             index: true,
         },
@@ -21,7 +22,7 @@ const userFeedbackSchema = new Schema(
             type: String,
             required: [true, "Feedback's message is required"],
             trim: true,
-        },
+        }, 
         commentCount: {
             type: Number,
             default: 0,

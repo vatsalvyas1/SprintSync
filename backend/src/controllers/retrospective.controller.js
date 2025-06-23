@@ -1,6 +1,7 @@
 import UserFeedback from "../models/retrospective.feedback.model.js";
 import userFeedbackComment from "../models/retrospective.feedback.comment.model.js";
 import userFeedbackUpvote from "../models/retrospective.feedback.upvote.model.js";
+import RetrospectiveSprint from "../models/retrospective.sprint.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
@@ -154,7 +155,6 @@ const getTotalCommentCount = asyncHandler(async (req, res) => {
                 new ApiResponse(201, { count }, "Total comment count fetched")
             );
     } catch (error) {
-        console.error("Error fetching total comment count:", error);
         throw new ApiError(200, "Failed to fetch comment count");
     }
 });
@@ -229,7 +229,6 @@ const getTotalUpvoteCount = asyncHandler(async (req, res) => {
                 new ApiResponse(201, { count }, "Total upvotes count fetched")
             );
     } catch (error) {
-        console.error("Error fetching total upvote count:", error);
         throw new ApiError(200, "Failed to fetch upvote count");
     }
 });
@@ -320,18 +319,16 @@ const getAllActionItems = asyncHandler(async (req, res) => {
         sprint: sprintId,
         actionItem: true,
     })
-    .select("message category author avatar createdAt actionItemMeta")  
-    .sort({ createdAt: -1 }); // sort new first 
+        .select("message category author avatar createdAt actionItemMeta")
+        .sort({ createdAt: -1 }); // sort new first
 
     return res
         .status(201)
         .json(new ApiResponse(201, actionItems, "Action Items Fetched"));
 });
 
-
 const getTotalActionItemsCount = asyncHandler(async (req, res) => {
     const { sprintId } = req.body;
-
     if (!sprintId) {
         throw new ApiError(200, "Sprint ID reference is required");
     }
@@ -352,9 +349,49 @@ const getTotalActionItemsCount = asyncHandler(async (req, res) => {
                 )
             );
     } catch (error) {
-        console.error("Error fetching total action items count:", error);
         throw new ApiError(200, "Failed to fetch action items count");
     }
+});
+
+const registerSprint = asyncHandler(async (req, res) => {
+    const { sprintName, projectName, createdBy } = req.body;
+    if (!sprintName || !projectName || !createdBy)
+        throw new ApiError(
+            200,
+            "Invalid or Missing Details for Registering Sprint"
+        );
+
+    const sprint = await RetrospectiveSprint({
+        sprintName,
+        projectName,
+        createdBy,
+    });
+
+    if (!sprint)
+        throw new ApiError(200, "Something Went Wrong While Saving The Sprint");
+
+    try {
+        await sprint.validate();
+        await sprint.save();
+    } catch (error) {
+        const firstError =
+            error.errors.sprintName ||
+            error.errors.projectName ||
+            error.errors.createdBy;
+        throw new ApiError(200, firstError.properties.message);
+    }
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, sprint, "Sprint Registered Successfully"));
+});
+
+const getAllSprint = asyncHandler(async (req, res) => {
+    const sprints = await RetrospectiveSprint.find();
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, sprints, "Sprints Fetched"));
 });
 
 export {
@@ -369,4 +406,6 @@ export {
     handleActionItems,
     getAllActionItems,
     getTotalActionItemsCount,
+    registerSprint,
+    getAllSprint,
 };

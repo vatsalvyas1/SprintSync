@@ -9,8 +9,9 @@ const userFeedbackCommentSchema = new Schema(
             index: true,
         },
         sprint: {
-            type: String,
-            required: [true, "Feedback reference is required"],
+            type: Schema.Types.ObjectId,
+            ref: "RetrospectiveSprint",
+            required: [true, "Sprint reference is required"],
             index: true,
         },
         author: {

@@ -46,6 +46,7 @@ const RetroSpectives = ({ sprintId }) => {
     const [allActionItemsCount, setAllActionItemsCount] = useState(null);
 
     useEffect(() => {
+        if(!sprintId) return;
         let storedUser;
         const fetchUserInfo = () => {
             storedUser = localStorage.getItem("loggedInUser");
@@ -63,7 +64,6 @@ const RetroSpectives = ({ sprintId }) => {
             const feedbacks = await api.post("/get-all-feedbacks", {
                 sprintId,
             });
-            console.log(feedbacks);
             if (storedUser) storedUser = JSON.parse(storedUser);
 
             feedbacks?.data?.data?.map((element) => {
@@ -83,6 +83,14 @@ const RetroSpectives = ({ sprintId }) => {
                 poorItems,
                 suggestions,
             });
+
+            const totalCountRes = await api.post(
+                "/get-total-action-item-count",
+                {
+                    sprintId,
+                }
+            );
+            setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
         };
 
         const fetchComments = async () => {
@@ -433,7 +441,6 @@ const RetroSpectives = ({ sprintId }) => {
             });
 
             setUpvotes((prev) => {
-                console.log("Upvote: ", prev);
 
                 let updatedUpvotes;
                 if (res.data.message === false) {
@@ -543,6 +550,7 @@ const RetroSpectives = ({ sprintId }) => {
                     sprintId,
                 }
             );
+
             setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
 
             setFeedbackData((prev) => {
@@ -586,8 +594,8 @@ const RetroSpectives = ({ sprintId }) => {
         }
     };
 
-    if (userInfo == null || comments == undefined)
-        return <section> Loading </section>;
+    if (userInfo == null || comments == undefined || sprintId == null)
+        return <div className="text-center mt-5 font-medium"> No Sprint Present</div>;
 
     return (
         <section className="mt-5 p-4">
@@ -707,8 +715,8 @@ const RetroSpectives = ({ sprintId }) => {
             </div>
 
             {/* Summary Statistics */}
-            <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-20">
-                <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+            <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:gap-5 lg:grid-cols-4">
+                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
                     <div className="mb-1 text-xl font-bold text-green-600 md:mb-2 md:text-2xl">
                         {getTotalFeedback()}
                     </div>
@@ -716,7 +724,7 @@ const RetroSpectives = ({ sprintId }) => {
                         Feedbacks
                     </div>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
                     <div className="mb-1 text-xl font-bold text-purple-600 md:mb-2 md:text-2xl">
                         {getTotalComments()}
                     </div>
@@ -724,7 +732,7 @@ const RetroSpectives = ({ sprintId }) => {
                         Comments
                     </div>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
                     <div className="mb-1 text-xl font-bold text-sky-600 md:mb-2 md:text-2xl">
                         {getTotalUpvotes()}
                     </div>
@@ -732,12 +740,12 @@ const RetroSpectives = ({ sprintId }) => {
                         Upvotes
                     </div>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
                     <div className="mb-1 text-xl font-bold text-pink-600 md:mb-2 md:text-2xl">
-                        16
+                        {getTotalActionItems()}
                     </div>
-                    <div className="text-xs text-gray-600 md:text-sm">
-                        Sprints
+                    <div className="text-xs whitespace-nowrap text-gray-600 md:text-sm">
+                        Action Items
                     </div>
                 </div>
             </div>
@@ -915,7 +923,7 @@ const RetroSpectives = ({ sprintId }) => {
                                     <X size={25} className="text-grey-500" />
                                 </button>
                             </div>
-                            <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-2">
+                            <div className="custom-scrollbar max-h-[60vh] space-y-4 overflow-y-auto pr-2">
                                 {[
                                     "What Went Well",
                                     "What Didn't Go Well",
@@ -928,10 +936,10 @@ const RetroSpectives = ({ sprintId }) => {
 
                                     const bgColor =
                                         category === "What Went Well"
-                                            ? "bg-green-100"
+                                            ? "bg-green-50 border-green-200"
                                             : category === "What Didn't Go Well"
-                                              ? "bg-red-100"
-                                              : "bg-blue-100";
+                                              ? "bg-red-50 border-red-200"
+                                              : "bg-blue-50 border-blue-200";
 
                                     return (
                                         <div key={category} className="mb-4">
@@ -942,7 +950,7 @@ const RetroSpectives = ({ sprintId }) => {
                                                 {items.map((item) => (
                                                     <div
                                                         key={item._id}
-                                                        className={`${bgColor} rounded-md border border-gray-300 p-3`}
+                                                        className={`${bgColor} rounded-md border p-3`}
                                                     >
                                                         <p className="text-sm text-gray-800">
                                                             {item.message}
