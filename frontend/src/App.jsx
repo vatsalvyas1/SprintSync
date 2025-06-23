@@ -32,6 +32,10 @@ function AppContent() {
     const [userInfoGlobal, setUserInfoGlobal] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const handleLogout = () => {
+        setUserInfoGlobal(null); // Clear the user info state
+    };
+
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
@@ -48,6 +52,9 @@ function AppContent() {
         };
 
         fetchUserInfo();
+
+        
+
 
         // Listen for storage events to handle login/logout from other tabs
         const handleStorageChange = () => {
@@ -72,7 +79,7 @@ function AppContent() {
             <ConditionalFrontPage userInfoGlobal={userInfoGlobal} />
 
             {/* Show NavBar only if user IS logged in */}
-            {userInfoGlobal && <NavBar />}
+            {userInfoGlobal && <NavBar onLogout={handleLogout} />}
 
             <Routes>
                 {/* Public Routes (accessible to everyone) */}

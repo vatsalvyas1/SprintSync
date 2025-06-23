@@ -14,7 +14,7 @@ import {
     LogOut,
 } from "lucide-react";
 
-const NavBar = () => {
+const NavBar = ({onLogout}) => {
     const [mobileMenu, setMobileMenu] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
     const navigate = useNavigate();
@@ -36,6 +36,7 @@ const NavBar = () => {
         try {
             await api.get("/logout");
             localStorage.removeItem("loggedInUser");
+             onLogout();
             navigate("/login");
         } catch (error) {
             console.error("Logout failed:", error);
