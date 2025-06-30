@@ -3,7 +3,6 @@ import Header from './Header';
 import ChatContainer from './ChatContainer';
 import MessageInput from './MessageInput';
 import { ChatProvider } from './ChatContext';
-import NavBar from '../User/Navbar';
 
 function Chatbot() {
   const [darkMode, setDarkMode] = useState(() => {
