@@ -12,6 +12,36 @@ function FormLocker() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
 
+    // Helper function to format date and time
+    const formatDateTime = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dateToCheck = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        
+        const diffTime = today.getTime() - dateToCheck.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        let dateLabel;
+        if (diffDays === 0) {
+            dateLabel = "Today";
+        } else if (diffDays === 1) {
+            dateLabel = "Yesterday";
+        } else if (diffDays < 7) {
+            dateLabel = `${diffDays} days ago`;
+        } else {
+            dateLabel = date.toLocaleDateString();
+        }
+        
+        const timeLabel = date.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+        });
+        
+        return `${dateLabel} at ${timeLabel}`;
+    };
+
     const fetchForms = async () => {
         try {
             const res = await fetch(`${backendUrl}/api/v1/form/`);
@@ -132,7 +162,7 @@ function FormLocker() {
                 </div>
             </div>
 
- {/* Form List */}
+            {/* Form List */}
             <div className="bg-white rounded-lg border border-gray-200">
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
@@ -162,7 +192,7 @@ function FormLocker() {
                         </div>
                     </div>
                 </div>
-<div className="divide-y divide-gray-200">
+                <div className="divide-y divide-gray-200">
                     {forms
                         .filter((form) => {
                             const matchesSearch = form.formName
@@ -232,7 +262,7 @@ function FormLocker() {
                                                         Checked out by {form.lockedBy?.name}
                                                     </div>
                                                     <div className="text-sm text-gray-500">
-                                                        {new Date(form.lockedAt).toLocaleTimeString()}
+                                                        {formatDateTime(form.lockedAt)}
                                                     </div>
                                                 </div>
                                             )}
@@ -309,7 +339,7 @@ function FormLocker() {
                                                                 Checked out by {form.lockedBy?.name}
                                                             </span>
                                                             <span className="text-sm text-gray-500">
-                                                                {new Date(form.lockedAt).toLocaleTimeString()}
+                                                                {formatDateTime(form.lockedAt)}
                                                             </span>
                                                         </>
                                                     )}
