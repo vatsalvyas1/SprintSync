@@ -11,9 +11,7 @@ const api = axios.create({
 
 const SprintManageRetroSpectives = () => {
     const [userInfo, setUserInfo] = useState(null);
-    const dropdownRef = useRef(null);
-    const [showMain, setShowMain] = useState(false);
-    const [activeCategory, setActiveCategory] = useState(null);
+    const [selectedProject, setSelectedProject] = useState(null);
     const [sprintId, setSprintId] = useState(null);
     const [sprintModal, setSprintModal] = useState(false);
     const [sprintData, setSprintData] = useState([]);
@@ -47,33 +45,38 @@ const SprintManageRetroSpectives = () => {
             } 
         };
 
-        const handleClickOutside = (e) => {
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(e.target)
-            ) {
-                setShowMain(false);
-                setActiveCategory(null);
-            }
-        };
-
         fetchUserInfo();
         fetchSprints();
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () =>
-            document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const dropdownData = {
-        Audit: [],
-        Survey: [],
-        SubroSource: [],
-        MedConnection: [],
+    const projectData = {
+        Audit: {
+            name: "Audit",
+            svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/audit_u1ijxn.svg"
+        },
+        Survey: {
+            name: "Survey",
+            svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/survey_czxocx.svg"
+        },
+        SubroSource: {
+            name: "SubroSource",
+            svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/subrosource_gzurvy.svg"
+        },
+        MedConnection: {
+            name: "MedConnection",
+            svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/medconnection_t9bdx0.svg"
+        },
     };
 
-    const handleCategoryClick = (category) => {
-        setActiveCategory((prev) => (prev === category ? null : category));
+    const handleProjectSelect = (projectName) => {
+        setSelectedProject(projectName);
+        setSprintId(null);
+        setActiveSprintName("");
+    };
+
+    const handleSprintSelect = (sprint) => {
+        setSprintId(sprint._id);
+        setActiveSprintName(sprint.sprintName);
     };
 
     const openSprintModal = () => {
@@ -83,7 +86,7 @@ const SprintManageRetroSpectives = () => {
     const closeSprintModal = () => {
         setNewSprintData({
             sprintName: "",
-            projectName: "",
+            projectName: "Audit",
             createdBy: "",
         });
         setSprintModal(false);
@@ -107,22 +110,22 @@ const SprintManageRetroSpectives = () => {
             sprint._id = res.data.data._id;
             setSprintData((prev) => [...prev, sprint]);
             setAddSprintDisabled(() => false);
-            closeSprintModal(true);
-        } catch (error) {}
+            closeSprintModal();
+        } catch (error) {
+            setAddSprintDisabled(() => false);
+        }
     };
 
-    // if (isLoading) {
-    //     return <section>Loading...</section>;
-    // }
-
-    // if (!sprintData || sprintData.length === 0) {
-    //     return <section>No Sprint Present</section>;
-    // }
+    const handleBackToProjects = () => {
+        setSelectedProject(null);
+        setSprintId(null);
+        setActiveSprintName("");
+    };
 
     return (
         <section className="my-5 px-4 sm:mx-2 md:ml-67">
             {/* Header */}
-            <div className="mx-auto flex items-center justify-between">
+            <div className="mx-auto flex items-center justify-between mb-6">
                 <div>
                     <div className="mb-1 text-xl font-bold text-gray-900 md:mb-2 lg:text-2xl">
                         Sprint Retro Board
@@ -132,92 +135,134 @@ const SprintManageRetroSpectives = () => {
                     </div>
                 </div>
                 
-                {/*Dropdown*/}
-                <div ref={dropdownRef}>
-                    <button
-                        onClick={() => setShowMain(!showMain)}
-                        className="mx-auto w-[110px] rounded-xl border-1 bg-white py-2 text-xs font-medium whitespace-nowrap text-gray-600 hover:text-blue-700 sm:w-[200px] sm:text-base"
-                    >
-                        Project
-                    </button>
-                    {showMain && (
-                        <ul className="absolute z-10 mt-2 -ml-25 w-52 rounded border border-gray-200 bg-white text-xs shadow-lg sm:-ml-2 sm:text-base">
-                            {Object.keys(dropdownData).map((category) => (
-                                <li key={category}>
-                                    <button
-                                        onClick={() =>
-                                            handleCategoryClick(category)
-                                        }
-                                        className="w-full px-4 py-2 text-left hover:bg-gray-100"
-                                    >
-                                        <span className="flex items-center justify-between">
-                                            {category}{" "}
-                                            <ChevronDown
-                                                size={15}
-                                                className="text-gray-600"
-                                            />
-                                        </span>
-                                    </button>
-                                    {activeCategory === category && (
-                                        <ul className="custom-scrollbar m-2 h-[100px] overflow-y-auto rounded border-gray-300 bg-gray-50 p-1 text-xs shadow-inner sm:text-base">
-                                            {sprintData
-                                                .filter(
-                                                    (item) =>
-                                                        item.projectName ===
-                                                        activeCategory
-                                                )
-                                                .map((item) => (
-                                                    <li
-                                                        key={item._id}
-                                                        data-value={item._id}
-                                                        title={`Created By - ${item.createdBy}`}
-                                                        className={`cursor-pointer px-4 py-1 ${sprintId === item._id ? "rounded-full bg-blue-600 py-2 text-white" : "bg-gray-50 text-black hover:bg-blue-100"}`}
-                                                        onClick={() => {
-                                                            setSprintId(
-                                                                item._id
-                                                            );
-                                                            setActiveSprintName(
-                                                                item.sprintName
-                                                            );
-                                                            setShowMain(false);
-                                                        }}
-                                                    >
-                                                        {item.sprintName}
-                                                    </li>
-                                                ))}
-                                        </ul>
-                                    )}
-                                </li>
-                            ))}
-                            <button
-                                onClick={openSprintModal}
-                                className="my-1 flex w-full cursor-pointer items-center justify-between rounded-full bg-blue-600 px-4 py-2 text-left text-white hover:border-2 hover:border-blue-600 hover:bg-white hover:font-medium hover:text-blue-600"
-                            >
-                                Add Sprint
-                                <Plus
-                                    size={15}
-                                    // className="text-white"
+                {/* Add Sprint Button - Always visible */}
+                <button
+                    onClick={openSprintModal}
+                    className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
+                >
+                    <Plus size={18} />
+                    Add Sprint
+                </button>
+            </div>
+
+            {/* Project Selection Cards */}
+            {!selectedProject && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mx-auto mt-8">
+                    {Object.entries(projectData).map(([key, project]) => (
+                        <div
+                            key={key}
+                            onClick={() => handleProjectSelect(key)}
+                            className="bg-white rounded-xl border border-gray-200 p-8 cursor-pointer hover:shadow-xl hover:border-blue-300 transition-all duration-200 text-center"
+                        >
+                            <div className="flex justify-center mb-6">
+                                <img 
+                                    src={project.svg} 
+                                    alt={project.name}
+                                    className="w-36 h-36 object-contain"
                                 />
-                            </button>
-                        </ul>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-3">
+                                {project.name}
+                            </h3>
+                            <p className="text-base text-gray-600">
+                                {sprintData.filter(sprint => sprint.projectName === key).length} sprints
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Sprint Selection for Selected Project */}
+            {selectedProject && !sprintId && (
+                <div className="mt-6">
+                    <div className="flex items-center gap-4 mb-6">
+                        <button
+                            onClick={handleBackToProjects}
+                            className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                            ← Back to Projects
+                        </button>
+                        <div className="flex items-center gap-3">
+                            <img 
+                                src={projectData[selectedProject].svg} 
+                                alt={selectedProject}
+                                className="w-8 h-8 object-contain"
+                            />
+                            <h2 className="text-xl font-bold text-gray-900">
+                                {selectedProject} Sprints
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {sprintData
+                            .filter(sprint => sprint.projectName === selectedProject)
+                            .map((sprint) => (
+                                <div
+                                    key={sprint._id}
+                                    onClick={() => handleSprintSelect(sprint)}
+                                    className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200"
+                                >
+                                    <h3 className="font-semibold text-gray-900 mb-2">
+                                        {sprint.sprintName}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Created by: {sprint.createdBy}
+                                    </p>
+                                </div>
+                            ))}
+                    </div>
+
+                    {sprintData.filter(sprint => sprint.projectName === selectedProject).length === 0 && (
+                        <div className="text-center py-12">
+                            <p className="text-gray-500 text-lg">No sprints found for {selectedProject}</p>
+                            <p className="text-gray-400 text-sm mt-2">Click "Add Sprint" to create your first sprint</p>
+                        </div>
                     )}
                 </div>
-            </div>
-            <div className="whitespace-nowrap mt-2 text-center font-medium">{activeSprintName}</div>
-            <RetroSpectives sprintId={sprintId} />
+            )}
+
+            {/* Active Sprint Display */}
+            {sprintId && (
+                <div className="mt-6">
+                    <div className="flex items-center gap-4 mb-6">
+                        <button
+                            onClick={() => {
+                                setSprintId(null);
+                                setActiveSprintName("");
+                            }}
+                            className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                            ← Back to {selectedProject} Sprints
+                        </button>
+                        <div className="flex items-center gap-3">
+                            <img 
+                                src={projectData[selectedProject].svg} 
+                                alt={selectedProject}
+                                className="w-8 h-8 object-contain"
+                            />
+                            <h2 className="text-xl font-bold text-gray-900">
+                                {activeSprintName}
+                            </h2>
+                        </div>
+                    </div>
+                    <RetroSpectives sprintId={sprintId} />
+                </div>
+            )}
+
             {/* Add sprint Modal */}
             {sprintModal && (
                 <div
-                    className="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm"
+                    className="fixed inset-0 z-40 overflow-y-auto "
                     aria-modal="true"
                 >
                     <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
                         <div
-                            className="bg-opacity-75 fixed bg-gray-500 transition-opacity"
+                            className="absolute inset-0 bg-black/50 backdrop-blur-xs"
                             onClick={closeSprintModal}
                         ></div>
 
-                        <div className="relative mx-auto w-full max-w-lg transform rounded-lg bg-white p-6 shadow-xl transition-all">
+                        <div className="relative mx-auto w-full max-w-lg transform rounded-lg bg-white p-6 shadow-xl transition-all z-10">
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900">
                                     Add Sprint
@@ -283,7 +328,7 @@ const SprintManageRetroSpectives = () => {
                                         type="button"
                                         onClick={handleSubmitSprint}
                                         disabled={addSprintDisabled}
-                                        className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                        className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
                                     >
                                         Add Sprint
                                     </button>
