@@ -1,12 +1,12 @@
 import {
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  useCallback
-} from 'react';
+    createContext,
+    useState,
+    useContext,
+    useEffect,
+    useCallback,
+} from "react";
 
-import { geminiService } from './geminiService';
+import { geminiService } from "./geminiService";
 
 const defaultSystemPrompt = `You are an expert test engineer who specializes in creating manual testing test cases.
 
@@ -55,118 +55,146 @@ Your test cases should be thorough but practical for manual execution.`;
 const ChatContext = createContext(undefined);
 
 export const ChatProvider = ({ children }) => {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [systemPrompt, setSystemPrompt] = useState(defaultSystemPrompt);
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [systemPrompt, setSystemPrompt] = useState(defaultSystemPrompt);
 
-  useEffect(() => {
-    const savedMessages = localStorage.getItem('chatMessages');
-    const savedPrompt = localStorage.getItem('systemPrompt');
+    useEffect(() => {
+        const savedMessages = localStorage.getItem("chatMessages");
+        const savedPrompt = localStorage.getItem("systemPrompt");
 
-    if (savedMessages) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages);
-        const messagesWithDateTimestamps = parsedMessages.map(msg => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }));
-        setMessages(messagesWithDateTimestamps);
-      } catch (e) {
-        console.error('Failed to parse saved messages', e);
-      }
-    }
+        if (savedMessages) {
+            try {
+                const parsedMessages = JSON.parse(savedMessages);
+                const messagesWithDateTimestamps = parsedMessages.map(
+                    (msg) => ({
+                        ...msg,
+                        timestamp: new Date(msg.timestamp),
+                    })
+                );
+                setMessages(messagesWithDateTimestamps);
+            } catch (e) {
+                console.error("Failed to parse saved messages", e);
+            }
+        }
 
-    if (savedPrompt) {
-      setSystemPrompt(savedPrompt);
-    }
-  }, []);
+        if (savedPrompt) {
+            setSystemPrompt(savedPrompt);
+        }
+    }, []);
 
-  useEffect(() => {
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
-  }, [messages]);
+    useEffect(() => {
+        localStorage.setItem("chatMessages", JSON.stringify(messages));
+    }, [messages]);
 
-  useEffect(() => {
-    localStorage.setItem('systemPrompt', systemPrompt);
-  }, [systemPrompt]);
+    useEffect(() => {
+        localStorage.setItem("systemPrompt", systemPrompt);
+    }, [systemPrompt]);
 
-  const addMessage = useCallback((message) => {
-    const newMessage = {
-      ...message,
-      id: crypto.randomUUID(),
-      timestamp: new Date()
-    };
+    const addMessage = useCallback((message) => {
+        const newMessage = {
+            ...message,
+            id: crypto.randomUUID(),
+            timestamp: new Date(),
+        };
 
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-  }, []);
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+    }, []);
 
-  const sendMessage = useCallback(async (content) => {
-    if (!content.trim()) return;
+    const sendMessage = useCallback(
+        async (content, image) => {
+            if (!content.trim() && !image) return;
 
-    const userMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content,
-      timestamp: new Date()
-    };
+            let imageData = null;
+            if (image) {
+                // Convert image file to base64
+                imageData = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(image);
+                });
+            }
 
-    setMessages(prevMessages => [...prevMessages, userMessage]);
-    setLoading(true);
-    setError(null);
+            const userMessage = {
+                id: crypto.randomUUID(),
+                role: "user",
+                content,
+                image: imageData,
+                timestamp: new Date(),
+            };
 
-    try {
-      if (!geminiService.isConfigured()) {
-        throw new Error('Please set your Gemini API key first.');
-      }
+            setMessages((prevMessages) => [...prevMessages, userMessage]);
+            setLoading(true);
+            setError(null);
 
-      const response = await geminiService.generateContent(content, systemPrompt);
+            try {
+                if (!geminiService.isConfigured()) {
+                    throw new Error("Please set your Gemini API key first.");
+                }
 
-      const assistantMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: response,
-        timestamp: new Date()
-      };
+                const response = await geminiService.generateContent(
+                    content,
+                    systemPrompt,
+                    imageData
+                );
 
-      setMessages(prevMessages => [...prevMessages, assistantMessage]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error sending message:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [systemPrompt]);
+                const assistantMessage = {
+                    id: crypto.randomUUID(),
+                    role: "assistant",
+                    content: response,
+                    timestamp: new Date(),
+                };
 
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-  }, []);
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    assistantMessage,
+                ]);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "An unknown error occurred"
+                );
+                console.error("Error sending message:", err);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [systemPrompt]
+    );
 
-  const updateSystemPrompt = useCallback((prompt) => {
-    setSystemPrompt(prompt);
-  }, []);
+    const clearMessages = useCallback(() => {
+        setMessages([]);
+    }, []);
 
-  return (
-    <ChatContext.Provider
-      value={{
-        messages,
-        loading,
-        error,
-        addMessage,
-        sendMessage,
-        clearMessages,
-        systemPrompt,
-        setSystemPrompt: updateSystemPrompt
-      }}
-    >
-      {children}
-    </ChatContext.Provider>
-  );
+    const updateSystemPrompt = useCallback((prompt) => {
+        setSystemPrompt(prompt);
+    }, []);
+
+    return (
+        <ChatContext.Provider
+            value={{
+                messages,
+                loading,
+                error,
+                addMessage,
+                sendMessage,
+                clearMessages,
+                systemPrompt,
+                setSystemPrompt: updateSystemPrompt,
+            }}
+        >
+            {children}
+        </ChatContext.Provider>
+    );
 };
 
 export const useChat = () => {
-  const context = useContext(ChatContext);
-  if (context === undefined) {
-    throw new Error('useChat must be used within a ChatProvider');
-  }
-  return context;
+    const context = useContext(ChatContext);
+    if (context === undefined) {
+        throw new Error("useChat must be used within a ChatProvider");
+    }
+    return context;
 };
