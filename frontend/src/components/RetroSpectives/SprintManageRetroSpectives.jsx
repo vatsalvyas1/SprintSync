@@ -277,19 +277,19 @@ const SprintManageRetroSpectives = () => {
             {/* Project Selection Cards */}
             {selectedProcess && !selectedProject && (
                 <div className="mt-6">
-                    <button
+                    <div
                         onClick={handleBackToProcess}
                         className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
                     >
-                        <div className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                        <button className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
                             <ArrowLeft size={15} />
                             &nbsp;Back to Process
-                        </div>
+                        </button>
 
                         <div className="text-center font-medium text-black">
                             {selectedProcess}
                         </div>
-                    </button>
+                    </div>
                     <div className="mx-auto mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
                         {Object.entries(projectData)
                             .filter(
@@ -303,7 +303,6 @@ const SprintManageRetroSpectives = () => {
                                     className="cursor-pointer rounded-xl border border-gray-200 bg-white p-8 text-center transition-all duration-200 hover:border-blue-300 hover:shadow-xl"
                                 >
                                     {" "}
-                                    {console.log(project.teams)}
                                     <div className="mb-6 flex justify-center">
                                         <img
                                             src={project.svg}
@@ -333,19 +332,19 @@ const SprintManageRetroSpectives = () => {
             {/* Team Selection */}
             {selectedProcess && selectedProject && !selectedTeam && (
                 <div className="mt-6">
-                    <button
-                        onClick={handleBackToProjects}
+                    <div
+                        
                         className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
                     >
-                        <div className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                        <button onClick={handleBackToProjects} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
                             <ArrowLeft size={15} />
                             &nbsp;Back to Projects
-                        </div>
+                        </button>
 
                         <div className="text-center font-medium text-black">
                             {selectedProject}
                         </div>
-                    </button>
+                    </div>
 
                     <div className="mx-auto mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
                         {Object.entries(teamData)
@@ -393,19 +392,19 @@ const SprintManageRetroSpectives = () => {
                 selectedTeam &&
                 !sprintId && (
                     <div className="mt-6">
-                        <button
+                        <div
                             onClick={handleBackToTeams}
                             className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
                         >
-                            <div className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                            <button className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
                                 <ArrowLeft size={15} />
                                 &nbsp;Back to Teams
-                            </div>
+                            </button>
 
                             <div className="text-center font-medium text-black">
                                 {selectedTeam}
                             </div>
-                        </button>
+                        </div>
 
                         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {sprintData
@@ -455,19 +454,19 @@ const SprintManageRetroSpectives = () => {
             {/* Active Sprint Display */}
             {sprintId && (
                 <div className="mt-6">
-                    <button
+                    <div
                         onClick={handleBackToSprints}
                         className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
                     >
-                        <div className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                        <button className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
                             <ArrowLeft size={15} />
                             &nbsp;Back to Sprints
-                        </div>
+                        </button>
 
                         <div className="text-center font-medium text-black">
                             {activeSprintName}
                         </div>
-                    </button>
+                    </div>
                     <RetroSpectives sprintId={sprintId} />
                 </div>
             )}
@@ -477,7 +476,7 @@ const SprintManageRetroSpectives = () => {
                 <div
                     className="fixed inset-0 z-40 overflow-y-auto"
                     aria-modal="true"
-                >
+                > 
                     <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
                         <div
                             className="absolute inset-0 bg-black/50 backdrop-blur-xs"
