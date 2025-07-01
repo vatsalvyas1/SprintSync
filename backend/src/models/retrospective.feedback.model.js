@@ -15,14 +15,21 @@ const userFeedbackSchema = new Schema(
         },
         category: {
             type: String,
-            enum: ["What Went Well", "What Didn't Go Well", "Suggestions"],
+            enum: {
+                values: [
+                    "What Went Well",
+                    "What Didn't Go Well",
+                    "Suggestions",
+                ],
+                message: "{VALUE} is not a valid category",
+            },
             required: [true, "Feedback's category is required"],
         },
         message: {
             type: String,
             required: [true, "Feedback's message is required"],
             trim: true,
-        }, 
+        },
         commentCount: {
             type: Number,
             default: 0,

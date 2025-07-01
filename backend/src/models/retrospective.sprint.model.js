@@ -10,10 +10,14 @@ const retrospectiveSprintSchema = new Schema(
             type: String,
             required: [true, "Sprint's Project Name is required"],
         },
+        teamName: {
+            type: String,
+            required: [true, "Team name is required"],
+        },
         createdBy: {
             type: String,
             required: [true, "Sprint Creator Name is required"],
-        }
+        },
     },
     {
         timestamps: true,

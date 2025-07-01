@@ -354,8 +354,8 @@ const getTotalActionItemsCount = asyncHandler(async (req, res) => {
 });
 
 const registerSprint = asyncHandler(async (req, res) => {
-    const { sprintName, projectName, createdBy } = req.body;
-    if (!sprintName || !projectName || !createdBy)
+    const { sprintName, projectName, teamName, createdBy } = req.body;
+    if (!sprintName || !projectName || !teamName || !createdBy)
         throw new ApiError(
             200,
             "Invalid or Missing Details for Registering Sprint"
@@ -364,6 +364,7 @@ const registerSprint = asyncHandler(async (req, res) => {
     const sprint = await RetrospectiveSprint({
         sprintName,
         projectName,
+        teamName,
         createdBy,
     });
 
@@ -377,6 +378,7 @@ const registerSprint = asyncHandler(async (req, res) => {
         const firstError =
             error.errors.sprintName ||
             error.errors.projectName ||
+            error.errors.teamName ||
             error.errors.createdBy;
         throw new ApiError(200, firstError.properties.message);
     }
