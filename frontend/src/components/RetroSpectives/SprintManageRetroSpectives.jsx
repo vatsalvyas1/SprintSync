@@ -150,6 +150,18 @@ const SprintManageRetroSpectives = () => {
     };
 
     const openSprintModal = () => {
+        if (selectedProject) {
+            setNewSprintData((prev) => ({
+                ...prev,
+                projectName: selectedProject,
+            }));
+        }
+        if (selectedTeam) {
+            setNewSprintData((prev) => ({
+                ...prev,
+                teamName: selectedTeam,
+            }));
+        }
         setSprintModal(true);
     };
 
@@ -278,10 +290,10 @@ const SprintManageRetroSpectives = () => {
             {selectedProcess && !selectedProject && (
                 <div className="mt-6">
                     <div
-                        onClick={handleBackToProcess}
+                        
                         className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
                     >
-                        <button className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                        <button onClick={handleBackToProcess} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
                             <ArrowLeft size={15} />
                             &nbsp;Back to Process
                         </button>
@@ -332,11 +344,11 @@ const SprintManageRetroSpectives = () => {
             {/* Team Selection */}
             {selectedProcess && selectedProject && !selectedTeam && (
                 <div className="mt-6">
-                    <div
-                        
-                        className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
-                    >
-                        <button onClick={handleBackToProjects} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                    <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
+                        <button
+                            onClick={handleBackToProjects}
+                            className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white"
+                        >
                             <ArrowLeft size={15} />
                             &nbsp;Back to Projects
                         </button>
@@ -393,10 +405,10 @@ const SprintManageRetroSpectives = () => {
                 !sprintId && (
                     <div className="mt-6">
                         <div
-                            onClick={handleBackToTeams}
+                            
                             className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
                         >
-                            <button className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                            <button onClick={handleBackToTeams} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
                                 <ArrowLeft size={15} />
                                 &nbsp;Back to Teams
                             </button>
@@ -414,7 +426,11 @@ const SprintManageRetroSpectives = () => {
                                             selectedProject &&
                                         sprint.teamName === selectedTeam
                                 )
-                                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                                .sort(
+                                    (a, b) =>
+                                        new Date(b.createdAt) -
+                                        new Date(a.createdAt)
+                                )
                                 .map((sprint) => (
                                     <div
                                         key={sprint._id}
@@ -455,10 +471,10 @@ const SprintManageRetroSpectives = () => {
             {sprintId && (
                 <div className="mt-6">
                     <div
-                        onClick={handleBackToSprints}
+                        
                         className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
                     >
-                        <button className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                        <button onClick={handleBackToSprints} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
                             <ArrowLeft size={15} />
                             &nbsp;Back to Sprints
                         </button>
@@ -476,7 +492,7 @@ const SprintManageRetroSpectives = () => {
                 <div
                     className="fixed inset-0 z-40 overflow-y-auto"
                     aria-modal="true"
-                > 
+                >
                     <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
                         <div
                             className="absolute inset-0 bg-black/50 backdrop-blur-xs"
@@ -529,10 +545,14 @@ const SprintManageRetroSpectives = () => {
                                             }))
                                         }
                                     >
-                                        <option>Audit</option>
-                                        <option>Survey</option>
-                                        <option>SubroSource</option>
-                                        <option>MedConnection</option>
+                                        <option value="Audit">Audit</option>
+                                        <option value="Survey">Survey</option>
+                                        <option value="SubroSource">
+                                            SubroSource
+                                        </option>
+                                        <option value="MedConnection">
+                                            MedConnection
+                                        </option>
                                     </select>
                                 </div>
                                 <div>
