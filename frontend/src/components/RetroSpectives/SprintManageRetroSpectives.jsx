@@ -96,13 +96,13 @@ const SprintManageRetroSpectives = () => {
             svg: "https://res.cloudinary.com/dlpxhfhax/image/upload/v1751384911/undraw_screen-time_f7ev_nq4vuj.svg",
             projectName: "Audit",
         },
-        X: {
-            name: "X",
+        SRP: {
+            name: "SRP",
             svg: "https://res.cloudinary.com/dlpxhfhax/image/upload/v1751384910/undraw_online-banking_l9sn_bw4l2f.svg",
             projectName: "Survey",
         },
-        Y: {
-            name: "Y",
+        SVFI: {
+            name: "SVFI",
             svg: "https://res.cloudinary.com/dlpxhfhax/image/upload/v1751384910/undraw_financial-data_lbci_yxxjkj.svg",
             projectName: "Survey",
         },

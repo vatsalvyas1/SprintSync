@@ -8,7 +8,7 @@ const retrospectiveSprintSchema = new Schema(
         },
         projectName: {
             type: String,
-            required: [true, "Sprint's Project Name is required"],
+            required: [true, "Project Name is required"],
         },
         teamName: {
             type: String,
