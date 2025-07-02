@@ -53,7 +53,6 @@ const userFeedbackSchema = new Schema(
                 type: String,
                 default: null,
             },
-            addedByUserName: String,
             addedByUser: {
                 type: Schema.Types.ObjectId,
                 ref: "User",

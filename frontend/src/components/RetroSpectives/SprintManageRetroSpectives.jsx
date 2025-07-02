@@ -67,21 +67,25 @@ const SprintManageRetroSpectives = () => {
             name: "Audit",
             svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/audit_u1ijxn.svg",
             processName: "OSI",
+            teams: ["Diva", "Pandora"],
         },
         Survey: {
             name: "Survey",
             svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/survey_czxocx.svg",
             processName: "OSI",
+            teams: ["SRP", "SVFI", "SFO"],
         },
         SubroSource: {
             name: "SubroSource",
             svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/subrosource_gzurvy.svg",
             processName: "Trumbull",
+            teams: ["Platform", "CS", "SP"],
         },
         MedConnection: {
             name: "MedConnection",
             svg: "https://res.cloudinary.com/dhrhfuzb0/image/upload/v1751313879/medconnection_t9bdx0.svg",
             processName: "Trumbull",
+            teams: ["MCM", "RR"],
         },
     };
 
@@ -154,6 +158,8 @@ const SprintManageRetroSpectives = () => {
             setNewSprintData((prev) => ({
                 ...prev,
                 projectName: selectedProject,
+                teamName: projectData[selectedProject].teams[0]
+                
             }));
         }
         if (selectedTeam) {
@@ -289,11 +295,11 @@ const SprintManageRetroSpectives = () => {
             {/* Project Selection Cards */}
             {selectedProcess && !selectedProject && (
                 <div className="mt-6">
-                    <div
-                        
-                        className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
-                    >
-                        <button onClick={handleBackToProcess} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                    <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
+                        <button
+                            onClick={handleBackToProcess}
+                            className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white"
+                        >
                             <ArrowLeft size={15} />
                             &nbsp;Back to Process
                         </button>
@@ -404,11 +410,11 @@ const SprintManageRetroSpectives = () => {
                 selectedTeam &&
                 !sprintId && (
                     <div className="mt-6">
-                        <div
-                            
-                            className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
-                        >
-                            <button onClick={handleBackToTeams} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                        <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
+                            <button
+                                onClick={handleBackToTeams}
+                                className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white"
+                            >
                                 <ArrowLeft size={15} />
                                 &nbsp;Back to Teams
                             </button>
@@ -470,11 +476,11 @@ const SprintManageRetroSpectives = () => {
             {/* Active Sprint Display */}
             {sprintId && (
                 <div className="mt-6">
-                    <div
-                        
-                        className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600"
-                    >
-                        <button onClick={handleBackToSprints} className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white">
+                    <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
+                        <button
+                            onClick={handleBackToSprints}
+                            className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white"
+                        >
                             <ArrowLeft size={15} />
                             &nbsp;Back to Sprints
                         </button>
@@ -533,7 +539,7 @@ const SprintManageRetroSpectives = () => {
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-gray-700">
-                                        Category
+                                        Team
                                     </label>
                                     <select
                                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -542,6 +548,7 @@ const SprintManageRetroSpectives = () => {
                                             setNewSprintData((prev) => ({
                                                 ...prev,
                                                 projectName: e.target.value,
+                                                teamName: projectData[e.target.value].teams[0]
                                             }))
                                         }
                                     >
@@ -557,7 +564,7 @@ const SprintManageRetroSpectives = () => {
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-gray-700">
-                                        Category
+                                        Squat
                                     </label>
                                     <select
                                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
