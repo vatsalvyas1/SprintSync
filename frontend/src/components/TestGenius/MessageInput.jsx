@@ -85,38 +85,30 @@ const MessageInput = () => {
         <form onSubmit={handleSubmit} className="w-full">
             <div className="relative flex flex-col items-end gap-2">
                 {error && (
-                    <div className="mb-1 w-full text-sm text-red-500">
+                    <div className="mb-1 w-full text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-md p-2 border border-red-200 dark:border-red-800">
                         {error}
                     </div>
                 )}
                 {imagePreview && (
-                    <div className="relative mb-2 h-32 w-32">
+                    <div className="relative mb-2 h-32 w-32 group">
                         <img
                             src={imagePreview}
                             alt="Preview"
-                            className="h-full w-full rounded border object-cover"
+                            className="h-full w-full rounded-lg border-2 border-purple-200 dark:border-purple-700 object-cover shadow-md"
                         />
                         <button
                             type="button"
                             onClick={handleRemoveImage}
-                            className="bg-opacity-80 absolute top-1 right-1 rounded-full bg-white p-1 hover:bg-red-100"
+                            className="absolute -top-2 -right-2 rounded-full bg-red-500 text-white p-1.5 hover:bg-red-600 transition-colors shadow-lg opacity-0 group-hover:opacity-100"
                             aria-label="Remove image"
                         >
-                            <XIcon size={16} />
+                            <XIcon size={14} />
                         </button>
                     </div>
                 )}
-                <div className="relative flex w-full items-end">
-                    <textarea
-                        ref={textareaRef}
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Describe the feature or application to test..."
-                        className="max-h-[200px] min-h-[56px] flex-1 resize-none rounded-lg border border-slate-200 bg-white p-4 pr-12 text-slate-900 placeholder-slate-500 transition-all focus:ring-2 focus:ring-purple-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400 dark:focus:ring-purple-400"
-                        disabled={loading}
-                    />
-                    <label className="absolute right-12 bottom-3 cursor-pointer">
+                <div className="relative flex w-full items-end bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-purple-500 dark:focus-within:ring-purple-400">
+                    {/* Image upload button on the left */}
+                    <label className="flex items-center justify-center p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-l-lg transition-colors">
                         <input
                             type="file"
                             accept="image/*"
@@ -126,21 +118,40 @@ const MessageInput = () => {
                         />
                         <ImageIcon
                             size={20}
-                            className="text-purple-500 hover:text-purple-700"
+                            className={`transition-colors ${
+                                image 
+                                    ? "text-purple-600 dark:text-purple-400" 
+                                    : "text-slate-400 hover:text-purple-500 dark:text-slate-500 dark:hover:text-purple-400"
+                            }`}
                         />
                     </label>
-                    <button
-                        type="submit"
-                        disabled={(!input.trim() && !image) || loading}
-                        className={`absolute right-3 bottom-3 rounded-md p-2 transition-colors ${
-                            (input.trim() || image) && !loading
-                                ? "bg-purple-500 text-white hover:bg-purple-600 dark:hover:bg-purple-400"
-                                : "cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
-                        }`}
-                        aria-label="Send message"
-                    >
-                        <Send size={18} />
-                    </button>
+                    
+                    {/* Textarea */}
+                    <textarea
+                        ref={textareaRef}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Describe the feature or application to test..."
+                        className="max-h-[200px] min-h-[56px] flex-1 resize-none bg-transparent p-4 py-3 text-slate-900 placeholder-slate-500 transition-all focus:outline-none dark:text-white dark:placeholder-slate-400"
+                        disabled={loading}
+                    />
+                    
+                    {/* Send button on the right */}
+                    <div className="p-3">
+                        <button
+                            type="submit"
+                            disabled={(!input.trim() && !image) || loading}
+                            className={`flex items-center justify-center p-2 rounded-md transition-colors ${
+                                (input.trim() || image) && !loading
+                                    ? "bg-purple-500 text-white hover:bg-purple-600 dark:hover:bg-purple-400"
+                                    : "cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+                            }`}
+                            aria-label="Send message"
+                        >
+                            <Send size={18} className={loading ? "animate-pulse" : ""} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
