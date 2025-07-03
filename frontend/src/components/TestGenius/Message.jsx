@@ -1,6 +1,32 @@
 import { useState } from "react";
 import { Copy, Check, User, Bot } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+
+// Simple markdown renderer for basic formatting
+const SimpleMarkdownRenderer = ({ content }) => {
+    const renderContent = (text) => {
+        // Handle bold text **text**
+        let rendered = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // Handle numbered lists
+        rendered = rendered.replace(/^(\d+)\.\s\*\*(.*?)\*\*/gm, '<div class="mb-2"><strong>$1. $2</strong></div>');
+        
+        // Handle regular numbered lists
+        rendered = rendered.replace(/^(\d+)\.\s(.+)/gm, '<div class="mb-2">$1. $2</div>');
+        
+        // Handle line breaks
+        rendered = rendered.replace(/\n\n/g, '<br><br>');
+        rendered = rendered.replace(/\n/g, '<br>');
+        
+        return rendered;
+    };
+
+    return (
+        <div 
+            className="prose prose-sm dark:prose-invert prose-slate dark:prose-slate max-w-none"
+            dangerouslySetInnerHTML={{ __html: renderContent(content) }}
+        />
+    );
+};
 
 const Message = ({ message }) => {
     const [copied, setCopied] = useState(false);
@@ -76,9 +102,7 @@ const Message = ({ message }) => {
                             {message.content}
                         </div>
                     ) : (
-                        <div className="prose prose-sm dark:prose-invert prose-slate dark:prose-slate max-w-none">
-                            <ReactMarkdown>{message.content}</ReactMarkdown>
-                        </div>
+                        <SimpleMarkdownRenderer content={message.content} />
                     )}
 
                     <button
