@@ -21,7 +21,7 @@ const userFeedbackSchema = new Schema(
                     "What Didn't Go Well",
                     "Suggestions",
                 ],
-                message: "{VALUE} is not a valid category",
+                message: (props) => `${props.value} is not a valid category`,
             },
             required: [true, "Feedback's category is required"],
         },
@@ -49,6 +49,12 @@ const userFeedbackSchema = new Schema(
             default: false,
         },
         actionItemMeta: {
+            upvotedByUserName: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "User",
+                },
+            ],
             addedByUserName: {
                 type: String,
                 default: null,

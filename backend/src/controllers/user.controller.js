@@ -13,7 +13,7 @@ const generateAccessTokenAndRefreshToken = async function (userId) {
 
         return { accessToken, refreshToken };
     } catch (error) {
-        throw new ApiError(200, "Something went wrong while generating tokens");
+        throw new ApiError(400, "Something went wrong while generating tokens");
     }
 };
 
@@ -29,12 +29,12 @@ const registerUser = asyncHandler(async function (req, res) {
     const { name, role, email, password, avatar } = req.body;
 
     if ([name, role, email, password, avatar].some((field) => field?.trim() === "")) {
-        throw new ApiError(200, "All fields are required.");
+        throw new ApiError(400, "All fields are required.");
     }
 
     const existingUser = await User.findOne({ email });
 
-    if (existingUser) throw new ApiError(200, "User already exists.");
+    if (existingUser) throw new ApiError(400, "User already exists.");
 
     const user = await User({
         name,
@@ -50,7 +50,7 @@ const registerUser = asyncHandler(async function (req, res) {
     } catch (error) {
         const firstError = error.errors.avatar || error.errors.email || error.errors.password || error.errors.name || error.errors.role;
 
-        throw new ApiError(200, firstError.properties.message);
+        throw new ApiError(400, firstError.properties.message);
     }
 
     const { accessToken, refreshToken } =
@@ -62,7 +62,7 @@ const registerUser = asyncHandler(async function (req, res) {
 
     if (!createdUser)
         throw new ApiError(
-            200,
+            400,
             "Something Went Wrong While Registering The User"
         );
 
@@ -91,17 +91,17 @@ const loginUser = asyncHandler(async function (req, res) {
     const { email, password } = req.body;
 
     if (!email || !password)
-        throw new ApiError(200, "Email and Password are required");
+        throw new ApiError(400, "Email and Password are required");
 
     const user = await User.findOne({
         email,
     });
 
-    if (!user) throw new ApiError(200, "User doesn't exist");
+    if (!user) throw new ApiError(400, "User doesn't exist");
 
     const passwordExist = await user.isPasswordCorrect(password);
 
-    if (!passwordExist) throw new ApiError(200, "Password isn't correct");
+    if (!passwordExist) throw new ApiError(400, "Password isn't correct");
 
     const { accessToken, refreshToken } =
         await generateAccessTokenAndRefreshToken(user._id); // refreshToken is saved to DB inside this function only

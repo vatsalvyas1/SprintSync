@@ -47,7 +47,7 @@ const RetroSpectives = ({ sprintId }) => {
     const [allActionItemsCount, setAllActionItemsCount] = useState(null);
 
     useEffect(() => {
-        if(!sprintId) return;
+        if (!sprintId) return;
         let storedUser;
         const fetchUserInfo = () => {
             storedUser = localStorage.getItem("loggedInUser");
@@ -124,7 +124,7 @@ const RetroSpectives = ({ sprintId }) => {
                 console.error("Error fetching action items:", error);
             }
         };
-
+        console.log(feedbackData)
         fetchUserInfo();
         fetchFeedbacks();
         fetchComments();
@@ -154,6 +154,44 @@ const RetroSpectives = ({ sprintId }) => {
             feedbackData.poorItems.length +
             feedbackData.suggestions.length
         );
+    };
+
+    const toggleActionItemsUpvote = async (feedbackId) => {
+        try {
+            await api.post("/add-action-items-upvote", {
+                feedbackId: feedbackId,
+                userId: userInfo._id,
+            });
+            setActionItems((prev) => {
+                return prev.map((item) => {
+                    if (item._id !== feedbackId) return item;
+
+                    const isUpvoted =
+                        item.actionItemMeta.upvotedByUserName.includes(
+                            userInfo._id
+                        );
+
+                    const updatedVoters = isUpvoted
+                        ? item.actionItemMeta.upvotedByUserName?.filter(
+                              (id) => id != userInfo._id
+                          )
+                        : [
+                              ...item.actionItemMeta.upvotedByUserName,
+                              userInfo._id,
+                          ];
+
+                    return {
+                        ...item,
+                        actionItemMeta: {
+                            ...item.actionItemMeta,
+                            upvotedByUserName: updatedVoters,
+                        },
+                    };
+                });
+            });
+        } catch (error) {
+            console.log("Error in handling action items upvotes: ", error);
+        }
     };
 
     {
@@ -442,7 +480,6 @@ const RetroSpectives = ({ sprintId }) => {
             });
 
             setUpvotes((prev) => {
-
                 let updatedUpvotes;
                 if (res.data.message === false) {
                     updatedUpvotes = prev.filter(
@@ -595,15 +632,20 @@ const RetroSpectives = ({ sprintId }) => {
         }
     };
 
-     if (sprintId == null )
-        return <div className="text-center mt-5 font-medium">Select Sprint To View Its Retro Board</div>;
+    if (sprintId == null)
+        return (
+            <div className="mt-5 text-center font-medium">
+                Select Sprint To View Its Retro Board
+            </div>
+        );
 
-
-    if (userInfo == null || comments == undefined )
-        return <div className="text-center mt-5 font-medium"> No Sprint Present</div>;
-
-    
-    
+    if (userInfo == null || comments == undefined)
+        return (
+            <div className="mt-5 text-center font-medium">
+                {" "}
+                No Sprint Present
+            </div>
+        );
 
     return (
         <section className="p-4">
@@ -937,9 +979,18 @@ const RetroSpectives = ({ sprintId }) => {
                                     "What Didn't Go Well",
                                     "Suggestions",
                                 ].map((category) => {
-                                    const items = actionItems.filter(
-                                        (item) => item.category === category
-                                    );
+                                    const items = actionItems
+                                        .filter(
+                                            (item) => item.category === category
+                                        )
+                                        .sort(
+                                            (a, b) =>
+                                                b.actionItemMeta
+                                                    .upvotedByUserName.length -
+                                                a.actionItemMeta
+                                                    .upvotedByUserName.length
+                                        );
+
                                     if (items.length === 0) return null;
 
                                     const bgColor =
@@ -955,33 +1006,69 @@ const RetroSpectives = ({ sprintId }) => {
                                                 {category}
                                             </h4>
                                             <div className="space-y-3">
-                                                {items.map((item) => (
-                                                    <div
-                                                        key={item._id}
-                                                        className={`${bgColor} rounded-md border p-3`}
-                                                    >
-                                                        <p className="text-sm text-gray-800">
-                                                            {item.message}
-                                                        </p>
-                                                        <div className="mt-2 text-xs text-gray-600">
-                                                            By {item.author}
-                                                            {item.actionItemMeta
-                                                                ?.addedByUserName && (
-                                                                <>
-                                                                    {" "}
-                                                                    • Added by{" "}
-                                                                    <strong>
+                                                {items.map((item) => {
+                                                    const isUpvotedByUser =
+                                                        item.actionItemMeta.upvotedByUserName.includes(
+                                                            userInfo._id
+                                                        );
+                                                    return (
+                                                        <div
+                                                            key={item._id}
+                                                            className={`${bgColor} rounded-md border p-3`}
+                                                        >
+                                                            <div className="flex items-center justify-between">
+                                                                <p className="text-sm text-gray-800">
+                                                                    {
+                                                                        item.message
+                                                                    }
+                                                                </p>
+                                                                <div className="flex items-center">
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            toggleActionItemsUpvote(
+                                                                                item._id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <ThumbsUp
+                                                                            size={
+                                                                                15
+                                                                            }
+                                                                            className={`cursor-pointer transition-colors hover:text-blue-700 ${isUpvotedByUser ? "text-blue-600" : "text-gray-500"}`}
+                                                                        />
+                                                                    </button>
+                                                                    <div className="ml-1 text-xs text-gray-600">
                                                                         {
                                                                             item
                                                                                 .actionItemMeta
-                                                                                .addedByUserName
+                                                                                .upvotedByUserName
+                                                                                .length
                                                                         }
-                                                                    </strong>
-                                                                </>
-                                                            )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="mt-2 text-xs text-gray-600">
+                                                                By {item.author}
+                                                                {item
+                                                                    .actionItemMeta
+                                                                    ?.addedByUserName && (
+                                                                    <>
+                                                                        {" "}
+                                                                        • Added
+                                                                        by{" "}
+                                                                        <strong>
+                                                                            {
+                                                                                item
+                                                                                    .actionItemMeta
+                                                                                    .addedByUserName
+                                                                            }
+                                                                        </strong>
+                                                                    </>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     );

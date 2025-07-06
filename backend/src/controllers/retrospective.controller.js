@@ -5,12 +5,13 @@ import RetrospectiveSprint from "../models/retrospective.sprint.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import mongoose from "mongoose";
 
 const registerFeedback = asyncHandler(async function (req, res) {
     const { sprintId, author, category, message, avatar } = req.body;
     if (!sprintId || !author || !category || !message || !avatar)
         throw new ApiError(
-            200,
+            400,
             "Invalid or Missing Details for Registering Feedback"
         );
     const feedback = await UserFeedback({
@@ -23,7 +24,7 @@ const registerFeedback = asyncHandler(async function (req, res) {
 
     if (!feedback)
         throw new ApiError(
-            200,
+            400,
             "Something Went Wrong While Saving The Feedback"
         );
 
@@ -36,7 +37,7 @@ const registerFeedback = asyncHandler(async function (req, res) {
             error.errors.author ||
             error.errors.category ||
             error.errors.message;
-        throw new ApiError(200, firstError.properties.message);
+        throw new ApiError(400, firstError.properties.message);
     }
 
     return res
@@ -47,7 +48,7 @@ const registerFeedback = asyncHandler(async function (req, res) {
 const getAllFeedback = asyncHandler(async function (req, res) {
     const { sprintId } = req.body;
 
-    if (!sprintId) throw new ApiError(200, "Sprint Reference is Required");
+    if (!sprintId) throw new ApiError(400, "Sprint Reference is Required");
 
     const feedbacks = await UserFeedback.find({ sprint: sprintId });
 
@@ -64,7 +65,7 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
         )
     ) {
         throw new ApiError(
-            200,
+            400,
             "Invalid or missing details for registering feedback's comment"
         );
     }
@@ -79,7 +80,7 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
 
     if (!comment)
         throw new ApiError(
-            200,
+            400,
             "Something Went Wrong While Saving The Comment"
         );
 
@@ -88,19 +89,19 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
         await comment.save();
     } catch (error) {
         if (error.errors?.author)
-            throw new ApiError(200, error.errors.author.message);
+            throw new ApiError(400, error.errors.author.message);
 
         if (error.errors?.avatar)
-            throw new ApiError(200, error.errors.avatar.message);
+            throw new ApiError(400, error.errors.avatar.message);
 
         if (error.errors?.message)
-            throw new ApiError(200, error.errors.message.message);
+            throw new ApiError(400, error.errors.message.message);
 
         if (error.errors?.sprint)
-            throw new ApiError(200, error.errors.message.message);
+            throw new ApiError(400, error.errors.message.message);
 
         if (error.errors?.feedback) {
-            throw new ApiError(200, error.errors.feedback.message);
+            throw new ApiError(400, error.errors.feedback.message);
         }
     }
 
@@ -115,7 +116,7 @@ const registerFeedbackComment = asyncHandler(async function (req, res) {
     );
 
     if (result.matchedCount === 0)
-        throw new ApiError(200, "Feedback not found");
+        throw new ApiError(400, "Feedback not found");
 
     return res
         .status(201)
@@ -126,13 +127,13 @@ const getAllComments = asyncHandler(async function (req, res) {
     const { sprintId } = req.body;
 
     if (!sprintId) {
-        throw new ApiError(200, "Sprint is required to fetch comments");
+        throw new ApiError(400, "Sprint is required to fetch comments");
     }
 
     const comments = await userFeedbackComment.find({ sprint: sprintId });
 
     if (!comments) {
-        throw new ApiError(200, "Error in Fetching Comments");
+        throw new ApiError(400, "Error in Fetching Comments");
     }
 
     return res
@@ -143,7 +144,7 @@ const getAllComments = asyncHandler(async function (req, res) {
 const getTotalCommentCount = asyncHandler(async (req, res) => {
     const { sprintId } = req.body;
 
-    if (!sprintId) throw new ApiError(200, "Sprint reference is required");
+    if (!sprintId) throw new ApiError(400, "Sprint reference is required");
 
     try {
         const count = await userFeedbackComment.countDocuments({
@@ -155,7 +156,7 @@ const getTotalCommentCount = asyncHandler(async (req, res) => {
                 new ApiResponse(201, { count }, "Total comment count fetched")
             );
     } catch (error) {
-        throw new ApiError(200, "Failed to fetch comment count");
+        throw new ApiError(400, "Failed to fetch comment count");
     }
 });
 
@@ -163,7 +164,7 @@ const handleFeedbackUpvote = asyncHandler(async function (req, res) {
     const { sprintId, feedbackId, userId } = req.body;
 
     if (!sprintId || !feedbackId || !userId) {
-        throw new ApiError(200, "feedbackId and userId are required");
+        throw new ApiError(400, "feedbackId and userId are required");
     }
 
     const existingUpvote = await userFeedbackUpvote.findOne({
@@ -197,7 +198,7 @@ const handleFeedbackUpvote = asyncHandler(async function (req, res) {
     );
 
     if (result.matchedCount === 0) {
-        throw new ApiError(200, "Feedback not found");
+        throw new ApiError(400, "Feedback not found");
     }
 
     return res
@@ -229,7 +230,7 @@ const getTotalUpvoteCount = asyncHandler(async (req, res) => {
                 new ApiResponse(201, { count }, "Total upvotes count fetched")
             );
     } catch (error) {
-        throw new ApiError(200, "Failed to fetch upvote count");
+        throw new ApiError(400, "Failed to fetch upvote count");
     }
 });
 
@@ -238,8 +239,8 @@ const handleActionItems = asyncHandler(async (req, res) => {
 
     if (!sprintId || !feedbackId || !userId || !userName) {
         throw new ApiError(
-            200,
-            "sprintId, feedbackId, userId, and userName are required"
+            400,
+            "SprintId, FeedbackId, UserId, and User Name are required"
         );
     }
 
@@ -249,7 +250,7 @@ const handleActionItems = asyncHandler(async (req, res) => {
     });
 
     if (!feedback) {
-        throw new ApiError(200, "Feedback not found");
+        throw new ApiError(400, "Feedback not found");
     }
 
     if (
@@ -257,7 +258,7 @@ const handleActionItems = asyncHandler(async (req, res) => {
         feedback.actionItemMeta?.addedByUser?.toString() !== userId
     ) {
         throw new ApiError(
-            200,
+            400,
             "Only the user who added the action item can remove it."
         );
     }
@@ -283,7 +284,7 @@ const handleActionItems = asyncHandler(async (req, res) => {
     );
 
     if (result.matchedCount === 0) {
-        throw new ApiError(200, "Feedback not found");
+        throw new ApiError(400, "Feedback not found");
     }
 
     return res.status(201).json(
@@ -308,11 +309,81 @@ const handleActionItems = asyncHandler(async (req, res) => {
     );
 });
 
+const handleActionItemsUpvote = asyncHandler(async (req, res) => {
+    const { feedbackId, userId } = req.body;
+
+    if (!feedbackId || !userId)
+        throw new ApiError(400, "FeedbackId and User Id are required");
+
+    const feedback = await UserFeedback.findOne({
+        _id: feedbackId,
+    });
+
+    if (!feedback) throw new ApiError(400, "Feedback not found");
+
+    if (!feedback.actionItem)
+        throw new ApiError(400, "Feedback is not an action item");
+
+    let response;
+    let message;
+
+    if (
+        feedback.actionItemMeta?.upvotedByUserName.some(
+            (userid) => userid.toString() === userId
+        )
+    ) {
+        message = "Upvote on action item successfully removed";
+        response = await UserFeedback.updateOne(
+            { _id: feedbackId },
+            {
+                $pull: {
+                    "actionItemMeta.upvotedByUserName": userId,
+                },
+            }
+        );
+    } else {
+        message = "Upvote on action item successfully added";
+        response = await UserFeedback.updateOne(
+            { _id: feedbackId },
+            {
+                $addToSet: { "actionItemMeta.upvotedByUserName": userId },
+            }
+        );
+    }
+
+    if (!response.matchedCount)
+        throw new ApiError(
+            500,
+            "Some error while updating action items upvotes"
+        );
+
+    const [result] = await UserFeedback.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(feedbackId) } },
+        {
+            $project: {
+                actionItemUpvoteCount: {
+                    $size: "$actionItemMeta.upvotedByUserName",
+                },
+            },
+        },
+    ]);
+
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(
+                201,
+                { actionItemUpvoteCount: result?.actionItemUpvoteCount ?? 0 },
+                message
+            )
+        );
+});
+
 const getAllActionItems = asyncHandler(async (req, res) => {
     const { sprintId } = req.body;
 
     if (!sprintId) {
-        throw new ApiError(200, "Sprint ID reference is required");
+        throw new ApiError(400, "Sprint ID reference is required");
     }
 
     const actionItems = await UserFeedback.find({
@@ -330,7 +401,7 @@ const getAllActionItems = asyncHandler(async (req, res) => {
 const getTotalActionItemsCount = asyncHandler(async (req, res) => {
     const { sprintId } = req.body;
     if (!sprintId) {
-        throw new ApiError(200, "Sprint ID reference is required");
+        throw new ApiError(400, "Sprint ID reference is required");
     }
 
     try {
@@ -340,16 +411,16 @@ const getTotalActionItemsCount = asyncHandler(async (req, res) => {
         });
 
         return res
-            .status(200)
+            .status(201)
             .json(
                 new ApiResponse(
-                    200,
+                    201,
                     { count },
                     "Total action items count fetched"
                 )
             );
     } catch (error) {
-        throw new ApiError(200, "Failed to fetch action items count");
+        throw new ApiError(400, "Failed to fetch action items count");
     }
 });
 
@@ -357,7 +428,7 @@ const registerSprint = asyncHandler(async (req, res) => {
     const { sprintName, projectName, teamName, createdBy } = req.body;
     if (!sprintName || !projectName || !teamName || !createdBy)
         throw new ApiError(
-            200,
+            400,
             "Invalid or Missing Details for Registering Sprint"
         );
 
@@ -369,7 +440,7 @@ const registerSprint = asyncHandler(async (req, res) => {
     });
 
     if (!sprint)
-        throw new ApiError(200, "Something Went Wrong While Saving The Sprint");
+        throw new ApiError(400, "Something Went Wrong While Saving The Sprint");
 
     try {
         await sprint.validate();
@@ -380,7 +451,7 @@ const registerSprint = asyncHandler(async (req, res) => {
             error.errors.projectName ||
             error.errors.teamName ||
             error.errors.createdBy;
-        throw new ApiError(200, firstError.properties.message);
+        throw new ApiError(400, firstError.properties.message);
     }
 
     return res
@@ -406,7 +477,7 @@ const getAllSprintCount = asyncHandler(async (req, res) => {
             );
     } catch (error) {
         console.error("Error fetching sprint count:", error);
-        throw new ApiError(200, "Failed to fetch sprint count");
+        throw new ApiError(400, "Failed to fetch sprint count");
     }
 });
 
@@ -420,6 +491,7 @@ export {
     getTotalUpvoteCount,
     getTotalCommentCount,
     handleActionItems,
+    handleActionItemsUpvote,
     getAllActionItems,
     getTotalActionItemsCount,
     registerSprint,
