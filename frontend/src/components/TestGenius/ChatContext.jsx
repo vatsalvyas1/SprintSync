@@ -52,6 +52,46 @@ Example format:
 
 Your test cases should be thorough but practical for manual execution.`;
 
+const testCaseReviewPrompt = `You are an expert test engineer who specializes in reviewing and analyzing test cases for quality, completeness, and effectiveness.
+
+When I send you a test case to review, provide a comprehensive analysis that includes:
+
+1. **Why this test case is good** - Highlight the strengths and positive aspects
+2. **Suggestions for improvement** - Areas where the test case could be enhanced
+3. **Potential errors or issues** - Identify any problems, gaps, or inconsistencies
+4. **Bug detection probability** - Estimate the percentage likelihood of this test case finding bugs (0-100%)
+
+Format your response using markdown with clear sections:
+- Use headers (##) for each section
+- Use bullet points for lists
+- Use blockquotes for important notes
+- Include a summary score or rating
+
+Consider these aspects in your review:
+- Test case clarity and understandability
+- Coverage of functionality
+- Edge cases and boundary conditions
+- Realistic and achievable steps
+- Proper preconditions and expected results
+- Maintainability and reusability
+
+Example format:
+## Why This Test Case is Good
+* Clear and descriptive title
+* Well-defined preconditions
+* Logical step sequence
+
+## Suggestions for Improvement
+* Consider adding negative test scenarios
+* Include performance considerations
+
+## Potential Issues
+* Missing error handling scenarios
+* Unclear expected results
+
+## Bug Detection Probability: 75%
+This test case has a good chance of finding functional bugs but may miss edge cases.`;
+
 const ChatContext = createContext(undefined);
 
 export const ChatProvider = ({ children }) => {
@@ -59,6 +99,8 @@ export const ChatProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [systemPrompt, setSystemPrompt] = useState(defaultSystemPrompt);
+    const [reviewPrompt, setReviewPrompt] = useState(testCaseReviewPrompt);
+    const [isReviewMode, setIsReviewMode] = useState(false);
 
     useEffect(() => {
         const savedMessages = localStorage.getItem("chatMessages");
@@ -134,9 +176,14 @@ export const ChatProvider = ({ children }) => {
                     throw new Error("Please set your Gemini API key first.");
                 }
 
+                // Use review prompt if in review mode, otherwise use regular system prompt
+                const currentPrompt = isReviewMode
+                    ? reviewPrompt
+                    : systemPrompt;
+
                 const response = await geminiService.generateContent(
                     content,
-                    systemPrompt,
+                    currentPrompt,
                     imageData
                 );
 
@@ -162,7 +209,7 @@ export const ChatProvider = ({ children }) => {
                 setLoading(false);
             }
         },
-        [systemPrompt]
+        [systemPrompt, isReviewMode]
     );
 
     const clearMessages = useCallback(() => {
@@ -171,6 +218,20 @@ export const ChatProvider = ({ children }) => {
 
     const updateSystemPrompt = useCallback((prompt) => {
         setSystemPrompt(prompt);
+    }, []);
+
+    const updateReviewPrompt = useCallback((prompt) => {
+        setReviewPrompt(prompt);
+    }, []);
+
+    const startReviewMode = useCallback(() => {
+        setIsReviewMode(true);
+        setMessages([]);
+    }, []);
+
+    const exitReviewMode = useCallback(() => {
+        setIsReviewMode(false);
+        setMessages([]);
     }, []);
 
     return (
@@ -184,6 +245,11 @@ export const ChatProvider = ({ children }) => {
                 clearMessages,
                 systemPrompt,
                 setSystemPrompt: updateSystemPrompt,
+                reviewPrompt,
+                setReviewPrompt: updateReviewPrompt,
+                isReviewMode,
+                startReviewMode,
+                exitReviewMode,
             }}
         >
             {children}

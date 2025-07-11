@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, Settings } from 'lucide-react';
-import { useChat } from './ChatContext';
+import { useState, useEffect } from "react";
+import { X, Settings } from "lucide-react";
+import { useChat } from "./ChatContext";
 
-// Define the default system prompt (same as in ChatContext.jsx)
+// Define the default system prompts (same as in ChatContext.jsx)
 const defaultSystemPrompt = `You are an expert test engineer who specializes in creating manual testing test cases.
 
 When I send you a feature or application description, respond with a set of comprehensive manual test cases that cover the functionality.
@@ -47,85 +47,145 @@ Example format:
 
 Your test cases should be thorough but practical for manual execution.`;
 
+const defaultReviewPrompt = `You are an expert test engineer who specializes in reviewing and analyzing test cases for quality, completeness, and effectiveness.
+
+When I send you a test case to review, provide a comprehensive analysis that includes:
+
+1. **Why this test case is good** - Highlight the strengths and positive aspects
+2. **Suggestions for improvement** - Areas where the test case could be enhanced
+3. **Potential errors or issues** - Identify any problems, gaps, or inconsistencies
+4. **Bug detection probability** - Estimate the percentage likelihood of this test case finding bugs (0-100%)
+
+Format your response using markdown with clear sections:
+- Use headers (##) for each section
+- Use bullet points for lists
+- Use blockquotes for important notes
+- Include a summary score or rating
+
+Consider these aspects in your review:
+- Test case clarity and understandability
+- Coverage of functionality
+- Edge cases and boundary conditions
+- Realistic and achievable steps
+- Proper preconditions and expected results
+- Maintainability and reusability
+
+Example format:
+## Why This Test Case is Good
+* Clear and descriptive title
+* Well-defined preconditions
+* Logical step sequence
+
+## Suggestions for Improvement
+* Consider adding negative test scenarios
+* Include performance considerations
+
+## Potential Issues
+* Missing error handling scenarios
+* Unclear expected results
+
+## Bug Detection Probability: 75%
+This test case has a good chance of finding functional bugs but may miss edge cases.`;
+
 const SystemPromptDialog = ({ isOpen, onClose }) => {
-  const { systemPrompt, setSystemPrompt } = useChat();
+  const { systemPrompt, setSystemPrompt, reviewPrompt, setReviewPrompt, isReviewMode } = useChat();
   const [localPrompt, setLocalPrompt] = useState(systemPrompt);
   const [showDialog, setShowDialog] = useState(isOpen);
 
   useEffect(() => {
     setShowDialog(isOpen);
-    setLocalPrompt(systemPrompt);
-  }, [isOpen, systemPrompt]);
+    // When opening the dialog, set the local prompt to the appropriate prompt based on mode
+    if (isOpen) {
+      if (isReviewMode) {
+        setLocalPrompt(reviewPrompt);
+      } else {
+        setLocalPrompt(systemPrompt);
+      }
+    }
+  }, [isOpen, systemPrompt, reviewPrompt, isReviewMode]);
 
   const handleSave = () => {
-    setSystemPrompt(localPrompt);
+    if (isReviewMode) {
+      setReviewPrompt(localPrompt);
+    } else {
+      setSystemPrompt(localPrompt);
+    }
     onClose();
   };
 
   const handleReset = () => {
-    setLocalPrompt(defaultSystemPrompt);
+    setLocalPrompt(isReviewMode ? defaultReviewPrompt : defaultSystemPrompt);
   };
 
-  if (!showDialog) return null;
+    if (!showDialog) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-out]">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg max-w-2xl w-full mx-4 animate-[slideIn_0.3s_ease-out]">
-        <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-xl font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-            <Settings size={20} className="text-purple-500 dark:text-purple-400" />
-            System Prompt
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-            aria-label="Close"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <div className="p-6">
-          <p className="text-slate-600 dark:text-slate-300 mb-4">
-            Customize the system prompt to control how the AI generates test cases. This prompt sets the tone, format, and requirements for the generated content.
-          </p>
-          <div className="mb-4">
-            <label htmlFor="systemPrompt" className="block text-sm font-medium mb-1 text-slate-900 dark:text-white">
-              System Prompt
-            </label>
-            <textarea
-              id="systemPrompt"
-              value={localPrompt}
-              onChange={(e) => setLocalPrompt(e.target.value)}
-              className="w-full h-64 p-3 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 font-mono text-sm"
-              placeholder="Enter system prompt to guide the AI's responses"
-            />
-          </div>
-          <div className="flex justify-between">
-            <button
-              onClick={handleReset}
-              className="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              Reset to Default
-            </button>
-            <div className="flex gap-2">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white rounded-md transition-colors"
-              >
-                Save
-              </button>
+    return (
+        <div className="fixed inset-0 z-50 flex animate-[fadeIn_0.2s_ease-out] items-center justify-center bg-black/50">
+            <div className="mx-4 w-full max-w-2xl animate-[slideIn_0.3s_ease-out] rounded-lg bg-white shadow-lg dark:bg-slate-800">
+                <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-700">
+                                         <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-white">
+                         <Settings
+                             size={20}
+                             className="text-purple-500 dark:text-purple-400"
+                         />
+                         {isReviewMode ? "Test Case Review Prompt" : "System Prompt"}
+                     </h2>
+                    <button
+                        onClick={onClose}
+                        className="text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                        aria-label="Close"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+                <div className="p-6">
+                                         <p className="mb-4 text-slate-600 dark:text-slate-300">
+                         {isReviewMode 
+                           ? "Customize the review prompt to control how the AI analyzes test cases. This prompt sets the criteria and format for test case reviews."
+                           : "Customize the system prompt to control how the AI generates test cases. This prompt sets the tone, format, and requirements for the generated content."
+                         }
+                     </p>
+                    <div className="mb-4">
+                                                 <label
+                             htmlFor="systemPrompt"
+                             className="mb-1 block text-sm font-medium text-slate-900 dark:text-white"
+                         >
+                             {isReviewMode ? "Review Prompt" : "System Prompt"}
+                         </label>
+                        <textarea
+                            id="systemPrompt"
+                            value={localPrompt}
+                            onChange={(e) => setLocalPrompt(e.target.value)}
+                            className="h-64 w-full rounded-md border border-slate-200 bg-white p-3 font-mono text-sm text-slate-900 focus:ring-2 focus:ring-purple-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-purple-400"
+                            placeholder="Enter system prompt to guide the AI's responses"
+                        />
+                    </div>
+                    <div className="flex justify-between">
+                        <button
+                            onClick={handleReset}
+                            className="px-4 py-2 text-sm text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                        >
+                            Reset to Default
+                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={onClose}
+                                className="rounded-md border border-slate-200 px-4 py-2 text-slate-900 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                className="rounded-md bg-purple-500 px-4 py-2 text-white transition-colors hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default SystemPromptDialog;
