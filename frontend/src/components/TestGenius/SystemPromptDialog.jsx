@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Settings } from "lucide-react";
 import { useChat } from "./ChatContext";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
 
 // Define the default system prompts (same as in ChatContext.jsx)
 const defaultSystemPrompt = `You are an expert test engineer who specializes in creating manual testing test cases.
@@ -89,6 +90,7 @@ This test case has a good chance of finding functional bugs but may miss edge ca
 
 const SystemPromptDialog = ({ isOpen, onClose }) => {
   const { systemPrompt, setSystemPrompt, reviewPrompt, setReviewPrompt, isReviewMode } = useChat();
+  const { speak, announce } = useAccessibility();
   const [localPrompt, setLocalPrompt] = useState(systemPrompt);
   const [showDialog, setShowDialog] = useState(isOpen);
 
@@ -101,8 +103,12 @@ const SystemPromptDialog = ({ isOpen, onClose }) => {
       } else {
         setLocalPrompt(systemPrompt);
       }
+      // Announce dialog opening
+      const dialogType = isReviewMode ? 'Test Case Review Prompt' : 'System Prompt';
+      announce(`${dialogType} settings dialog opened`);
+      speak(`${dialogType} settings dialog is now open`);
     }
-  }, [isOpen, systemPrompt, reviewPrompt, isReviewMode]);
+  }, [isOpen, systemPrompt, reviewPrompt, isReviewMode, announce, speak]);
 
   const handleSave = () => {
     if (isReviewMode) {
@@ -110,20 +116,32 @@ const SystemPromptDialog = ({ isOpen, onClose }) => {
     } else {
       setSystemPrompt(localPrompt);
     }
+    speak('Settings saved successfully');
+    announce('System prompt settings have been saved');
     onClose();
   };
 
   const handleReset = () => {
     setLocalPrompt(isReviewMode ? defaultReviewPrompt : defaultSystemPrompt);
+    speak('Settings reset to default');
+    announce('System prompt has been reset to default settings');
   };
 
     if (!showDialog) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex animate-[fadeIn_0.2s_ease-out] items-center justify-center bg-black/50">
+        <div 
+            className="fixed inset-0 z-50 flex animate-[fadeIn_0.2s_ease-out] items-center justify-center bg-black/50"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dialog-title"
+        >
             <div className="mx-4 w-full max-w-2xl animate-[slideIn_0.3s_ease-out] rounded-lg bg-white shadow-lg dark:bg-slate-800">
                 <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-700">
-                                         <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-white">
+                                         <h2 
+                            id="dialog-title"
+                            className="flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-white"
+                        >
                          <Settings
                              size={20}
                              className="text-purple-500 dark:text-purple-400"
@@ -131,9 +149,22 @@ const SystemPromptDialog = ({ isOpen, onClose }) => {
                          {isReviewMode ? "Test Case Review Prompt" : "System Prompt"}
                      </h2>
                     <button
-                        onClick={onClose}
+                        onClick={() => {
+                            onClose();
+                            speak('Dialog closed');
+                            announce('Settings dialog has been closed');
+                        }}
+                        onFocus={() => speak('Close dialog button')}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                onClose();
+                                speak('Dialog closed');
+                                announce('Settings dialog has been closed');
+                            }
+                        }}
                         className="text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                        aria-label="Close"
+                        aria-label="Close dialog"
                     >
                         <X size={20} />
                     </button>
@@ -156,27 +187,58 @@ const SystemPromptDialog = ({ isOpen, onClose }) => {
                             id="systemPrompt"
                             value={localPrompt}
                             onChange={(e) => setLocalPrompt(e.target.value)}
+                            onFocus={() => speak('System prompt text area focused')}
                             className="h-64 w-full rounded-md border border-slate-200 bg-white p-3 font-mono text-sm text-slate-900 focus:ring-2 focus:ring-purple-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-purple-400"
                             placeholder="Enter system prompt to guide the AI's responses"
+                            aria-describedby="prompt-description"
                         />
                     </div>
                     <div className="flex justify-between">
                         <button
                             onClick={handleReset}
+                            onFocus={() => speak('Reset to default button')}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleReset();
+                                }
+                            }}
                             className="px-4 py-2 text-sm text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                            aria-label="Reset prompt to default settings"
                         >
                             Reset to Default
                         </button>
                         <div className="flex gap-2">
                             <button
-                                onClick={onClose}
+                                onClick={() => {
+                                    onClose();
+                                    speak('Dialog cancelled');
+                                    announce('Settings dialog cancelled, no changes saved');
+                                }}
+                                onFocus={() => speak('Cancel button')}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        onClose();
+                                        speak('Dialog cancelled');
+                                        announce('Settings dialog cancelled, no changes saved');
+                                    }
+                                }}
                                 className="rounded-md border border-slate-200 px-4 py-2 text-slate-900 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
+                                onFocus={() => speak('Save settings button')}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        handleSave();
+                                    }
+                                }}
                                 className="rounded-md bg-purple-500 px-4 py-2 text-white transition-colors hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500"
+                                aria-label="Save prompt settings"
                             >
                                 Save
                             </button>

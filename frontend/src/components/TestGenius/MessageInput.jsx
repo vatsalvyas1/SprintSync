@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Image as ImageIcon, X as XIcon } from "lucide-react";
 import { useChat } from "./ChatContext";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
 
 const MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
 
@@ -11,6 +12,7 @@ const MessageInput = () => {
     const [error, setError] = useState("");
     const { sendMessage, loading } = useChat();
     const textareaRef = useRef(null);
+    const { speak, announce } = useAccessibility();
 
     // Auto-resize the textarea as content grows
     useEffect(() => {
@@ -29,16 +31,22 @@ const MessageInput = () => {
             setError("Only image files are allowed.");
             setImage(null);
             setImagePreview(null);
+            speak("Error: Only image files are allowed");
+            announce("Image upload failed: Only image files are allowed");
             return;
         }
         if (file.size > MAX_IMAGE_SIZE) {
             setError("Image must be less than 1MB.");
             setImage(null);
             setImagePreview(null);
+            speak("Error: Image must be less than 1MB");
+            announce("Image upload failed: Image must be less than 1MB");
             return;
         }
         setError("");
         setImage(file);
+        speak(`Image ${file.name} uploaded successfully`);
+        announce(`Image ${file.name} has been attached to your message`);
         const reader = new FileReader();
         reader.onloadend = () => {
             setImagePreview(reader.result);
@@ -50,6 +58,8 @@ const MessageInput = () => {
         setImage(null);
         setImagePreview(null);
         setError("");
+        speak("Image removed");
+        announce("Image has been removed from your message");
     };
 
     const handleSubmit = async (e) => {
@@ -60,16 +70,24 @@ const MessageInput = () => {
             (image.size > MAX_IMAGE_SIZE || !image.type.startsWith("image/"))
         ) {
             setError("Invalid image.");
+            speak("Error: Invalid image");
+            announce("Message sending failed: Invalid image");
             return;
         }
         try {
+            speak("Sending message");
+            announce("Message is being sent to AI");
             await sendMessage(input, image);
             setInput("");
             setImage(null);
             setImagePreview(null);
             setError("");
+            speak("Message sent successfully");
+            announce("Your message has been sent to the AI");
         } catch (error) {
             setError("Error sending message.");
+            speak("Error sending message");
+            announce("Failed to send message. Please try again.");
             console.error("Error sending message:", error);
         }
     };

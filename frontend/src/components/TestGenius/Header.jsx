@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Moon, Sun, Settings, Trash2, Bot } from "lucide-react";
 import SystemPromptDialog from "./SystemPromptDialog";
 import { useChat } from "./ChatContext";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
 
 const Header = ({ darkMode, toggleDarkMode }) => {
     const [showSystemPromptDialog, setShowSystemPromptDialog] = useState(false);
     const { clearMessages, isReviewMode } = useChat();
+    const { speak, announce } = useAccessibility();
 
     return (
         <>
@@ -42,7 +44,20 @@ const Header = ({ darkMode, toggleDarkMode }) => {
 
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={() => clearMessages()}
+                            onClick={() => {
+                                clearMessages();
+                                speak('Conversation cleared');
+                                announce('All messages have been cleared from the conversation');
+                            }}
+                            onFocus={() => speak('Clear conversation button')}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    clearMessages();
+                                    speak('Conversation cleared');
+                                    announce('All messages have been cleared from the conversation');
+                                }
+                            }}
                             className="rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                             aria-label="Clear conversation"
                             title="Clear conversation"
@@ -51,7 +66,20 @@ const Header = ({ darkMode, toggleDarkMode }) => {
                         </button>
 
                         <button
-                            onClick={() => setShowSystemPromptDialog(true)}
+                            onClick={() => {
+                                setShowSystemPromptDialog(true);
+                                speak('Opening system prompt settings');
+                                announce('System prompt settings dialog opened');
+                            }}
+                            onFocus={() => speak('System prompt settings button')}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setShowSystemPromptDialog(true);
+                                    speak('Opening system prompt settings');
+                                    announce('System prompt settings dialog opened');
+                                }
+                            }}
                             className="rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                             aria-label="System prompt settings"
                             title="System prompt settings"
@@ -61,6 +89,16 @@ const Header = ({ darkMode, toggleDarkMode }) => {
 
                         <button
                             onClick={toggleDarkMode}
+                            onFocus={() => {
+                                const modeText = darkMode ? 'Switch to light mode' : 'Switch to dark mode';
+                                speak(modeText + ' button');
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    toggleDarkMode();
+                                }
+                            }}
                             className="rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                             aria-label={
                                 darkMode

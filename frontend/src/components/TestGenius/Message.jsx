@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Copy, Check, User, Bot } from "lucide-react";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
 
 // Simple markdown renderer for basic formatting
 const SimpleMarkdownRenderer = ({ content }) => {
@@ -30,6 +31,7 @@ const SimpleMarkdownRenderer = ({ content }) => {
 
 const Message = ({ message }) => {
     const [copied, setCopied] = useState(false);
+    const { speak, announce } = useAccessibility();
 
     const isUser = message.role === "user";
 
@@ -37,9 +39,13 @@ const Message = ({ message }) => {
         try {
             await navigator.clipboard.writeText(message.content);
             setCopied(true);
+            speak("Message copied to clipboard");
+            announce("Message content has been copied to clipboard");
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             console.error("Failed to copy message:", err);
+            speak("Failed to copy message");
+            announce("Error: Could not copy message to clipboard");
         }
     };
 
@@ -51,6 +57,8 @@ const Message = ({ message }) => {
     return (
         <div
             className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4 animate-[fadeIn_0.3s_ease-out]`}
+            role="article"
+            aria-label={`Message from ${isUser ? "you" : "TestGenius AI"} at ${formattedTime}`}
         >
             <div
                 className={`max-w-[85%] rounded-lg shadow-md md:max-w-[75%] ${
@@ -58,6 +66,11 @@ const Message = ({ message }) => {
                         ? "rounded-tr-none bg-purple-500 text-white"
                         : "rounded-tl-none border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
                 } `}
+                tabIndex="0"
+                onFocus={() => {
+                    const sender = isUser ? "your" : "TestGenius AI";
+                    speak(`${sender} message: ${message.content.substring(0, 100)}${message.content.length > 100 ? '...' : ''}`);
+                }}
             >
                 <div
                     className={`flex items-center gap-2 p-3 ${
@@ -91,9 +104,14 @@ const Message = ({ message }) => {
                         <div className="mb-2">
                             <img
                                 src={message.image}
-                                alt="User upload"
+                                alt="User uploaded image"
                                 className="max-h-48 max-w-xs rounded border"
                                 style={{ objectFit: "cover" }}
+                                onLoad={() => {
+                                    if (!isUser) {
+                                        speak("Image attached to message");
+                                    }
+                                }}
                             />
                         </div>
                     )}
@@ -107,13 +125,20 @@ const Message = ({ message }) => {
 
                     <button
                         onClick={copyToClipboard}
+                        onFocus={() => speak("Copy message button")}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                copyToClipboard();
+                            }
+                        }}
                         className={`absolute top-3 right-3 rounded-md p-1.5 transition-colors ${
                             isUser
                                 ? "text-white/70 hover:bg-white/20 hover:text-white"
                                 : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
                         } `}
-                        aria-label="Copy message"
-                        title="Copy to clipboard"
+                        aria-label={copied ? "Message copied" : "Copy message to clipboard"}
+                        title={copied ? "Message copied" : "Copy to clipboard"}
                     >
                         {copied ? <Check size={16} /> : <Copy size={16} />}
                     </button>
