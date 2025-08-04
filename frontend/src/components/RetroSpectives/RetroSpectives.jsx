@@ -11,6 +11,7 @@ import {
     ThumbsUp,
     X,
 } from "lucide-react";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
 
 const api = axios.create({
     baseURL: `${backendUrl}/api/v1/retrospectives/`,
@@ -18,6 +19,7 @@ const api = axios.create({
 });
 
 const RetroSpectives = ({ sprintId }) => {
+    const { speak, announce } = useAccessibility();
     const [userInfo, setUserInfo] = useState(null);
     const [feedbackData, setFeedbackData] = useState({
         wellItems: [],
@@ -45,6 +47,78 @@ const RetroSpectives = ({ sprintId }) => {
     const [addCommentDisabled, setAddCommentDisabled] = useState(false);
     const [actionItems, setActionItems] = useState([]);
     const [allActionItemsCount, setAllActionItemsCount] = useState(null);
+
+    // Accessibility handlers
+    const handleSectionFocus = (sectionName) => {
+        speak(`Retrospectives section: ${sectionName}`);
+    };
+
+    const handleCardFocus = (category) => {
+        const itemCount = feedbackData[category]?.length || 0;
+        speak(`${category} card with ${itemCount} items`);
+    };
+
+    const handleButtonFocus = (buttonName) => {
+        speak(`${buttonName} button`);
+    };
+
+    const handleFeedbackCardFocus = (item) => {
+        const actionStatus = item.actionItem
+            ? "marked as action item"
+            : "not marked as action item";
+        const upvoteStatus =
+            item.upvoteCount > 0
+                ? `with ${item.upvoteCount} upvotes`
+                : "with no upvotes";
+        speak(
+            `Feedback: ${item.message}. ${actionStatus}. ${upvoteStatus}. By ${item.author} ${item.time} ago`
+        );
+    };
+
+    const handleUpvoteFocus = (item) => {
+        const isUpvoted = upvotes?.some(
+            (vote) => vote.user === userInfo?._id && vote.feedback === item._id
+        );
+        const status = isUpvoted ? "upvoted" : "not upvoted";
+        speak(
+            `Upvote button, currently ${status}, ${item.upvoteCount} total upvotes`
+        );
+    };
+
+    const handleActionItemFocus = (item) => {
+        if (item.actionItem) {
+            const addedBy =
+                item.actionItemMeta?.addedByUserName || "unknown user";
+            speak(`Action item toggle, marked as action item by ${addedBy}`);
+        } else {
+            speak("Action item toggle, click to mark as action item");
+        }
+    };
+
+    const handleCommentButtonFocus = (item) => {
+        speak(`Comments button, ${item.commentCount} comments`);
+    };
+
+    const handleStatFocus = (statName, value) => {
+        speak(`${statName}: ${value}`);
+    };
+
+    const handleModalFocus = (modalName) => {
+        speak(`${modalName} modal opened`);
+    };
+
+    const handleKeyDown = (e, action, item = null) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            if (action === "upvote" && item) {
+                handleUpvote(item);
+            } else if (action === "actionItem" && item) {
+                handleActionItem(item);
+            } else if (action === "comment" && item) {
+                openCommentModal(item);
+            }
+        }
+    };
 
     useEffect(() => {
         if (!sprintId) return;
@@ -124,13 +198,34 @@ const RetroSpectives = ({ sprintId }) => {
                 console.error("Error fetching action items:", error);
             }
         };
-        console.log(feedbackData)
+        console.log(feedbackData);
         fetchUserInfo();
         fetchFeedbacks();
         fetchComments();
         fetchUpvotes();
         fetchActionItems();
     }, [sprintId, actionItemModal]);
+
+    // Accessibility: Announce feedback items when loaded or changed
+    useEffect(() => {
+        if (!feedbackData) return;
+        const allItems = [
+            ...feedbackData.wellItems,
+            ...feedbackData.poorItems,
+            ...feedbackData.suggestions
+        ];
+        if (allItems.length > 0) {
+            allItems.forEach((item, idx) => {
+                setTimeout(() => {
+                    speak(
+                        `Feedback: ${item.message}. ${item.upvoteCount > 0 ? `${item.upvoteCount} upvotes.` : 'No upvotes.'} By ${item.author}, ${item.time} ago.`
+                    );
+                }, idx * 800); // space out announcements for clarity
+            });
+        } else {
+            speak('No retrospective items present.');
+        }
+    }, [feedbackData, speak]);
 
     const feedbackTimeAgo = (timeStamp) => {
         const now = new Date();
@@ -211,9 +306,20 @@ const RetroSpectives = ({ sprintId }) => {
         return (
             <div
                 className={`${bgColor} ${borderColor} rounded-lg border-1 p-3 transition-shadow hover:shadow-sm`}
+                tabIndex={0}
+                onFocus={() => handleFeedbackCardFocus(item)}
+                role="article"
+                aria-label={`Feedback by ${item.author}: ${item.message}`}
             >
                 <div className="mb-3 flex items-start justify-between">
-                    <div className="max-w-full text-sm font-medium break-normal text-gray-900">
+                    <div
+                        className="max-w-full text-sm font-medium break-normal text-gray-900"
+                        tabIndex={0}
+                        onFocus={() =>
+                            speak(`Feedback content: ${item.message}`)
+                        }
+                        role="text"
+                    >
                         {item.message}
                     </div>
                     <div className="ml-1 flex items-center space-x-2">
@@ -222,28 +328,54 @@ const RetroSpectives = ({ sprintId }) => {
                             isAddedByCurrentUser ? (
                                 <button
                                     onClick={() => handleActionItem(item)}
+                                    onFocus={() => handleActionItemFocus(item)}
+                                    onKeyDown={(e) =>
+                                        handleKeyDown(e, "actionItem", item)
+                                    }
                                     title="Remove Action Item"
+                                    aria-label={`Remove action item marked by ${item.actionItemMeta?.addedByUserName}`}
+                                    tabIndex={0}
                                 >
                                     <CirclePlus
                                         size={18}
                                         className="cursor-pointer text-blue-600 hover:text-blue-700"
+                                        aria-hidden="true"
                                     />
                                 </button>
                             ) : (
-                                <CheckCircle
-                                    size={18}
-                                    className="cursor-default text-green-600"
+                                <div
                                     title={`Action Item by ${item.actionItemMeta?.addedByUserName}`}
-                                />
+                                    tabIndex={0}
+                                    onFocus={() =>
+                                        speak(
+                                            `Action item marked by ${item.actionItemMeta?.addedByUserName}`
+                                        )
+                                    }
+                                    role="status"
+                                    aria-label={`Action item marked by ${item.actionItemMeta?.addedByUserName}`}
+                                >
+                                    <CheckCircle
+                                        size={18}
+                                        className="cursor-default text-green-600"
+                                        aria-hidden="true"
+                                    />
+                                </div>
                             )
                         ) : (
                             <button
                                 onClick={() => handleActionItem(item)}
+                                onFocus={() => handleActionItemFocus(item)}
+                                onKeyDown={(e) =>
+                                    handleKeyDown(e, "actionItem", item)
+                                }
                                 title="Mark as Action Item"
+                                aria-label="Mark as action item"
+                                tabIndex={0}
                             >
                                 <CirclePlus
                                     size={18}
                                     className="cursor-pointer text-gray-800 hover:text-blue-700"
+                                    aria-hidden="true"
                                 />
                             </button>
                         )}
@@ -252,6 +384,11 @@ const RetroSpectives = ({ sprintId }) => {
                         <div
                             className="no-wrap flex items-center"
                             title="Upvote"
+                            tabIndex={0}
+                            onFocus={() => handleUpvoteFocus(item)}
+                            onKeyDown={(e) => handleKeyDown(e, "upvote", item)}
+                            role="button"
+                            aria-label={`Upvote feedback, currently ${isUpvotedByUser ? "upvoted" : "not upvoted"}, ${item.upvoteCount} total upvotes`}
                         >
                             <button onClick={() => handleUpvote(item)}>
                                 <ThumbsUp
@@ -261,9 +398,13 @@ const RetroSpectives = ({ sprintId }) => {
                                             ? "text-blue-600"
                                             : "text-gray-400"
                                     } hover:text-blue-700`}
+                                    aria-hidden="true"
                                 />
                             </button>
-                            <div className="ml-1 text-xs text-gray-600">
+                            <div
+                                className="ml-1 text-xs text-gray-600"
+                                aria-label={`${item.upvoteCount} upvotes`}
+                            >
                                 {item.upvoteCount}
                             </div>
                         </div>
@@ -276,10 +417,19 @@ const RetroSpectives = ({ sprintId }) => {
                         <img
                             className="h-5 w-5 rounded-full"
                             src={item.avatar}
-                            alt="User"
+                            alt={`Avatar of ${item.author}`}
                             draggable="false"
                         />
-                        <span className="text-xs text-gray-500">
+                        <span
+                            className="text-xs text-gray-500"
+                            tabIndex={0}
+                            onFocus={() =>
+                                speak(
+                                    `Author: ${item.author}, posted ${item.time} ago`
+                                )
+                            }
+                            role="text"
+                        >
                             <span className="whitespace-nowrap">
                                 {item.author}
                             </span>{" "}
@@ -291,7 +441,11 @@ const RetroSpectives = ({ sprintId }) => {
                     </div>
                     <button
                         onClick={() => openCommentModal(item)}
+                        onFocus={() => handleCommentButtonFocus(item)}
+                        onKeyDown={(e) => handleKeyDown(e, "comment", item)}
                         className="ml-2 text-xs text-blue-600 hover:text-blue-700"
+                        aria-label={`View ${item.commentCount} comments`}
+                        tabIndex={0}
                     >
                         {item.commentCount} comments
                     </button>
@@ -302,23 +456,22 @@ const RetroSpectives = ({ sprintId }) => {
 
     const openActionItemsModal = () => {
         setActionItemsModal(true);
+        handleModalFocus("Action Items");
     };
 
     const closeActionItemsModal = () => {
         setActionItemsModal(false);
+        speak("Action items modal closed");
     };
 
     const openFeedbackModal = () => {
         setFeedbackModal(true);
+        handleModalFocus("Add Feedback");
     };
 
     const closeFeedbackModal = () => {
         setFeedbackModal(false);
-        setNewFeedback({
-            category: "What Went Well",
-            message: "",
-            anonymous: false,
-        });
+        speak("Add feedback modal closed");
     };
 
     const handleSubmitFeedback = async (e) => {
@@ -377,12 +530,14 @@ const RetroSpectives = ({ sprintId }) => {
             category: feedback.category,
         });
         setCommentModal(true);
+        handleModalFocus("Comments");
     };
 
     const closeCommentModal = () => {
         setCommentModal(false);
         setSelectedFeedback(null);
         setNewComment("");
+        speak("Comments modal closed");
     };
 
     const getTotalComments = () => {
@@ -634,34 +789,58 @@ const RetroSpectives = ({ sprintId }) => {
 
     if (sprintId == null)
         return (
-            <div className="mt-5 text-center font-medium">
+            <div
+                className="mt-5 text-center font-medium"
+                tabIndex={0}
+                onFocus={() => speak("Select Sprint To View Its Retro Board")}
+                role="status"
+                aria-label="Select Sprint To View Its Retro Board"
+            >
                 Select Sprint To View Its Retro Board
             </div>
         );
 
     if (userInfo == null || comments == undefined)
         return (
-            <div className="mt-5 text-center font-medium">
+            <div
+                className="mt-5 text-center font-medium"
+                tabIndex={0}
+                onFocus={() => speak("No Sprint Present")}
+                role="status"
+                aria-label="No Sprint Present"
+            >
                 {" "}
                 No Sprint Present
             </div>
         );
 
     return (
-        <section className="p-4">
+        <section
+            className="p-4"
+            role="main"
+            aria-label="Retrospectives dashboard"
+            tabIndex={0}
+            onFocus={() => handleSectionFocus("Retrospectives Dashboard")}
+        >
             {/* Sub-Header */}
 
             <div className="mb-5 flex justify-between gap-2">
                 <button
                     onClick={openFeedbackModal}
+                    onFocus={() => handleButtonFocus("Add Feedback")}
                     className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 md:px-4 md:py-2"
+                    aria-label="Add new feedback"
+                    tabIndex={0}
                 >
-                    <Plus size={18} className="mr-2" />
+                    <Plus size={18} className="mr-2" aria-hidden="true" />
                     Add Feedback
                 </button>
                 <button
                     onClick={openActionItemsModal}
+                    onFocus={() => handleButtonFocus("Show Action Items")}
                     className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 md:px-4 md:py-2"
+                    aria-label="View all action items"
+                    tabIndex={0}
                 >
                     Show Action Items
                 </button>
@@ -670,17 +849,43 @@ const RetroSpectives = ({ sprintId }) => {
             {/* Container For All Cards */}
             <div className="scrollbar-hide mb-6 grid h-[500px] grid-cols-1 gap-4 overflow-y-auto rounded-lg pb-5 md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3 lg:overflow-hidden">
                 {/* What Went Well Card */}
-                <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
+                <div
+                    className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
+                    tabIndex={0}
+                    onFocus={() => handleCardFocus("wellItems")}
+                    role="region"
+                    aria-label="What Went Well feedback section"
+                >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-100 md:h-8 md:w-8">
-                                <Check size={18} className="text-green-800" />
+                                <Check
+                                    size={18}
+                                    className="text-green-800"
+                                    aria-hidden="true"
+                                />
                             </div>
-                            <div className="px-2 text-base font-semibold text-gray-900">
+                            <div
+                                className="px-2 text-base font-semibold text-gray-900"
+                                tabIndex={0}
+                                onFocus={() => speak("What Went Well section")}
+                                role="heading"
+                                aria-level="2"
+                            >
                                 What Went Well
                             </div>
                         </div>
-                        <div className="ml-auto inline-flex items-center rounded-full border bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 md:px-2 md:py-1">
+                        <div
+                            className="ml-auto inline-flex items-center rounded-full border bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 md:px-2 md:py-1"
+                            tabIndex={0}
+                            onFocus={() =>
+                                speak(
+                                    `${feedbackData.wellItems.length} items in What Went Well`
+                                )
+                            }
+                            role="status"
+                            aria-label={`${feedbackData.wellItems.length} items`}
+                        >
                             {feedbackData.wellItems.length} items
                         </div>
                     </div>
@@ -701,17 +906,45 @@ const RetroSpectives = ({ sprintId }) => {
                     </div>
                 </div>
                 {/* What Didn't Go Well Card */}
-                <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
+                <div
+                    className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
+                    tabIndex={0}
+                    onFocus={() => handleCardFocus("poorItems")}
+                    role="region"
+                    aria-label="What Didn't Go Well feedback section"
+                >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-100 md:h-8 md:w-8">
-                                <X size={18} className="text-red-800" />
+                                <X
+                                    size={18}
+                                    className="text-red-800"
+                                    aria-hidden="true"
+                                />
                             </div>
-                            <h2 className="px-2 text-base font-semibold text-gray-900">
+                            <h2
+                                className="px-2 text-base font-semibold text-gray-900"
+                                tabIndex={0}
+                                onFocus={() =>
+                                    speak("What Didn't Go Well section")
+                                }
+                                role="heading"
+                                aria-level="2"
+                            >
                                 What Didn't Go Well
                             </h2>
                         </div>
-                        <span className="ml-auto inline-flex items-center rounded-full border bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 md:px-2 md:py-1">
+                        <span
+                            className="ml-auto inline-flex items-center rounded-full border bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 md:px-2 md:py-1"
+                            tabIndex={0}
+                            onFocus={() =>
+                                speak(
+                                    `${feedbackData.poorItems.length} items in What Didn't Go Well`
+                                )
+                            }
+                            role="status"
+                            aria-label={`${feedbackData.poorItems.length} items`}
+                        >
                             {feedbackData.poorItems.length} items
                         </span>
                     </div>
@@ -729,20 +962,43 @@ const RetroSpectives = ({ sprintId }) => {
                     </div>
                 </div>
                 {/* Suggestions Card */}
-                <div className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6">
+                <div
+                    className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
+                    tabIndex={0}
+                    onFocus={() => handleCardFocus("suggestions")}
+                    role="region"
+                    aria-label="Suggestions feedback section"
+                >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
                             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 md:h-8 md:w-8">
                                 <Lightbulb
                                     size={18}
                                     className="text-blue-800"
+                                    aria-hidden="true"
                                 />
                             </div>
-                            <h2 className="px-2 text-base font-semibold text-gray-900">
+                            <h2
+                                className="px-2 text-base font-semibold text-gray-900"
+                                tabIndex={0}
+                                onFocus={() => speak("Suggestions section")}
+                                role="heading"
+                                aria-level="2"
+                            >
                                 Suggestions
                             </h2>
                         </div>
-                        <span className="ml-auto inline-flex items-center rounded-full border bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 md:px-2 md:py-1">
+                        <span
+                            className="ml-auto inline-flex items-center rounded-full border bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 md:px-2 md:py-1"
+                            tabIndex={0}
+                            onFocus={() =>
+                                speak(
+                                    `${feedbackData.suggestions.length} items in Suggestions`
+                                )
+                            }
+                            role="status"
+                            aria-label={`${feedbackData.suggestions.length} items`}
+                        >
                             {feedbackData.suggestions.length} items
                         </span>
                     </div>
@@ -765,8 +1021,27 @@ const RetroSpectives = ({ sprintId }) => {
             </div>
 
             {/* Summary Statistics */}
-            <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:gap-5 lg:grid-cols-4">
-                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+            <div
+                className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:gap-5 lg:grid-cols-4"
+                role="region"
+                aria-label="Retrospective summary statistics"
+                tabIndex={0}
+                onFocus={() =>
+                    handleStatFocus(
+                        "Summary statistics",
+                        "Retrospective summary statistics"
+                    )
+                }
+            >
+                <div
+                    className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6"
+                    tabIndex={0}
+                    onFocus={() =>
+                        handleStatFocus("Total Feedbacks", getTotalFeedback())
+                    }
+                    role="status"
+                    aria-label={`Total feedbacks: ${getTotalFeedback()}`}
+                >
                     <div className="mb-1 text-xl font-bold text-green-600 md:mb-2 md:text-2xl">
                         {getTotalFeedback()}
                     </div>
@@ -774,7 +1049,15 @@ const RetroSpectives = ({ sprintId }) => {
                         Feedbacks
                     </div>
                 </div>
-                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                <div
+                    className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6"
+                    tabIndex={0}
+                    onFocus={() =>
+                        handleStatFocus("Total Comments", getTotalComments())
+                    }
+                    role="status"
+                    aria-label={`Total comments: ${getTotalComments()}`}
+                >
                     <div className="mb-1 text-xl font-bold text-purple-600 md:mb-2 md:text-2xl">
                         {getTotalComments()}
                     </div>
@@ -782,7 +1065,15 @@ const RetroSpectives = ({ sprintId }) => {
                         Comments
                     </div>
                 </div>
-                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                <div
+                    className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6"
+                    tabIndex={0}
+                    onFocus={() =>
+                        handleStatFocus("Total Upvotes", getTotalUpvotes())
+                    }
+                    role="status"
+                    aria-label={`Total upvotes: ${getTotalUpvotes()}`}
+                >
                     <div className="mb-1 text-xl font-bold text-sky-600 md:mb-2 md:text-2xl">
                         {getTotalUpvotes()}
                     </div>
@@ -790,7 +1081,18 @@ const RetroSpectives = ({ sprintId }) => {
                         Upvotes
                     </div>
                 </div>
-                <div className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6">
+                <div
+                    className="px-auto rounded-lg border border-gray-200 bg-white p-3 text-center md:p-6"
+                    tabIndex={0}
+                    onFocus={() =>
+                        handleStatFocus(
+                            "Total Action Items",
+                            getTotalActionItems()
+                        )
+                    }
+                    role="status"
+                    aria-label={`Total action items: ${getTotalActionItems()}`}
+                >
                     <div className="mb-1 text-xl font-bold text-pink-600 md:mb-2 md:text-2xl">
                         {getTotalActionItems()}
                     </div>
