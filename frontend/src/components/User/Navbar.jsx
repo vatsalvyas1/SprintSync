@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/axios";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
 import {
     Menu,
     X,
@@ -14,11 +15,12 @@ import {
     LogOut,
 } from "lucide-react";
 
-const NavBar = ({onLogout}) => {
+const NavBar = ({ onLogout }) => {
     const [mobileMenu, setMobileMenu] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const { speak, announce } = useAccessibility();
 
     useEffect(() => {
         const fetchUserInfo = () => {
@@ -34,12 +36,15 @@ const NavBar = ({onLogout}) => {
 
     const handleLogoutClick = async () => {
         try {
+            speak("Logging out");
             await api.get("/logout");
             localStorage.removeItem("loggedInUser");
-             onLogout();
+            onLogout();
             navigate("/login");
+            announce("Successfully logged out");
         } catch (error) {
             console.error("Logout failed:", error);
+            speak("Logout failed. Please try again.");
         }
     };
 
@@ -81,7 +86,17 @@ const NavBar = ({onLogout}) => {
                 {/* Mobile Menu Button */}
                 <button
                     className="rounded-md p-1 text-white transition-colors duration-200 hover:bg-slate-700/50 md:hidden"
-                    onClick={() => setMobileMenu(!mobileMenu)}
+                    onClick={() => {
+                        setMobileMenu(!mobileMenu);
+                        speak(mobileMenu ? "Menu closed" : "Menu opened");
+                    }}
+                    aria-label={
+                        mobileMenu
+                            ? "Close navigation menu"
+                            : "Open navigation menu"
+                    }
+                    aria-expanded={mobileMenu}
+                    aria-controls="mobile-navigation"
                 >
                     {mobileMenu ? <X size={24} /> : <Menu size={24} />}
                 </button>
@@ -131,14 +146,20 @@ const NavBar = ({onLogout}) => {
 
             {/* Mobile Navigation */}
             {mobileMenu && (
-                <div className="border-t border-slate-600/30 md:hidden">
+                <div
+                    id="mobile-navigation"
+                    className="border-t border-slate-600/30 md:hidden"
+                    role="navigation"
+                    aria-label="Mobile navigation menu"
+                >
                     <nav className="space-y-2 px-4 py-4">
                         <NavLinks currentPath={location.pathname} />
                     </nav>
                     <div className="px-4 pb-4">
                         <button
-                            className="flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-700 to-purple-600 px-4 py-2 text-sm font-medium transition-all duration-200 hover:from-purple-600 hover:to-purple-500"
+                            className="flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-700 to-purple-600 px-4 py-2 text-sm font-medium transition-all duration-200 hover:from-purple-600 hover:to-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none"
                             onClick={handleLogoutClick}
+                            aria-label="Logout from account"
                         >
                             <LogOut size={16} />
                             Logout
@@ -151,6 +172,8 @@ const NavBar = ({onLogout}) => {
 };
 
 const NavLinks = ({ currentPath }) => {
+    const { speak } = useAccessibility();
+
     const links = [
         { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { to: "/deployment", label: "Deployment", icon: UploadCloud },
@@ -169,24 +192,38 @@ const NavLinks = ({ currentPath }) => {
                     <Link
                         key={to}
                         to={to}
-                        className={`group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 transition-all duration-200 ${
+                        className={`group relative flex items-center gap-3 overflow-hidden rounded-md px-4 py-2 transition-all duration-200 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none ${
                             isActive
                                 ? "bg-slate-700/50 text-white"
                                 : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
                         }`}
+                        onFocus={() =>
+                            speak(
+                                `${label} navigation link${isActive ? ", current page" : ""}`
+                            )
+                        }
+                        aria-current={isActive ? "page" : undefined}
+                        aria-label={`Navigate to ${label}${isActive ? " (current page)" : ""}`}
                     >
                         <div
                             className={`absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 transition-opacity duration-200 ${
-                                isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                                isActive
+                                    ? "opacity-100"
+                                    : "opacity-0 group-hover:opacity-100"
                             }`}
                         />
                         <Icon
                             size={18}
                             className={`relative z-10 transition-colors duration-200 ${
-                                isActive ? "text-purple-400" : "group-hover:text-purple-400"
+                                isActive
+                                    ? "text-purple-400"
+                                    : "group-hover:text-purple-400"
                             }`}
+                            aria-hidden="true"
                         />
-                        <span className="relative z-10 text-sm font-medium">{label}</span>
+                        <span className="relative z-10 text-sm font-medium">
+                            {label}
+                        </span>
                     </Link>
                 );
             })}

@@ -1,6 +1,9 @@
 import React, { useRef, useState } from "react";
 import api from "../utils/axios.js";
 import { Link, useNavigate } from "react-router-dom";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
+import AccessibleButton from "../Accessibility/AccessibleButton";
+import AccessibleLink from "../Accessibility/AccessibleLink";
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -8,20 +11,22 @@ function Login() {
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({
         email: "",
-        password: ""
+        password: "",
     });
     const navigate = useNavigate();
+    const { speak, announce } = useAccessibility();
 
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
 
     const togglePassword = () => {
         setShowPassword((prev) => !prev);
+        speak(showPassword ? "Password hidden" : "Password visible");
     };
 
     const navigateToHomePage = () => {
-        navigate("/")
-    }
+        navigate("/");
+    };
 
     // Client-side validation function
     const validateForm = () => {
@@ -54,7 +59,7 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Clear previous errors
         setError("");
         setFieldErrors({ email: "", password: "" });
@@ -73,26 +78,45 @@ function Login() {
             });
 
             if (res.data.success) {
-                localStorage.setItem("loggedInUser", JSON.stringify(res.data.data.loggedInUser));
-                window.dispatchEvent(new Event('storage'));
+                localStorage.setItem(
+                    "loggedInUser",
+                    JSON.stringify(res.data.data.loggedInUser)
+                );
+                window.dispatchEvent(new Event("storage"));
+                announce("Login successful. Redirecting to dashboard.");
                 navigate(`/dashboard`);
             } else {
                 setError(res.data.message || "Login failed. Please try again.");
+                speak("Login failed. Please check your credentials.");
             }
         } catch (error) {
             console.error("Login error:", error);
-            
+
             // Handle different types of errors
             if (error.response) {
                 // Server responded with error status
-                const errorMessage = error.response.data?.message || error.response.data?.error;
-                
-                if (error.response.status === 404 || errorMessage?.toLowerCase().includes("doesn't exist") || errorMessage?.toLowerCase().includes("not found")) {
-                    setError("User doesn't exist. Please check your email or register first.");
-                } else if (error.response.status === 401 || errorMessage?.toLowerCase().includes("password") || errorMessage?.toLowerCase().includes("incorrect")) {
+                const errorMessage =
+                    error.response.data?.message || error.response.data?.error;
+
+                if (
+                    error.response.status === 404 ||
+                    errorMessage?.toLowerCase().includes("doesn't exist") ||
+                    errorMessage?.toLowerCase().includes("not found")
+                ) {
+                    setError(
+                        "User doesn't exist. Please check your email or register first."
+                    );
+                } else if (
+                    error.response.status === 401 ||
+                    errorMessage?.toLowerCase().includes("password") ||
+                    errorMessage?.toLowerCase().includes("incorrect")
+                ) {
                     setError("Incorrect password. Please try again.");
                 } else if (error.response.status === 400) {
-                    setError(errorMessage || "Invalid credentials. Please check your email and password.");
+                    setError(
+                        errorMessage ||
+                            "Invalid credentials. Please check your email and password."
+                    );
                 } else if (error.response.status >= 500) {
                     setError("Server error. Please try again later.");
                 } else {
@@ -100,7 +124,9 @@ function Login() {
                 }
             } else if (error.request) {
                 // Network error
-                setError("Network error. Please check your internet connection and try again.");
+                setError(
+                    "Network error. Please check your internet connection and try again."
+                );
             } else {
                 // Other errors
                 setError("An unexpected error occurred. Please try again.");
@@ -113,7 +139,7 @@ function Login() {
     // Clear errors when user starts typing
     const handleInputChange = (field) => {
         if (fieldErrors[field]) {
-            setFieldErrors(prev => ({ ...prev, [field]: "" }));
+            setFieldErrors((prev) => ({ ...prev, [field]: "" }));
         }
         if (error) {
             setError("");
@@ -123,19 +149,26 @@ function Login() {
     return (
         <div
             id="root"
-            className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4 overflow-x-hidden relative"
+            className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-gradient-to-br from-purple-50 to-indigo-100 p-4"
+            role="main"
+            aria-label="Login page"
         >
-            <section id="login-form" className="w-full max-w-md relative">
+            <section id="login-form" className="relative w-full max-w-md">
                 {/* Login Card */}
-                <div className="bg-white rounded-3xl shadow-lg border border-purple-100 p-8 relative z-10 transition-all duration-500 hover:shadow-xl">
+                <div className="relative z-10 rounded-3xl border border-purple-100 bg-white p-8 shadow-lg transition-all duration-500 hover:shadow-xl">
                     {/* Logo/Brand */}
-                    <div className="text-center mb-8">
-                        <div onClick={navigateToHomePage} className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4 cursor-pointer">
+                    <div className="mb-8 text-center">
+                        <button
+                            onClick={navigateToHomePage}
+                            className="mb-4 inline-flex h-16 w-16 cursor-pointer items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none"
+                            aria-label="Go to SprintSync homepage"
+                        >
                             <svg
-                                className="w-8 h-8 text-white"
+                                className="h-8 w-8 text-white"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                aria-hidden="true"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -144,23 +177,39 @@ function Login() {
                                     d="M13 10V3L4 14h7v7l9-11h-7z"
                                 />
                             </svg>
-                        </div>
-                        <h1 onClick={navigateToHomePage} className="text-2xl font-bold text-gray-900 font-inter cursor-pointer">
+                        </button>
+                        <h1 className="font-inter text-2xl font-bold text-gray-900">
                             SprintSync
                         </h1>
-                        <p className="text-gray-600 text-sm mt-1">
+                        <p className="mt-1 text-sm text-gray-600">
                             Welcome back to your workspace
                         </p>
                     </div>
 
                     {/* Global Error Message */}
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                        <div
+                            className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4"
+                            role="alert"
+                            aria-live="assertive"
+                            aria-label="Login error"
+                        >
                             <div className="flex items-center">
-                                <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <svg
+                                    className="mr-2 h-5 w-5 text-red-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
                                 </svg>
-                                <p className="text-red-700 text-sm">{error}</p>
+                                <p className="text-sm text-red-700">{error}</p>
                             </div>
                         </div>
                     )}
@@ -171,7 +220,7 @@ function Login() {
                         <div className="transition-transform duration-300">
                             <label
                                 htmlFor="email"
-                                className="block text-sm font-medium text-gray-700 mb-2"
+                                className="mb-2 block text-sm font-medium text-gray-700"
                             >
                                 Email Address
                             </label>
@@ -183,17 +232,20 @@ function Login() {
                                     autoComplete="email"
                                     name="email"
                                     ref={emailRef}
-                                    onChange={() => handleInputChange('email')}
-                                    className={`w-full px-4 outline-none py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white ${
-                                        fieldErrors.email ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                    onChange={() => handleInputChange("email")}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 transition-all duration-300 outline-none focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500 ${
+                                        fieldErrors.email
+                                            ? "border-red-300 bg-red-50"
+                                            : "border-gray-200"
                                     }`}
                                     placeholder="Enter your email"
                                 />
                                 <svg
-                                    className="absolute right-3 top-3.5 w-5 h-5 text-gray-400"
+                                    className="absolute top-3.5 right-3 h-5 w-5 text-gray-400"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -204,7 +256,9 @@ function Login() {
                                 </svg>
                             </div>
                             {fieldErrors.email && (
-                                <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                                <p className="mt-1 text-sm text-red-600">
+                                    {fieldErrors.email}
+                                </p>
                             )}
                         </div>
 
@@ -212,7 +266,7 @@ function Login() {
                         <div className="transition-transform duration-300">
                             <label
                                 htmlFor="password"
-                                className="block text-sm font-medium text-gray-700 mb-2"
+                                className="mb-2 block text-sm font-medium text-gray-700"
                             >
                                 Password
                             </label>
@@ -223,23 +277,33 @@ function Login() {
                                     name="password"
                                     autoComplete="current-password"
                                     ref={passwordRef}
-                                    onChange={() => handleInputChange('password')}
-                                    className={`w-full px-4 py-3 border outline-none rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white pr-12 ${
-                                        fieldErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                    onChange={() =>
+                                        handleInputChange("password")
+                                    }
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 pr-12 transition-all duration-300 outline-none focus:border-transparent focus:bg-white focus:ring-2 focus:ring-purple-500 ${
+                                        fieldErrors.password
+                                            ? "border-red-300 bg-red-50"
+                                            : "border-gray-200"
                                     }`}
                                     placeholder="Enter your password"
                                 />
                                 <button
                                     type="button"
-                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                                    className="absolute top-3.5 right-3 rounded text-gray-400 hover:text-gray-600 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none"
                                     onClick={togglePassword}
+                                    aria-label={
+                                        showPassword
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
                                 >
                                     {showPassword ? (
                                         <svg
-                                            className="w-5 h-5"
+                                            className="h-5 w-5"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
+                                            aria-hidden="true"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -250,10 +314,11 @@ function Login() {
                                         </svg>
                                     ) : (
                                         <svg
-                                            className="w-5 h-5"
+                                            className="h-5 w-5"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
+                                            aria-hidden="true"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -272,50 +337,75 @@ function Login() {
                                 </button>
                             </div>
                             {fieldErrors.password && (
-                                <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+                                <p className="mt-1 text-sm text-red-600">
+                                    {fieldErrors.password}
+                                </p>
                             )}
                         </div>
 
                         {/* Submit Button */}
-                        <button
+                        <AccessibleButton
                             type="submit"
-                            className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-4 rounded-2xl font-medium hover:from-purple-600 hover:to-indigo-700 focus:ring-4 focus:ring-purple-200 transition-all duration-300 transform hover:scale-101 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            className="w-full transform rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-3 font-medium text-white transition-all duration-300 hover:scale-101 hover:from-purple-600 hover:to-indigo-700 focus:ring-4 focus:ring-purple-200 active:scale-95 disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50"
                             disabled={loading}
+                            loading={loading}
+                            ariaLabel={
+                                loading
+                                    ? "Signing in, please wait"
+                                    : "Sign in to SprintSync"
+                            }
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <svg
+                                        className="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
                                     </svg>
                                     Signing in...
                                 </div>
                             ) : (
                                 "Sign In to SprintSync"
                             )}
-                        </button>
+                        </AccessibleButton>
                     </form>
 
                     {/* Register Link */}
-                    <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                    <div className="mt-8 border-t border-gray-100 pt-6 text-center">
                         <p className="text-sm text-gray-600">
-                            New here?
-                            <Link
-                                to={"/register"}
-                                className="text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200"
+                            New here?{" "}
+                            <AccessibleLink
+                                to="/register"
+                                className="font-medium text-purple-600 transition-colors duration-200 hover:text-purple-700"
+                                ariaLabel="Create a new account"
                             >
-                                {" "}
                                 Register Now
-                            </Link>
+                            </AccessibleLink>
                         </p>
                     </div>
                 </div>
 
                 {/* Floating elements */}
-                <div className="absolute top-20 left-10 w-3 h-3 bg-purple-300 rounded-full animate-bounce opacity-60"></div>
-                <div className="absolute bottom-32 right-16 w-2 h-2 bg-indigo-300 rounded-full animate-pulse opacity-40"></div>
+                <div className="absolute top-20 left-10 h-3 w-3 animate-bounce rounded-full bg-purple-300 opacity-60"></div>
+                <div className="absolute right-16 bottom-32 h-2 w-2 animate-pulse rounded-full bg-indigo-300 opacity-40"></div>
                 <div
-                    className="absolute top-1/3 right-8 w-4 h-4 bg-purple-200 rounded-full animate-bounce opacity-30"
+                    className="absolute top-1/3 right-8 h-4 w-4 animate-bounce rounded-full bg-purple-200 opacity-30"
                     style={{ animationDelay: "1s" }}
                 ></div>
             </section>

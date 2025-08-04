@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Navigate,
+    useLocation,
+} from "react-router-dom";
 import { useState, useEffect } from "react";
 import Chatbot from "./components/TestGenius/Chatbot";
 import Login from "./components/User/Login";
@@ -15,16 +21,18 @@ import ChecklistDetail from "./components/Deployment/ChecklistDetail";
 import JournalPage from "./components/Journals/JournalPage";
 import RetroSpectives from "./components/RetroSpectives/RetroSpectives";
 import SprintManageRetroSpectives from "./components/RetroSpectives/SprintManageRetroSpectives";
+import { AccessibilityProvider } from "./components/Accessibility/AccessibilityProvider";
+import AccessibilityToolbar from "./components/Accessibility/AccessibilityToolbar";
 
 // Create a component to handle conditional FrontPage rendering
 function ConditionalFrontPage({ userInfoGlobal }) {
     const location = useLocation();
-    
+
     // Only show FrontPage on home route when user is not logged in
-    if (!userInfoGlobal && location.pathname === '/') {
+    if (!userInfoGlobal && location.pathname === "/") {
         return <FrontPage />;
     }
-    
+
     return null;
 }
 
@@ -53,22 +61,19 @@ function AppContent() {
 
         fetchUserInfo();
 
-        
-
-
         // Listen for storage events to handle login/logout from other tabs
         const handleStorageChange = () => {
             fetchUserInfo();
         };
 
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
     }, []);
 
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            <div className="flex h-screen items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-purple-500"></div>
             </div>
         );
     }
@@ -84,45 +89,106 @@ function AppContent() {
             <Routes>
                 {/* Public Routes (accessible to everyone) */}
                 <Route path="/ai-test-generator" element={<Chatbot />} />
-                <Route path="/publicretrospectives" element={<PublicSprintRetro />} />
+                <Route
+                    path="/publicretrospectives"
+                    element={<PublicSprintRetro />}
+                />
                 <Route path="/publicdashboard" element={<PublicDashboard />} />
-                <Route path="/login" element={userInfoGlobal ? <Navigate to="/dashboard" /> : <Login />} />
-                <Route path="/register" element={userInfoGlobal ? <Navigate to="/dashboard" /> : <Register />} />
+                <Route
+                    path="/login"
+                    element={
+                        userInfoGlobal ? (
+                            <Navigate to="/dashboard" />
+                        ) : (
+                            <Login />
+                        )
+                    }
+                />
+                <Route
+                    path="/register"
+                    element={
+                        userInfoGlobal ? (
+                            <Navigate to="/dashboard" />
+                        ) : (
+                            <Register />
+                        )
+                    }
+                />
 
                 {/* Protected Routes (only accessible when logged in) */}
-                <Route 
-                    path="/dashboard" 
-                    element={userInfoGlobal ? <PublicDashboard /> : <Navigate to="/login" />} 
+                <Route
+                    path="/dashboard"
+                    element={
+                        userInfoGlobal ? (
+                            <PublicDashboard />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
                 />
-                <Route 
-                    path="/deployment" 
-                    element={userInfoGlobal ? <Checklist /> : <Navigate to="/login" />} 
+                <Route
+                    path="/deployment"
+                    element={
+                        userInfoGlobal ? (
+                            <Checklist />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
                 />
-                <Route 
-                    path="/deployment/:checklistId" 
-                    element={userInfoGlobal ? <ChecklistDetail /> : <Navigate to="/login" />} 
+                <Route
+                    path="/deployment/:checklistId"
+                    element={
+                        userInfoGlobal ? (
+                            <ChecklistDetail />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
                 />
-                <Route 
-                    path="/retrospectives" 
-                    element={userInfoGlobal ? <SprintManageRetroSpectives /> : <Navigate to="/login" />} 
+                <Route
+                    path="/retrospectives"
+                    element={
+                        userInfoGlobal ? (
+                            <SprintManageRetroSpectives />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
                 />
-                <Route 
-                    path="/add-form/:userid" 
-                    element={userInfoGlobal ? <AddForm /> : <Navigate to="/login" />} 
+                <Route
+                    path="/add-form/:userid"
+                    element={
+                        userInfoGlobal ? <AddForm /> : <Navigate to="/login" />
+                    }
                 />
-                <Route 
-                    path="/forms" 
-                    element={userInfoGlobal ? <FormLocker /> : <Navigate to="/login" />} 
+                <Route
+                    path="/forms"
+                    element={
+                        userInfoGlobal ? (
+                            <FormLocker />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
                 />
-                <Route 
-                    path="/task-journal" 
-                    element={userInfoGlobal ? <JournalPage /> : <Navigate to="/login" />} 
+                <Route
+                    path="/task-journal"
+                    element={
+                        userInfoGlobal ? (
+                            <JournalPage />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
                 />
 
                 {/* Homepage redirect */}
-                <Route 
-                    path="/" 
-                    element={userInfoGlobal ? <Navigate to="/dashboard" /> : null} 
+                <Route
+                    path="/"
+                    element={
+                        userInfoGlobal ? <Navigate to="/dashboard" /> : null
+                    }
                 />
 
                 {/* Fallback Route */}
@@ -134,9 +200,12 @@ function AppContent() {
 
 function App() {
     return (
-        <Router>
-            <AppContent />
-        </Router>
+        <AccessibilityProvider>
+            <Router>
+                <AppContent />
+                <AccessibilityToolbar />
+            </Router>
+        </AccessibilityProvider>
     );
 }
 

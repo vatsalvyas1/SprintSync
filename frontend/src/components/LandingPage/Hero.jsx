@@ -1,11 +1,48 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAccessibility } from "../Accessibility/AccessibilityProvider";
 
 function Hero() {
     const navigate = useNavigate();
+    const { speak, announce } = useAccessibility();
 
     const handleStartNowClick = () => {
+        console.log(
+            "Hero button clicked - accessibility should announce navigation"
+        );
+        speak("Navigating to login page");
         navigate("/login");
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            console.log(
+                "Hero button activated via keyboard - accessibility should work"
+            );
+            handleStartNowClick();
+        }
+    };
+
+    const handleButtonFocus = () => {
+        console.log("Hero button focused - should announce");
+        speak("Start Now button - Get started with SprintSync");
+    };
+
+    const handleHeadlineFocus = () => {
+        speak(
+            "Main headline: Everything Your Team Needs In One Sprint Workspace"
+        );
+    };
+
+    const handleSubheadlineFocus = () => {
+        speak(
+            "Subheadline: Track deployments, test cases, blockers, retrospectives and more in real time. Designed for productivity — not complexity."
+        );
+    };
+
+    const handleStatsFocus = (stat) => {
+        speak(`${stat.value} - ${stat.label}`);
     };
 
     useEffect(() => {
@@ -51,10 +88,18 @@ function Hero() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    const stats = [
+        { value: "6", label: "Core Modules" },
+        { value: "Real-time", label: "Sprint Tracking" },
+        { value: "Zero", label: "Setup Required" },
+    ];
+
     return (
         <section
             id="hero"
-            className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 relative overflow-hidden"
+            className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-purple-50"
+            role="banner"
+            aria-label="Hero section - SprintSync introduction"
         >
             {/* Background Grid Pattern */}
             <div
@@ -74,10 +119,16 @@ function Hero() {
                 ></div>
             </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+            <div className="relative z-10 mx-auto max-w-7xl px-4 pt-20 pb-16 sm:px-6 lg:px-8">
                 <div className="text-center">
                     {/* Main Headline */}
-                    <h1 className="font-inter text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                    <h1
+                        className="font-inter mb-6 text-4xl leading-tight font-bold text-gray-900 sm:text-5xl lg:text-6xl"
+                        tabIndex={0}
+                        onFocus={handleHeadlineFocus}
+                        role="heading"
+                        aria-level="1"
+                    >
                         Everything Your Team Needs —<br />
                         <span className="text-indigo-600">
                             In One Sprint Workspace
@@ -85,7 +136,12 @@ function Hero() {
                     </h1>
 
                     {/* Subheadline */}
-                    <p className="font-inter text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    <p
+                        className="font-inter mx-auto mb-8 max-w-3xl text-lg leading-relaxed text-gray-600 sm:text-xl"
+                        tabIndex={0}
+                        onFocus={handleSubheadlineFocus}
+                        role="text"
+                    >
                         Track deployments, test cases, blockers, retrospectives
                         and more in real time. Designed for productivity — not
                         complexity.
@@ -94,15 +150,22 @@ function Hero() {
                     {/* CTA Button */}
                     <div className="mb-16">
                         <button
+                            id="hero-cta"
                             onClick={handleStartNowClick}
-                            className="font-inter cursor-pointer inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
+                            onKeyDown={handleKeyDown}
+                            onFocus={handleButtonFocus}
+                            className="font-inter inline-flex transform cursor-pointer items-center rounded-xl bg-indigo-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-indigo-700 hover:shadow-xl focus:ring-4 focus:ring-indigo-300 focus:outline-none"
+                            aria-label="Get started with SprintSync - Navigate to login page"
+                            role="button"
+                            tabIndex={0}
                         >
                             Start Now
                             <svg
-                                className="ml-2 w-5 h-5"
+                                className="ml-2 h-5 w-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                aria-hidden="true"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -115,44 +178,42 @@ function Hero() {
                     </div>
 
                     {/* Quick Stats */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
-                        <div className="text-center">
-                            <div className="font-inter text-2xl font-bold text-indigo-600 mb-1">
-                                6
+                    <div className="mx-auto grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-3">
+                        {stats.map((stat, index) => (
+                            <div
+                                key={index}
+                                className="text-center"
+                                tabIndex={0}
+                                onFocus={() => handleStatsFocus(stat)}
+                                role="text"
+                                aria-label={`Statistic: ${stat.value} ${stat.label}`}
+                            >
+                                <div className="font-inter mb-1 text-2xl font-bold text-indigo-600">
+                                    {stat.value}
+                                </div>
+                                <div className="font-inter text-sm text-gray-600">
+                                    {stat.label}
+                                </div>
                             </div>
-                            <div className="font-inter text-sm text-gray-600">
-                                Core Modules
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <div className="font-inter text-2xl font-bold text-indigo-600 mb-1">
-                                Real-time
-                            </div>
-                            <div className="font-inter text-sm text-gray-600">
-                                Sprint Tracking
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <div className="font-inter text-2xl font-bold text-indigo-600 mb-1">
-                                Zero
-                            </div>
-                            <div className="font-inter text-sm text-gray-600">
-                                Setup Required
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>
 
             {/* Floating Elements */}
-            <div className="absolute top-20 left-10 w-16 h-16 bg-purple-200 rounded-full opacity-60 animate-pulse floating-element"></div>
             <div
-                className="absolute bottom-20 right-10 w-12 h-12 bg-indigo-200 rounded-full opacity-60 animate-pulse floating-element"
-                style={{ animationDelay: "1s" }}
+                className="floating-element absolute top-20 left-10 h-16 w-16 animate-pulse rounded-full bg-purple-200 opacity-60"
+                aria-hidden="true"
             ></div>
             <div
-                className="absolute top-1/2 left-20 w-8 h-8 bg-purple-300 rounded-full opacity-40 animate-pulse floating-element"
+                className="floating-element absolute right-10 bottom-20 h-12 w-12 animate-pulse rounded-full bg-indigo-200 opacity-60"
+                style={{ animationDelay: "1s" }}
+                aria-hidden="true"
+            ></div>
+            <div
+                className="floating-element absolute top-1/2 left-20 h-8 w-8 animate-pulse rounded-full bg-purple-300 opacity-40"
                 style={{ animationDelay: "2s" }}
+                aria-hidden="true"
             ></div>
         </section>
     );
