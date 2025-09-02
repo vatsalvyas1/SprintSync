@@ -1,0 +1,264 @@
+import React, { useState } from "react";
+import { Wheel } from "react-custom-roulette";
+import { PiSpinnerBallDuotone } from "react-icons/pi";
+
+const SpinningWheel = () => {
+  const [showWheel, setShowWheel] = useState(false);
+  const [names, setNames] = useState([]);
+  const [input, setInput] = useState("");
+  const [mustSpin, setMustSpin] = useState(false);
+  const [prizeNumber, setPrizeNumber] = useState(0);
+  const [winner, setWinner] = useState("");
+
+  const getColor = (index) => {
+    const colors = [
+      "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", 
+      "#f59e0b", "#10b981", "#06b6d4", "#84cc16"
+    ];
+    return colors[index % colors.length];
+  };
+
+  const data = names.map((name, index) => ({ 
+    option: name,
+    style: { backgroundColor: getColor(index) }
+  }));
+
+  const handleAddName = () => {
+    if (input.trim() !== "" && !names.includes(input.trim())) {
+      setNames([...names, input.trim()]);
+      setInput("");
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleAddName();
+    }
+  };
+
+  const handleRemoveName = (indexToRemove) => {
+    setNames(names.filter((_, index) => index !== indexToRemove));
+    setWinner("");
+  };
+
+  const handleSpinClick = () => {
+    if (data.length === 0) {
+      alert("Add at least one name first!");
+      return;
+    }
+    const newPrizeNumber = Math.floor(Math.random() * data.length);
+    setPrizeNumber(newPrizeNumber);
+    setMustSpin(true);
+    setWinner("");
+  };
+
+  const handleStopSpinning = () => {
+    setMustSpin(false);
+    const winnerName = data[prizeNumber].option;
+    setWinner(winnerName);
+  };
+
+  return (
+    <div>
+      {/* Trigger Button */}
+      <button
+        onClick={() => setShowWheel(true)}
+        className="group relative p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+        title="Open Retro Starter Picker"
+      >
+        <PiSpinnerBallDuotone 
+          size={32} 
+          className="text-white group-hover:rotate-12 transition-transform duration-300" 
+        />
+        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+      </button>
+
+      {/* Enhanced Responsive Modal */}
+      {showWheel && (
+        <div className="fixed inset-0 bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] relative overflow-hidden animate-in fade-in-0 zoom-in-95 duration-300">
+            
+            {/* Header with gradient */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 relative">
+              <h2 className="text-2xl font-bold text-white text-center">
+                Retro Starter Picker
+              </h2>
+              <button
+                onClick={() => setShowWheel(false)}
+                className="absolute top-3 right-3 w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-red-600 transition-all duration-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Main Content - Responsive Layout */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+              <div className="flex flex-col lg:flex-row gap-6 h-full">
+                
+                {/* Left Panel - Names Management */}
+                <div className="flex-1 lg:max-w-sm">
+                  {/* Input Section */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Add Team Member
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Enter name..."
+                        className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 px-4 py-2 rounded-lg flex-1 transition-all duration-200 outline-none"
+                        disabled={mustSpin}
+                      />
+                      <button
+                        onClick={handleAddName}
+                        disabled={!input.trim() || mustSpin}
+                        className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 disabled:scale-100"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Names List */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Team Members ({names.length})
+                    </label>
+                    {names.length > 0 ? (
+                      <div className="max-h-64 lg:max-h-80 overflow-y-auto space-y-2 bg-gray-50 rounded-lg p-3">
+                        {names.map((name, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center bg-white px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-4 h-4 rounded-full" 
+                                style={{ backgroundColor: getColor(index) }}
+                              ></div>
+                              <span className="text-sm font-medium text-gray-800">
+                                {name}
+                              </span>
+                            </div>
+                            {!mustSpin && (
+                              <button
+                                onClick={() => handleRemoveName(index)}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200"
+                              >
+                                ×
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-6 text-center">
+                        <PiSpinnerBallDuotone size={32} className="text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500 text-sm">No team members added yet</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick Actions */}
+                  {names.length > 0 && !mustSpin && (
+                    <div className="flex gap-2 mb-4">
+                      <button
+                        onClick={() => {
+                          setNames([]);
+                          setWinner("");
+                        }}
+                        className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors duration-200"
+                      >
+                        Clear All
+                      </button>
+                      <button
+                        onClick={() => setWinner("")}
+                        className="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors duration-200"
+                      >
+                        Reset Winner
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Panel - Wheel and Controls */}
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[400px]">
+                  {/* Wheel Section */}
+                  <div className="mb-6 flex flex-col items-center">
+                    {data.length > 0 ? (
+                      <div className="relative">
+                        <Wheel
+                          mustStartSpinning={mustSpin}
+                          prizeNumber={prizeNumber}
+                          data={data}
+                          backgroundColors={data.map((_, index) => getColor(index))}
+                          textColors={["#ffffff"]}
+                          fontSize={window.innerWidth < 768 ? 12 : 14}
+                          outerBorderColor={["#e5e7eb"]}
+                          outerBorderWidth={4}
+                          radiusLineColor={["#ffffff"]}
+                          radiusLineWidth={2}
+                          onStopSpinning={handleStopSpinning}
+                          spinDuration={0.8}
+                        />
+                        {mustSpin && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-64 h-64 md:w-80 md:h-80 border-4 border-dashed border-gray-300 rounded-full flex items-center justify-center bg-gray-50">
+                        <div className="text-center">
+                          <PiSpinnerBallDuotone size={48} className="text-gray-400 mx-auto mb-2" />
+                          <p className="text-gray-500 text-sm">Add names to see the wheel</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Spin Button */}
+                  <button
+                    onClick={handleSpinClick}
+                    disabled={mustSpin || data.length === 0}
+                    className={`w-full max-w-xs py-3 rounded-lg font-bold text-lg transition-all duration-300 transform ${
+                      mustSpin || data.length === 0
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl hover:scale-105"
+                    }`}
+                  >
+                    {mustSpin ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Spinning...
+                      </span>
+                    ) : (
+                      "Spin the Wheel!"
+                    )}
+                  </button>
+
+                  {/* Winner Display */}
+                  {winner && !mustSpin && (
+                    <div className="mt-6 w-full max-w-xs">
+                      <div className="p-4 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg border-l-4 border-green-500 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600 mb-1">Today's Retro Starter</p>
+                          <p className="text-xl font-bold text-gray-800">{winner}</p>
+                          <p className="text-sm text-gray-600 mt-1">Let's get this retro started! 🚀</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SpinningWheel;

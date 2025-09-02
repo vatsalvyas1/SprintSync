@@ -12,6 +12,7 @@ import {
     X,
 } from "lucide-react";
 import { useAccessibility } from "../Accessibility/AccessibilityProvider";
+import SpinningWheel from "./SpinningWheel.jsx";
 
 const api = axios.create({
     baseURL: `${backendUrl}/api/v1/retrospectives/`,
@@ -212,18 +213,18 @@ const RetroSpectives = ({ sprintId }) => {
         const allItems = [
             ...feedbackData.wellItems,
             ...feedbackData.poorItems,
-            ...feedbackData.suggestions
+            ...feedbackData.suggestions,
         ];
         if (allItems.length > 0) {
             allItems.forEach((item, idx) => {
                 setTimeout(() => {
                     speak(
-                        `Feedback: ${item.message}. ${item.upvoteCount > 0 ? `${item.upvoteCount} upvotes.` : 'No upvotes.'} By ${item.author}, ${item.time} ago.`
+                        `Feedback: ${item.message}. ${item.upvoteCount > 0 ? `${item.upvoteCount} upvotes.` : "No upvotes."} By ${item.author}, ${item.time} ago.`
                     );
                 }, idx * 800); // space out announcements for clarity
             });
         } else {
-            speak('No retrospective items present.');
+            speak("No retrospective items present.");
         }
     }, [feedbackData, speak]);
 
@@ -822,6 +823,9 @@ const RetroSpectives = ({ sprintId }) => {
             tabIndex={0}
             onFocus={() => handleSectionFocus("Retrospectives Dashboard")}
         >
+            <div className="mb-5">
+                <SpinningWheel />
+            </div>
             {/* Sub-Header */}
 
             <div className="mb-5 flex justify-between gap-2">
