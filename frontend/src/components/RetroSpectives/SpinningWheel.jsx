@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { Wheel } from "react-custom-roulette";
+import { useState, useRef } from "react";
 import { PiSpinnerBallDuotone } from "react-icons/pi";
 
 const SpinningWheel = () => {
   const [showWheel, setShowWheel] = useState(false);
   const [names, setNames] = useState([]);
   const [input, setInput] = useState("");
-  const [mustSpin, setMustSpin] = useState(false);
-  const [prizeNumber, setPrizeNumber] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState("");
+  const [rotation, setRotation] = useState(0);
+  const wheelRef = useRef(null);
 
   const getColor = (index) => {
     const colors = [
@@ -17,11 +17,6 @@ const SpinningWheel = () => {
     ];
     return colors[index % colors.length];
   };
-
-  const data = names.map((name, index) => ({ 
-    option: name,
-    style: { backgroundColor: getColor(index) }
-  }));
 
   const handleAddName = () => {
     if (input.trim() !== "" && !names.includes(input.trim())) {
@@ -42,20 +37,93 @@ const SpinningWheel = () => {
   };
 
   const handleSpinClick = () => {
-    if (data.length === 0) {
+    if (names.length === 0) {
       alert("Add at least one name first!");
       return;
     }
-    const newPrizeNumber = Math.floor(Math.random() * data.length);
-    setPrizeNumber(newPrizeNumber);
-    setMustSpin(true);
+
+    setIsSpinning(true);
     setWinner("");
+
+    // Generate random rotation (multiple full spins + random angle)
+    const minSpins = 5;
+    const maxSpins = 8;
+    const spins = Math.random() * (maxSpins - minSpins) + minSpins;
+    const finalAngle = Math.random() * 360;
+    const totalRotation = rotation + (spins * 360) + finalAngle;
+    
+    setRotation(totalRotation);
+
+    // Calculate winner based on final position
+    const segmentAngle = 360 / names.length;
+    const normalizedAngle = (360 - (totalRotation % 360)) % 360;
+    const winnerIndex = Math.floor(normalizedAngle / segmentAngle);
+
+    setTimeout(() => {
+      setIsSpinning(false);
+      setWinner(names[winnerIndex]);
+    }, 3000); // 3 second spin duration
   };
 
-  const handleStopSpinning = () => {
-    setMustSpin(false);
-    const winnerName = data[prizeNumber].option;
-    setWinner(winnerName);
+  const createWheelSegments = () => {
+    if (names.length === 0) return null;
+
+    const segmentAngle = 360 / names.length;
+    const radius = 140;
+    const center = 150;
+
+    return names.map((name, index) => {
+      const startAngle = index * segmentAngle;
+      const endAngle = (index + 1) * segmentAngle;
+      
+      // Convert to radians
+      const startRad = (startAngle * Math.PI) / 180;
+      const endRad = (endAngle * Math.PI) / 180;
+      
+      // Calculate path for segment
+      const x1 = center + radius * Math.cos(startRad);
+      const y1 = center + radius * Math.sin(startRad);
+      const x2 = center + radius * Math.cos(endRad);
+      const y2 = center + radius * Math.sin(endRad);
+      
+      const largeArcFlag = segmentAngle > 180 ? 1 : 0;
+      
+      const pathData = [
+        `M ${center} ${center}`,
+        `L ${x1} ${y1}`,
+        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+        'Z'
+      ].join(' ');
+
+      // Calculate text position
+      const textAngle = startAngle + segmentAngle / 2;
+      const textRadius = radius * 0.7;
+      const textX = center + textRadius * Math.cos((textAngle * Math.PI) / 180);
+      const textY = center + textRadius * Math.sin((textAngle * Math.PI) / 180);
+
+      return (
+        <g key={index}>
+          <path
+            d={pathData}
+            fill={getColor(index)}
+            stroke="#ffffff"
+            strokeWidth="2"
+          />
+          <text
+            x={textX}
+            y={textY}
+            fill="white"
+            fontSize="14"
+            fontWeight="bold"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            transform={`rotate(${textAngle}, ${textX}, ${textY})`}
+          >
+            {name.length > 8 ? name.substring(0, 8) + '...' : name}
+          </text>
+        </g>
+      );
+    });
   };
 
   return (
@@ -76,7 +144,7 @@ const SpinningWheel = () => {
       {/* Enhanced Responsive Modal */}
       {showWheel && (
         <div className="fixed inset-0 bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] relative overflow-hidden animate-in fade-in-0 zoom-in-95 duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] relative overflow-hidden">
             
             {/* Header with gradient */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 relative">
@@ -85,7 +153,7 @@ const SpinningWheel = () => {
               </h2>
               <button
                 onClick={() => setShowWheel(false)}
-                className="absolute top-3 right-3 w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-red-600 transition-all duration-200"
+                className="absolute top-3 right-3 w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center text-red-500 transition-all duration-200"
               >
                 ✕
               </button>
@@ -109,11 +177,11 @@ const SpinningWheel = () => {
                         onKeyPress={handleKeyPress}
                         placeholder="Enter name..."
                         className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 px-4 py-2 rounded-lg flex-1 transition-all duration-200 outline-none"
-                        disabled={mustSpin}
+                        disabled={isSpinning}
                       />
                       <button
                         onClick={handleAddName}
-                        disabled={!input.trim() || mustSpin}
+                        disabled={!input.trim() || isSpinning}
                         className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 disabled:scale-100"
                       >
                         Add
@@ -142,7 +210,7 @@ const SpinningWheel = () => {
                                 {name}
                               </span>
                             </div>
-                            {!mustSpin && (
+                            {!isSpinning && (
                               <button
                                 onClick={() => handleRemoveName(index)}
                                 className="text-red-500 hover:text-red-700 hover:bg-red-50 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200"
@@ -162,12 +230,13 @@ const SpinningWheel = () => {
                   </div>
 
                   {/* Quick Actions */}
-                  {names.length > 0 && !mustSpin && (
+                  {names.length > 0 && !isSpinning && (
                     <div className="flex gap-2 mb-4">
                       <button
                         onClick={() => {
                           setNames([]);
                           setWinner("");
+                          setRotation(0);
                         }}
                         className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors duration-200"
                       >
@@ -185,32 +254,50 @@ const SpinningWheel = () => {
 
                 {/* Right Panel - Wheel and Controls */}
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[400px]">
-                  {/* Wheel Section */}
-                  <div className="mb-6 flex flex-col items-center">
-                    {data.length > 0 ? (
+                  {/* Custom Wheel */}
+                  <div className="mb-6 relative">
+                    {names.length > 0 ? (
                       <div className="relative">
-                        <Wheel
-                          mustStartSpinning={mustSpin}
-                          prizeNumber={prizeNumber}
-                          data={data}
-                          backgroundColors={data.map((_, index) => getColor(index))}
-                          textColors={["#ffffff"]}
-                          fontSize={window.innerWidth < 768 ? 12 : 14}
-                          outerBorderColor={["#e5e7eb"]}
-                          outerBorderWidth={4}
-                          radiusLineColor={["#ffffff"]}
-                          radiusLineWidth={2}
-                          onStopSpinning={handleStopSpinning}
-                          spinDuration={0.8}
-                        />
-                        {mustSpin && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {/* Wheel Container */}
+                        <div className="relative w-80 h-80 md:w-96 md:h-96">
+                          <svg
+                            ref={wheelRef}
+                            width="100%"
+                            height="100%"
+                            viewBox="0 0 300 300"
+                            className="drop-shadow-xl"
+                            style={{
+                              transform: `rotate(${rotation}deg)`,
+                              transition: isSpinning ? 'transform 3s cubic-bezier(0.23, 1, 0.32, 1)' : 'none'
+                            }}
+                          >
+                            {createWheelSegments()}
+                            
+                            {/* Center circle */}
+                            <circle
+                              cx="150"
+                              cy="150"
+                              r="20"
+                              fill="white"
+                              stroke="#e5e7eb"
+                              strokeWidth="3"
+                            />
+                            <circle
+                              cx="150"
+                              cy="150"
+                              r="8"
+                              fill="#6b7280"
+                            />
+                          </svg>
+                          
+                          {/* Pointer */}
+                          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 z-10">
+                            <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-b-[25px] border-l-transparent border-r-transparent border-b-red-500 drop-shadow-lg"></div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     ) : (
-                      <div className="w-64 h-64 md:w-80 md:h-80 border-4 border-dashed border-gray-300 rounded-full flex items-center justify-center bg-gray-50">
+                      <div className="w-80 h-80 md:w-96 md:h-96 border-4 border-dashed border-gray-300 rounded-full flex items-center justify-center bg-gray-50">
                         <div className="text-center">
                           <PiSpinnerBallDuotone size={48} className="text-gray-400 mx-auto mb-2" />
                           <p className="text-gray-500 text-sm">Add names to see the wheel</p>
@@ -222,14 +309,14 @@ const SpinningWheel = () => {
                   {/* Spin Button */}
                   <button
                     onClick={handleSpinClick}
-                    disabled={mustSpin || data.length === 0}
+                    disabled={isSpinning || names.length === 0}
                     className={`w-full max-w-xs py-3 rounded-lg font-bold text-lg transition-all duration-300 transform ${
-                      mustSpin || data.length === 0
+                      isSpinning || names.length === 0
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl hover:scale-105"
                     }`}
                   >
-                    {mustSpin ? (
+                    {isSpinning ? (
                       <span className="flex items-center justify-center gap-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         Spinning...
@@ -240,9 +327,9 @@ const SpinningWheel = () => {
                   </button>
 
                   {/* Winner Display */}
-                  {winner && !mustSpin && (
+                  {winner && !isSpinning && (
                     <div className="mt-6 w-full max-w-xs">
-                      <div className="p-4 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg border-l-4 border-green-500 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+                      <div className="p-4 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg border-l-4 border-green-500 animate-pulse">
                         <div className="text-center">
                           <p className="text-sm text-gray-600 mb-1">Today's Retro Starter</p>
                           <p className="text-xl font-bold text-gray-800">{winner}</p>
