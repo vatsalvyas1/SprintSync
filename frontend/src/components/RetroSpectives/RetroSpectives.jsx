@@ -205,6 +205,15 @@ const RetroSpectives = ({ sprintId }) => {
         fetchComments();
         fetchUpvotes();
         fetchActionItems();
+
+         // Polling every 3 seconds
+    const intervalId = setInterval(() => {
+        fetchFeedbacks();
+        fetchComments();
+        fetchUpvotes();
+        fetchActionItems();
+    }, 3000);
+    return () => clearInterval(intervalId);
     }, [sprintId, actionItemModal]);
 
     // Accessibility: Announce feedback items when loaded or changed
