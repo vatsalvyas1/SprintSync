@@ -481,6 +481,34 @@ const getAllSprintCount = asyncHandler(async (req, res) => {
     }
 });
 
+const updateFeedbackCategory = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { category } = req.body;
+
+    if (!category) {
+        throw new ApiError(400, "Category is required");
+    }
+
+    if (!["What Went Well", "What Didn't Go Well", "Suggestions"].includes(category)) {
+        throw new ApiError(400, "Invalid category provided");
+    }
+
+    const updatedFeedback = await UserFeedback.findByIdAndUpdate(
+        id,
+        { category },
+        { new: true }
+    );
+
+    if (!updatedFeedback) {
+        throw new ApiError(404, "Feedback not found");
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, updatedFeedback, "Feedback category updated successfully"));
+});
+
+
 export {
     registerFeedback,
     getAllFeedback,
@@ -497,4 +525,5 @@ export {
     registerSprint,
     getAllSprint,
     getAllSprintCount,
+    updateFeedbackCategory,
 };

@@ -16,6 +16,7 @@ import {
     getAllSprint,
     getAllSprintCount,
     handleActionItemsUpvote,
+    updateFeedbackCategory
 } from "../controllers/retrospective.controller.js";
 
 const router = Router();
@@ -40,5 +41,6 @@ router
 router.route("/add-sprint").post(verifyJWT, registerSprint);
 router.route("/get-all-sprint").get(verifyJWT, getAllSprint);
 router.route("/get-all-sprint-count").get(getAllSprintCount);
+router.route("/update-feedback/:id").patch(verifyJWT, updateFeedbackCategory);
 
 export default router;
