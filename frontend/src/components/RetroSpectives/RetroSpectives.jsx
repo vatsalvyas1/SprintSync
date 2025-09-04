@@ -122,24 +122,28 @@ const RetroSpectives = ({ sprintId }) => {
     };
 
     useEffect(() => {
-        if (!sprintId) return;
-        let storedUser;
-        const fetchUserInfo = () => {
-            storedUser = localStorage.getItem("loggedInUser");
-            if (storedUser) {
-                setUserInfo(JSON.parse(storedUser));
-            } else {
-                console.error("No user info found in localStorage");
-            }
-        };
-        let wellItems = [];
-        let poorItems = [];
-        let suggestions = [];
+    if (!sprintId) return;
+    
+    let storedUser;
+    const fetchUserInfo = () => {
+        storedUser = localStorage.getItem("loggedInUser");
+        if (storedUser) {
+            setUserInfo(JSON.parse(storedUser));
+        } else {
+            console.error("No user info found in localStorage");
+        }
+    };
 
-        const fetchFeedbacks = async () => {
+    const fetchFeedbacks = async () => {
+        try {
+            let wellItems = [];
+            let poorItems = [];
+            let suggestions = [];
+
             const feedbacks = await api.post("/get-all-feedbacks", {
                 sprintId,
             });
+            
             if (storedUser) storedUser = JSON.parse(storedUser);
 
             feedbacks?.data?.data?.map((element) => {
@@ -154,6 +158,7 @@ const RetroSpectives = ({ sprintId }) => {
                     wellItems.push(element);
                 }
             });
+            
             setFeedbackData({
                 wellItems,
                 poorItems,
@@ -167,9 +172,13 @@ const RetroSpectives = ({ sprintId }) => {
                 }
             );
             setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
-        };
+        } catch (error) {
+            console.error("Error fetching feedbacks:", error);
+        }
+    };
 
-        const fetchComments = async () => {
+    const fetchComments = async () => {
+        try {
             const allComments = await api.post("/get-all-comments", {
                 sprintId,
             });
@@ -179,42 +188,66 @@ const RetroSpectives = ({ sprintId }) => {
                 element.time = feedbackTimeAgo(element.createdAt);
             });
             setComments(allComments?.data?.data);
-        };
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+        }
+    };
 
-        const fetchUpvotes = async () => {
+    const fetchUpvotes = async () => {
+        try {
             const allUpvotes = await api.post("/get-all-upvotes", { sprintId });
             setAllUpvoteCount(() => allUpvotes?.data?.data?.length);
             setUpvotes(allUpvotes?.data?.data);
-        };
+        } catch (error) {
+            console.error("Error fetching upvotes:", error);
+        }
+    };
 
-        const fetchActionItems = async () => {
-            if (!actionItemModal || !sprintId) return;
+    const fetchActionItems = async () => {
+        try {
+            const res = await api.post("/get-all-action-items", {
+                sprintId,
+            });
+            setActionItems(res.data?.data || []);
+        } catch (error) {
+            console.error("Error fetching action items:", error);
+        }
+    };
 
-            try {
-                const res = await api.post("/get-all-action-items", {
-                    sprintId,
-                });
-                setActionItems(res.data?.data || []);
-            } catch (error) {
-                console.error("Error fetching action items:", error);
-            }
-        };
-        console.log(feedbackData);
+    // Initial data fetch
+    const initializeData = async () => {
         fetchUserInfo();
-        fetchFeedbacks();
-        fetchComments();
-        fetchUpvotes();
-        fetchActionItems();
+        await Promise.all([
+            fetchFeedbacks(),
+            fetchComments(), 
+            fetchUpvotes(),
+            fetchActionItems()
+        ]);
+    };
 
-         // Polling every 3 seconds
-    const intervalId = setInterval(() => {
-        fetchFeedbacks();
-        fetchComments();
-        fetchUpvotes();
-        fetchActionItems();
-    }, 3000);
-    return () => clearInterval(intervalId);
-    }, [sprintId, actionItemModal]);
+    // Start initial data load
+    initializeData();
+
+    // Set up polling interval - runs every 3 seconds
+    const intervalId = setInterval(async () => {
+        try {
+            await Promise.all([
+                fetchFeedbacks(),
+                fetchComments(),
+                fetchUpvotes(), 
+                fetchActionItems()
+            ]);
+        } catch (error) {
+            console.error("Polling error:", error);
+            // Continue polling even if there's an error
+        }
+    }, 2500);
+
+    // Cleanup function
+    return () => {
+        clearInterval(intervalId);
+    };
+}, [sprintId]);
 
     // Accessibility: Announce feedback items when loaded or changed
     useEffect(() => {
