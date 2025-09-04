@@ -122,132 +122,134 @@ const RetroSpectives = ({ sprintId }) => {
     };
 
     useEffect(() => {
-    if (!sprintId) return;
-    
-    let storedUser;
-    const fetchUserInfo = () => {
-        storedUser = localStorage.getItem("loggedInUser");
-        if (storedUser) {
-            setUserInfo(JSON.parse(storedUser));
-        } else {
-            console.error("No user info found in localStorage");
-        }
-    };
+        if (!sprintId) return;
 
-    const fetchFeedbacks = async () => {
-        try {
-            let wellItems = [];
-            let poorItems = [];
-            let suggestions = [];
+        let storedUserData = null;
 
-            const feedbacks = await api.post("/get-all-feedbacks", {
-                sprintId,
-            });
-            
-            if (storedUser) storedUser = JSON.parse(storedUser);
+        const fetchUserInfo = () => {
+            const storedUserString = localStorage.getItem("loggedInUser");
+            if (storedUserString) {
+                storedUserData = JSON.parse(storedUserString); // Parse ONCE
+                setUserInfo(storedUserData);
+            } else {
+                console.error("No user info found in localStorage");
+            }
+        };
 
-            feedbacks?.data?.data?.map((element) => {
-                if (element.category === "Suggestions") {
-                    element.time = feedbackTimeAgo(element.createdAt);
-                    suggestions.push(element);
-                } else if (element.category === "What Didn't Go Well") {
-                    element.time = feedbackTimeAgo(element.createdAt);
-                    poorItems.push(element);
-                } else {
-                    element.time = feedbackTimeAgo(element.createdAt);
-                    wellItems.push(element);
-                }
-            });
-            
-            setFeedbackData({
-                wellItems,
-                poorItems,
-                suggestions,
-            });
+        const fetchFeedbacks = async () => {
+            try {
+                let wellItems = [];
+                let poorItems = [];
+                let suggestions = [];
 
-            const totalCountRes = await api.post(
-                "/get-total-action-item-count",
-                {
+                const feedbacks = await api.post("/get-all-feedbacks", {
                     sprintId,
-                }
-            );
-            setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
-        } catch (error) {
-            console.error("Error fetching feedbacks:", error);
-        }
-    };
+                });
 
-    const fetchComments = async () => {
-        try {
-            const allComments = await api.post("/get-all-comments", {
-                sprintId,
-            });
-            setAllCommentCount(() => allComments?.data?.data?.length);
+                // NO JSON.parse here - storedUserData is already an object
 
-            allComments?.data?.data?.forEach((element) => {
-                element.time = feedbackTimeAgo(element.createdAt);
-            });
-            setComments(allComments?.data?.data);
-        } catch (error) {
-            console.error("Error fetching comments:", error);
-        }
-    };
+                feedbacks?.data?.data?.forEach((element) => {
+                    element.time = feedbackTimeAgo(element.createdAt);
 
-    const fetchUpvotes = async () => {
-        try {
-            const allUpvotes = await api.post("/get-all-upvotes", { sprintId });
-            setAllUpvoteCount(() => allUpvotes?.data?.data?.length);
-            setUpvotes(allUpvotes?.data?.data);
-        } catch (error) {
-            console.error("Error fetching upvotes:", error);
-        }
-    };
+                    if (element.category === "Suggestions") {
+                        suggestions.push(element);
+                    } else if (element.category === "What Didn't Go Well") {
+                        poorItems.push(element);
+                    } else {
+                        wellItems.push(element);
+                    }
+                });
 
-    const fetchActionItems = async () => {
-        try {
-            const res = await api.post("/get-all-action-items", {
-                sprintId,
-            });
-            setActionItems(res.data?.data || []);
-        } catch (error) {
-            console.error("Error fetching action items:", error);
-        }
-    };
+                setFeedbackData({
+                    wellItems,
+                    poorItems,
+                    suggestions,
+                });
 
-    // Initial data fetch
-    const initializeData = async () => {
-        fetchUserInfo();
-        await Promise.all([
-            fetchFeedbacks(),
-            fetchComments(), 
-            fetchUpvotes(),
-            fetchActionItems()
-        ]);
-    };
+                const totalCountRes = await api.post(
+                    "/get-total-action-item-count",
+                    {
+                        sprintId,
+                    }
+                );
+                setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
+            } catch (error) {
+                console.error("Error fetching feedbacks:", error);
+            }
+        };
 
-    // Start initial data load
-    initializeData();
+        const fetchComments = async () => {
+            try {
+                const allComments = await api.post("/get-all-comments", {
+                    sprintId,
+                });
+                setAllCommentCount(allComments?.data?.data?.length || 0);
 
-    // Set up polling interval - runs every 3 seconds
-    const intervalId = setInterval(async () => {
-        try {
+                allComments?.data?.data?.forEach((element) => {
+                    element.time = feedbackTimeAgo(element.createdAt);
+                });
+                setComments(allComments?.data?.data || []);
+            } catch (error) {
+                console.error("Error fetching comments:", error);
+            }
+        };
+
+        const fetchUpvotes = async () => {
+            try {
+                const allUpvotes = await api.post("/get-all-upvotes", {
+                    sprintId,
+                });
+                setAllUpvoteCount(allUpvotes?.data?.data?.length || 0);
+                setUpvotes(allUpvotes?.data?.data || []);
+            } catch (error) {
+                console.error("Error fetching upvotes:", error);
+            }
+        };
+
+        const fetchActionItems = async () => {
+            try {
+                const res = await api.post("/get-all-action-items", {
+                    sprintId,
+                });
+                setActionItems(res.data?.data || []);
+            } catch (error) {
+                console.error("Error fetching action items:", error);
+            }
+        };
+
+        // Initial data fetch
+        const initializeData = async () => {
+            fetchUserInfo();
             await Promise.all([
                 fetchFeedbacks(),
                 fetchComments(),
-                fetchUpvotes(), 
-                fetchActionItems()
+                fetchUpvotes(),
+                fetchActionItems(),
             ]);
-        } catch (error) {
-            console.error("Polling error:", error);
-            // Continue polling even if there's an error
-        }
-    }, 2500);
+        };
 
-    // Cleanup function
-    return () => {
-        clearInterval(intervalId);
-    };
-}, [sprintId]);
+        console.log("Setting up polling for sprint:", sprintId);
+        initializeData();
+
+        // Polling every 3 seconds
+        const intervalId = setInterval(async () => {
+            try {
+                await Promise.all([
+                    fetchFeedbacks(),
+                    fetchComments(),
+                    fetchUpvotes(),
+                    fetchActionItems(),
+                ]);
+            } catch (error) {
+                console.error("Polling error:", error);
+            }
+        }, 3000);
+
+        return () => {
+            console.log("Cleaning up polling interval");
+            clearInterval(intervalId);
+        };
+    }, [sprintId]);
 
     // Accessibility: Announce feedback items when loaded or changed
     useEffect(() => {
