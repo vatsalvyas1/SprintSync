@@ -49,46 +49,46 @@ const RetroSpectives = ({ sprintId }) => {
     const [allActionItemsCount, setAllActionItemsCount] = useState(null);
 
     const fetchFeedbacks = async () => {
-            try {
-                let wellItems = [];
-                let poorItems = [];
-                let suggestions = [];
+        try {
+            let wellItems = [];
+            let poorItems = [];
+            let suggestions = [];
 
-                const feedbacks = await api.post("/get-all-feedbacks", {
+            const feedbacks = await api.post("/get-all-feedbacks", {
+                sprintId,
+            });
+
+            // NO JSON.parse here - storedUserData is already an object
+
+            feedbacks?.data?.data?.forEach((element) => {
+                element.time = feedbackTimeAgo(element.createdAt);
+
+                if (element.category === "Suggestions") {
+                    suggestions.push(element);
+                } else if (element.category === "What Didn't Go Well") {
+                    poorItems.push(element);
+                } else {
+                    wellItems.push(element);
+                }
+            });
+
+            setFeedbackData({
+                wellItems,
+                poorItems,
+                suggestions,
+            });
+
+            const totalCountRes = await api.post(
+                "/get-total-action-item-count",
+                {
                     sprintId,
-                });
-
-                // NO JSON.parse here - storedUserData is already an object
-
-                feedbacks?.data?.data?.forEach((element) => {
-                    element.time = feedbackTimeAgo(element.createdAt);
-
-                    if (element.category === "Suggestions") {
-                        suggestions.push(element);
-                    } else if (element.category === "What Didn't Go Well") {
-                        poorItems.push(element);
-                    } else {
-                        wellItems.push(element);
-                    }
-                });
-
-                setFeedbackData({
-                    wellItems,
-                    poorItems,
-                    suggestions,
-                });
-
-                const totalCountRes = await api.post(
-                    "/get-total-action-item-count",
-                    {
-                        sprintId,
-                    }
-                );
-                setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
-            } catch (error) {
-                console.error("Error fetching feedbacks:", error);
-            }
-        };
+                }
+            );
+            setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
+        } catch (error) {
+            console.error("Error fetching feedbacks:", error);
+        }
+    };
 
     useEffect(() => {
         if (!sprintId) return;
@@ -202,6 +202,7 @@ const RetroSpectives = ({ sprintId }) => {
     const toggleActionItemsUpvote = async (feedbackId) => {
         try {
             await api.post("/add-action-items-upvote", {
+                sprintId,
                 feedbackId: feedbackId,
                 userId: userInfo._id,
             });
@@ -243,27 +244,27 @@ const RetroSpectives = ({ sprintId }) => {
     const handleDragStart = (e, itemId) => {
         e.target.style.opacity = "0.5";
         console.log("Dragging item:", itemId);
-        dragItem.current = itemId; 
-    }
+        dragItem.current = itemId;
+    };
 
     const handleDragEnd = (e) => {
         e.target.style.opacity = "1";
-    }
+    };
 
     const handleDrop = async (e, targetCategory) => {
         e.preventDefault();
         const draggedItemId = dragItem.current;
 
-        try{
+        try {
             const res = await api.patch(`/update-feedback/${draggedItemId}`, {
-                category: targetCategory
+                category: targetCategory,
             });
             console.log("Feedback updated successfully:", res.data);
             await fetchFeedbacks();
         } catch (error) {
             console.error("Error updating feedback:", error);
         }
-    }
+    };
 
     {
         /* Template For All Feedback Cards */
@@ -281,7 +282,7 @@ const RetroSpectives = ({ sprintId }) => {
 
         return (
             <div
-                className={`${bgColor} ${borderColor} rounded-lg border-1 p-3 transition-shadow hover:shadow-sm cursor-grab`}
+                className={`${bgColor} ${borderColor} cursor-grab rounded-lg border-1 p-3 transition-shadow hover:shadow-sm`}
                 onFocus={() => handleFeedbackCardFocus(item)}
                 role="article"
                 draggable
@@ -448,11 +449,12 @@ const RetroSpectives = ({ sprintId }) => {
         try {
             setAddFeedbackDisabled(() => true);
             const res = await api.post("/add-feedback", {
-                sprintId: sprintId,
+                sprintId,
                 author: newFeedback.anonymous ? "Anonymous" : userInfo.name,
                 category: newFeedback.category,
                 message: newFeedback.message,
                 avatar: userInfo.avatar,
+                userId: userInfo._id,
             });
             feedback._id = res.data.data._id;
             feedback.category = res.data.data.category;
@@ -519,6 +521,7 @@ const RetroSpectives = ({ sprintId }) => {
                 author: userInfo.name,
                 message: newComment,
                 avatar: userInfo.avatar,
+                userId: userInfo._id,
             });
             setComments((prev) => [...prev, comment]);
             setNewComment("");
@@ -795,7 +798,10 @@ const RetroSpectives = ({ sprintId }) => {
                     className="scrollbar-hide overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
                     onFocus={() => handleCardFocus("wellItems")}
                     role="region"
-                    onDrop={(e) => {handleDrop(e,"What Went Well")}} onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                        handleDrop(e, "What Went Well");
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
                 >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
@@ -848,7 +854,10 @@ const RetroSpectives = ({ sprintId }) => {
                     className="scrollbar-hide overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
                     onFocus={() => handleCardFocus("poorItems")}
                     role="region"
-                    onDrop={(e) => {handleDrop(e,"What Didn't Go Well")}} onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                        handleDrop(e, "What Didn't Go Well");
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
                 >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
@@ -900,7 +909,10 @@ const RetroSpectives = ({ sprintId }) => {
                     className="scrollbar-hide overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
                     onFocus={() => handleCardFocus("suggestions")}
                     role="region"
-                    onDrop={(e) => {handleDrop(e,"Suggestions")}} onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                        handleDrop(e, "Suggestions");
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
                 >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
@@ -1116,7 +1128,7 @@ const RetroSpectives = ({ sprintId }) => {
                                         rows="4"
                                         autoFocus
                                         placeholder="Share your thoughts about this sprint..."
-                                        value={newFeedback.text}
+                                        value={newFeedback.message}
                                         onChange={(e) =>
                                             setNewFeedback((prev) => ({
                                                 ...prev,
