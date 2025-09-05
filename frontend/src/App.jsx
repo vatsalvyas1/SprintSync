@@ -157,6 +157,16 @@ function AppContent() {
                     }
                 />
                 <Route
+                    path="/retrospectives/:sprintId"
+                    element={
+                        userInfoGlobal ? (
+                            <SprintManageRetroSpectives />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
+                />
+                <Route
                     path="/add-form/:userid"
                     element={
                         userInfoGlobal ? <AddForm /> : <Navigate to="/login" />

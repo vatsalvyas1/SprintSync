@@ -154,8 +154,6 @@ const RetroSpectives = ({ sprintId }) => {
                 fetchActionItems(),
             ]);
         };
-
-        console.log("Setting up polling for sprint:", sprintId);
         initializeData();
 
         // Polling every 5 seconds
@@ -173,7 +171,6 @@ const RetroSpectives = ({ sprintId }) => {
         }, 5000);
 
         return () => {
-            console.log("Cleaning up polling interval");
             clearInterval(intervalId);
         };
     }, [sprintId]);

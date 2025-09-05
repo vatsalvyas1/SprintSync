@@ -3,7 +3,7 @@ import RetroSpectives from "./RetroSpectives";
 import { ArrowLeft, ChevronDown, Plus, X } from "lucide-react";
 import axios from "axios";
 import { backendUrl } from "../../constant";
-import { useAccessibility } from "../Accessibility/AccessibilityProvider";
+import { useParams, useNavigate } from "react-router-dom";
 
 const api = axios.create({
     baseURL: `${backendUrl}/api/v1/retrospectives/`,
@@ -11,7 +11,8 @@ const api = axios.create({
 });
 
 const SprintManageRetroSpectives = () => {
-    const { speak, announce } = useAccessibility();
+    const { sprintId: sprintIdParam } = useParams();
+    const navigate = useNavigate();
     const [userInfo, setUserInfo] = useState(null);
     const [selectedProcess, setSelectedProcess] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
@@ -52,6 +53,20 @@ const SprintManageRetroSpectives = () => {
         fetchUserInfo();
         fetchSprints();
     }, []);
+
+    // When sprints are loaded, if sprintIdParam exists, select the correct process/project/team/sprint
+    useEffect(() => {
+        if (sprintIdParam && sprintData.length > 0) {
+            const sprint = sprintData.find(s => s._id === sprintIdParam);
+            if (sprint) {
+                setSelectedProcess(projectData[sprint.projectName].processName);
+                setSelectedProject(sprint.projectName);
+                setSelectedTeam(sprint.teamName);
+                setSprintId(sprint._id);
+                setActiveSprintName(sprint.sprintName);
+            }
+        }
+    }, [sprintIdParam, sprintData]);
 
     const processData = {
         OSI: {
@@ -148,15 +163,15 @@ const SprintManageRetroSpectives = () => {
         setSelectedProject(projectName);
         setSprintId(null);
         setActiveSprintName("");
-        speak(`Selected project: ${projectName}`);
-        announce(`Navigated to ${projectName} project`);
     };
 
     const handleSprintSelect = (sprint) => {
         setSprintId(sprint._id);
         setActiveSprintName(sprint.sprintName);
-        speak(`Selected sprint: ${sprint.sprintName}`);
-        announce(`Opened sprint ${sprint.sprintName} retrospective board`);
+        setSelectedProcess(projectData[sprint.projectName].processName);
+        setSelectedProject(sprint.projectName);
+        setSelectedTeam(sprint.teamName);
+        navigate(`/retrospectives/${sprint._id}`);
     };
 
     const openSprintModal = () => {
@@ -174,8 +189,6 @@ const SprintManageRetroSpectives = () => {
             }));
         }
         setSprintModal(true);
-        speak('Add sprint dialog opened');
-        announce('Sprint creation dialog is now open');
     };
 
     const closeSprintModal = () => {
@@ -186,14 +199,10 @@ const SprintManageRetroSpectives = () => {
             createdBy: "",
         });
         setSprintModal(false);
-        speak('Add sprint dialog closed');
-        announce('Sprint creation dialog has been closed');
     };
 
     const handleSubmitSprint = async () => {
         if (!newSprintData.sprintName.trim()) {
-            speak('Please enter a sprint name');
-            announce('Sprint name is required');
             return;
         }
 
@@ -205,8 +214,6 @@ const SprintManageRetroSpectives = () => {
         };
         try {
             setAddSprintDisabled(() => true);
-            speak('Creating sprint...');
-            announce('Sprint is being created');
             const res = await api.post("/add-sprint", {
                 sprintName: newSprintData.sprintName,
                 projectName: newSprintData.projectName,
@@ -216,13 +223,9 @@ const SprintManageRetroSpectives = () => {
             sprint._id = res.data.data._id;
             setSprintData((prev) => [...prev, sprint]);
             setAddSprintDisabled(() => false);
-            speak(`Sprint ${newSprintData.sprintName} created successfully`);
-            announce(`New sprint ${newSprintData.sprintName} has been added`);
             closeSprintModal();
         } catch (error) {
             setAddSprintDisabled(() => false);
-            speak('Error creating sprint');
-            announce('Failed to create sprint. Please try again.');
         }
     };
 
@@ -231,12 +234,14 @@ const SprintManageRetroSpectives = () => {
         setSelectedTeam(null);
         setSprintId(null);
         setActiveSprintName("");
+        navigate("/retrospectives");
     };
 
     const handleBackToTeams = () => {
         setSelectedTeam(null);
         setSprintId(null);
         setActiveSprintName("");
+        navigate("/retrospectives");
     };
 
     const handleBackToProcess = () => {
@@ -244,24 +249,23 @@ const SprintManageRetroSpectives = () => {
         setSelectedProcess(null);
         setSprintId(null);
         setActiveSprintName("");
+        navigate("/retrospectives");
     };
 
     const handleBackToSprints = () => {
         setSprintId(null);
         setActiveSprintName("");
+        navigate("/retrospectives");
     };
 
     // Accessibility handlers
     const handleSectionFocus = (sectionName) => {
-        speak(`Sprint Retrospectives section: ${sectionName}`);
     };
 
     const handleCardFocus = (cardName) => {
-        speak(`${cardName} card`);
     };
 
     const handleButtonFocus = (buttonName) => {
-        speak(`${buttonName} button`);
     };
 
     const handleProcessSelect = (processName) => {
@@ -269,13 +273,11 @@ const SprintManageRetroSpectives = () => {
         setSelectedProject("");
         setSprintId("");
         setActiveSprintName("");
-        speak(`Selected process: ${processName}`);
     };
 
     const handleTeamSelect = (teamName) => {
         setSelectedTeam(teamName);
         setSprintId("");
-        speak(`Selected team: ${teamName}`);
     };
 
     return (
@@ -293,20 +295,11 @@ const SprintManageRetroSpectives = () => {
                 <div>
                     <div
                         className="mb-1 text-xl font-bold text-gray-900 md:mb-2 lg:text-2xl"
-                        tabIndex={0}
-                        onFocus={() => speak("Sprint Retro Board IPS")}
-                        role="heading"
-                        aria-level="1"
                     >
                         Sprint Retro Board [IPS]
                     </div>
                     <div
                         className="hidden text-sm text-gray-600 sm:block"
-                        tabIndex={0}
-                        onFocus={() =>
-                            speak("Collect and track retrospective feedback")
-                        }
-                        role="text"
                     >
                         Collect and track retrospective feedback
                     </div>
@@ -330,9 +323,6 @@ const SprintManageRetroSpectives = () => {
                 <div
                     className="mx-auto mt-8 grid grid-cols-1 gap-8 md:grid-cols-2"
                     role="region"
-                    aria-label="Process selection"
-                    tabIndex={0}
-                    onFocus={() => speak("Process selection section")}
                 >
                     {Object.entries(processData).map(([key, process]) => (
                         <div
@@ -361,10 +351,6 @@ const SprintManageRetroSpectives = () => {
                             </div>
                             <h3
                                 className="mb-5 text-xl font-medium text-gray-900"
-                                tabIndex={0}
-                                onFocus={() => speak(`${process.name} process`)}
-                                role="heading"
-                                aria-level="2"
                             >
                                 {process.name}
                             </h3>
@@ -378,9 +364,6 @@ const SprintManageRetroSpectives = () => {
                 <div
                     className="mt-6"
                     role="region"
-                    aria-label="Project selection"
-                    tabIndex={0}
-                    onFocus={() => speak("Project selection section")}
                 >
                     <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
                         <button
@@ -457,24 +440,17 @@ const SprintManageRetroSpectives = () => {
                 <div 
                     className="mt-6"
                     role="region"
-                    aria-label="Team selection"
-                    tabIndex={0}
-                    onFocus={() => speak("Team selection section")}
                 >
                     <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
                         <button
                             onClick={() => {
                                 handleBackToProjects();
-                                speak('Navigated back to projects');
-                                announce('Returned to project selection');
                             }}
                             onFocus={() => handleButtonFocus("Back to Projects")}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
                                     handleBackToProjects();
-                                    speak('Navigated back to projects');
-                                    announce('Returned to project selection');
                                 }
                             }}
                             className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-blue-800 hover:text-white"
@@ -553,24 +529,17 @@ const SprintManageRetroSpectives = () => {
                     <div 
                         className="mt-6"
                         role="region"
-                        aria-label="Sprint selection"
-                        tabIndex={0}
-                        onFocus={() => speak("Sprint selection section")}
                     >
                         <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
                             <button
                                 onClick={() => {
                                     handleBackToTeams();
-                                    speak('Navigated back to teams');
-                                    announce('Returned to team selection');
                                 }}
                                 onFocus={() => handleButtonFocus("Back to Teams")}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter" || e.key === " ") {
                                         e.preventDefault();
                                         handleBackToTeams();
-                                        speak('Navigated back to teams');
-                                        announce('Returned to team selection');
                                     }
                                 }}
                                 className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-white"
@@ -639,9 +608,6 @@ const SprintManageRetroSpectives = () => {
                             <div 
                                 className="py-12 text-center"
                                 role="status"
-                                aria-live="polite"
-                                tabIndex={0}
-                                onFocus={() => speak(`No sprints found for ${selectedProject}. Click Add Sprint to create your first sprint.`)}
                             >
                                 <p className="text-lg text-gray-500">
                                     No sprints found for {selectedProject}
@@ -660,24 +626,17 @@ const SprintManageRetroSpectives = () => {
                 <div 
                     className="mt-6"
                     role="region"
-                    aria-label="Active sprint retrospective"
-                    tabIndex={0}
-                    onFocus={() => speak(`Active sprint: ${activeSprintName} retrospective board`)}
                 >
                     <div className="relative flex w-full items-center justify-center border border-transparent font-medium text-blue-600">
                         <button
                             onClick={() => {
                                 handleBackToSprints();
-                                speak('Navigated back to sprints');
-                                announce('Returned to sprint selection');
                             }}
                             onFocus={() => handleButtonFocus("Back to Sprints")}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
                                     handleBackToSprints();
-                                    speak('Navigated back to sprints');
-                                    announce('Returned to sprint selection');
                                 }
                             }}
                             className="absolute left-0 flex items-center px-2 py-1 transition-all duration-200 hover:rounded-full hover:bg-red-500 hover:text-white"
@@ -701,9 +660,6 @@ const SprintManageRetroSpectives = () => {
                 <div
                     className="fixed inset-0 z-40 overflow-y-auto"
                     role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="modal-title"
-                    aria-describedby="modal-description"
                 >
                     <div className="flex min-h-screen items-center justify-center p-4 sm:p-0">
                         <div
@@ -731,8 +687,6 @@ const SprintManageRetroSpectives = () => {
                                         }
                                     }}
                                     className="text-gray-400 transition-colors hover:text-gray-600"
-                                    aria-label="Close add sprint dialog"
-                                    tabIndex={0}
                                 >
                                     <X size={25} className="text-grey-500" aria-hidden="true" />
                                 </button>
@@ -759,9 +713,6 @@ const SprintManageRetroSpectives = () => {
                                                 sprintName: e.target.value,
                                             }))
                                         }
-                                        onFocus={() => speak("Sprint name input field")}
-                                        aria-required="true"
-                                        aria-describedby="sprint-name-help"
                                     ></textarea>
                                     <div id="sprint-name-help" className="sr-only">
                                         Enter a unique name for your sprint, for example SPRINT-25
@@ -786,10 +737,7 @@ const SprintManageRetroSpectives = () => {
                                                     projectData[e.target.value]
                                                         .teams[0],
                                             }));
-                                            speak(`Selected project: ${e.target.value}`);
                                         }}
-                                        onFocus={() => speak("Project selection dropdown")}
-                                        aria-describedby="project-help"
                                     >
                                         <option value="Audit">Audit</option>
                                         <option value="Survey">Survey</option>
@@ -817,10 +765,7 @@ const SprintManageRetroSpectives = () => {
                                                 ...prev,
                                                 teamName: e.target.value,
                                             }));
-                                            speak(`Selected team: ${e.target.value}`);
                                         }}
-                                        onFocus={() => speak("Team selection dropdown")}
-                                        aria-describedby="team-help"
                                     >
                                         {Object.entries(teamData)
                                             .filter(
