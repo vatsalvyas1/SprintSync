@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { backendUrl } from "../../constant.js";
 import {
@@ -62,110 +62,6 @@ const RetroSpectives = ({ sprintId }) => {
         sprintId: sprintId,
     });
 
-    const onDragEnd = async (result) => {
-        const { source, destination } = result;
-
-        // Dropped outside the list
-        if (!destination) {
-            return;
-        }
-
-        const sourceId = source.droppableId;
-        const destId = destination.droppableId;
-
-        // If in the same list, reorder
-        if (sourceId === destId) {
-            let items = [];
-            if (sourceId === "well") items = [...feedbackData.wellItems];
-            else if (sourceId === "poor") items = [...feedbackData.poorItems];
-            else items = [...feedbackData.suggestions];
-
-            const reorderedItems = reorder(
-                items,
-                source.index,
-                destination.index
-            );
-
-            setFeedbackData((prev) => ({
-                ...prev,
-                [sourceId === "well"
-                    ? "wellItems"
-                    : sourceId === "poor"
-                      ? "poorItems"
-                      : "suggestions"]: reorderedItems,
-            }));
-        } else {
-            // Moving between lists
-            const sourceItems =
-                sourceId === "well"
-                    ? [...feedbackData.wellItems]
-                    : sourceId === "poor"
-                      ? [...feedbackData.poorItems]
-                      : [...feedbackData.suggestions];
-
-            const destItems =
-                destId === "well"
-                    ? [...feedbackData.wellItems]
-                    : destId === "poor"
-                      ? [...feedbackData.poorItems]
-                      : [...feedbackData.suggestions];
-
-            const result = move(sourceItems, destItems, source, destination);
-
-            // Update state
-            setFeedbackData((prev) => ({
-                ...prev,
-                [sourceId === "well"
-                    ? "wellItems"
-                    : sourceId === "poor"
-                      ? "poorItems"
-                      : "suggestions"]: result[sourceId],
-                [destId === "well"
-                    ? "wellItems"
-                    : destId === "poor"
-                      ? "poorItems"
-                      : "suggestions"]: result[destId],
-            }));
-
-            // Update the category in the backend
-            const movedItem =
-                sourceId === "well"
-                    ? feedbackData.wellItems[source.index]
-                    : sourceId === "poor"
-                      ? feedbackData.poorItems[source.index]
-                      : feedbackData.suggestions[source.index];
-
-            try {
-                const category =
-                    destId === "well"
-                        ? "What Went Well"
-                        : destId === "poor"
-                          ? "What Didn't Go Well"
-                          : "Suggestions";
-
-                await api.patch(`/update-feedback/${movedItem._id}`, {
-                    category,
-                });
-            } catch (error) {
-                console.error("Error updating feedback category:", error);
-                // Revert the UI if the API call fails
-                setFeedbackData((prev) => ({
-                    ...prev,
-                    [sourceId === "well"
-                        ? "wellItems"
-                        : sourceId === "poor"
-                          ? "poorItems"
-                          : "suggestions"]: sourceItems,
-                    [destId === "well"
-                        ? "wellItems"
-                        : destId === "poor"
-                          ? "poorItems"
-                          : "suggestions"]: destItems,
-                }));
-            }
-        }
-    };
-
     const [feedbackModal, setFeedbackModal] = useState(false);
     const [addFeedbackDisabled, setAddFeedbackDisabled] = useState(false);
 
@@ -176,22 +72,7 @@ const RetroSpectives = ({ sprintId }) => {
     const [actionItems, setActionItems] = useState([]);
     const [allActionItemsCount, setAllActionItemsCount] = useState(null);
 
-    useEffect(() => {
-        if (!sprintId) return;
-
-        let storedUserData = null;
-
-        const fetchUserInfo = () => {
-            const storedUserString = localStorage.getItem("loggedInUser");
-            if (storedUserString) {
-                storedUserData = JSON.parse(storedUserString); // Parse ONCE
-                setUserInfo(storedUserData);
-            } else {
-                console.error("No user info found in localStorage");
-            }
-        };
-
-        const fetchFeedbacks = async () => {
+    const fetchFeedbacks = async () => {
             try {
                 let wellItems = [];
                 let poorItems = [];
@@ -230,6 +111,21 @@ const RetroSpectives = ({ sprintId }) => {
                 setAllActionItemsCount(totalCountRes?.data?.data?.count || 0);
             } catch (error) {
                 console.error("Error fetching feedbacks:", error);
+            }
+        };
+
+    useEffect(() => {
+        if (!sprintId) return;
+
+        let storedUserData = null;
+
+        const fetchUserInfo = () => {
+            const storedUserString = localStorage.getItem("loggedInUser");
+            if (storedUserString) {
+                storedUserData = JSON.parse(storedUserString); // Parse ONCE
+                setUserInfo(storedUserData);
+            } else {
+                console.error("No user info found in localStorage");
             }
         };
 
@@ -286,7 +182,7 @@ const RetroSpectives = ({ sprintId }) => {
         console.log("Setting up polling for sprint:", sprintId);
         initializeData();
 
-        // Polling every 3 seconds
+        // Polling every 5 seconds
         const intervalId = setInterval(async () => {
             try {
                 await Promise.all([
@@ -298,7 +194,7 @@ const RetroSpectives = ({ sprintId }) => {
             } catch (error) {
                 console.error("Polling error:", error);
             }
-        }, 3000);
+        }, 5000);
 
         return () => {
             console.log("Cleaning up polling interval");
@@ -368,6 +264,34 @@ const RetroSpectives = ({ sprintId }) => {
         }
     };
 
+    // implementing drag drops
+    const dragItem = useRef();
+
+    const handleDragStart = (e, itemId) => {
+        e.target.style.opacity = "0.5";
+        console.log("Dragging item:", itemId);
+        dragItem.current = itemId; 
+    }
+
+    const handleDragEnd = (e) => {
+        e.target.style.opacity = "1";
+    }
+
+    const handleDrop = async (e, targetCategory) => {
+        e.preventDefault();
+        const draggedItemId = dragItem.current;
+
+        try{
+            const res = await api.patch(`/update-feedback/${draggedItemId}`, {
+                category: targetCategory
+            });
+            console.log("Feedback updated successfully:", res.data);
+            await fetchFeedbacks();
+        } catch (error) {
+            console.error("Error updating feedback:", error);
+        }
+    }
+
     {
         /* Template For All Feedback Cards */
     }
@@ -384,9 +308,12 @@ const RetroSpectives = ({ sprintId }) => {
 
         return (
             <div
-                className={`${bgColor} ${borderColor} rounded-lg border-1 p-3 transition-shadow hover:shadow-sm`}
+                className={`${bgColor} ${borderColor} rounded-lg border-1 p-3 transition-shadow hover:shadow-sm cursor-grab`}
                 onFocus={() => handleFeedbackCardFocus(item)}
                 role="article"
+                draggable
+                onDragStart={(e) => handleDragStart(e, item._id)}
+                onDragEnd={(e) => handleDragEnd(e)}
             >
                 <div className="mb-3 flex items-start justify-between">
                     <div
@@ -889,12 +816,13 @@ const RetroSpectives = ({ sprintId }) => {
             </div>
 
             {/* Container For All Cards */}
-            <div className="scrollbar-hide mb-6 grid h-[500px] grid-cols-1 gap-4 overflow-y-auto rounded-lg pb-5 md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3 lg:overflow-hidden">
+            <div className="scrollbar-hide mb-6 grid grid-cols-1 gap-4 overflow-y-auto rounded-lg pb-5 md:mb-8 md:grid-cols-1 md:gap-6 lg:grid-cols-3 lg:overflow-hidden">
                 {/* What Went Well Card */}
                 <div
-                    className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
+                    className="scrollbar-hide overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
                     onFocus={() => handleCardFocus("wellItems")}
                     role="region"
+                    onDrop={(e) => {handleDrop(e,"What Went Well")}} onDragOver={(e) => e.preventDefault()}
                 >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
@@ -944,9 +872,10 @@ const RetroSpectives = ({ sprintId }) => {
                 </div>
                 {/* What Didn't Go Well Card */}
                 <div
-                    className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
+                    className="scrollbar-hide overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
                     onFocus={() => handleCardFocus("poorItems")}
                     role="region"
+                    onDrop={(e) => {handleDrop(e,"What Didn't Go Well")}} onDragOver={(e) => e.preventDefault()}
                 >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
@@ -995,9 +924,10 @@ const RetroSpectives = ({ sprintId }) => {
                 </div>
                 {/* Suggestions Card */}
                 <div
-                    className="scrollbar-hide h-[500px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
+                    className="scrollbar-hide overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 md:p-6"
                     onFocus={() => handleCardFocus("suggestions")}
                     role="region"
+                    onDrop={(e) => {handleDrop(e,"Suggestions")}} onDragOver={(e) => e.preventDefault()}
                 >
                     <div className="mb-4 flex flex-wrap items-center justify-between md:mb-6">
                         <div className="flex items-center justify-evenly whitespace-nowrap">
